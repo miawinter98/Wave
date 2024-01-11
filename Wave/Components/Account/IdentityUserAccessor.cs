@@ -1,20 +1,19 @@
 using Microsoft.AspNetCore.Identity;
 using Wave.Data;
 
-namespace Wave.Components.Account
-{
-    internal sealed class IdentityUserAccessor(UserManager<ApplicationUser> userManager, IdentityRedirectManager redirectManager)
-    {
-        public async Task<ApplicationUser> GetRequiredUserAsync(HttpContext context)
-        {
-            var user = await userManager.GetUserAsync(context.User);
+namespace Wave.Components.Account;
 
-            if (user is null)
-            {
-                redirectManager.RedirectToWithStatus("Account/InvalidUser", $"Error: Unable to load user with ID '{userManager.GetUserId(context.User)}'.", context);
-            }
+internal sealed class IdentityUserAccessor(
+    UserManager<ApplicationUser> userManager,
+    IdentityRedirectManager redirectManager) {
+    public async Task<ApplicationUser> GetRequiredUserAsync(HttpContext context) {
+        var user = await userManager.GetUserAsync(context.User);
 
-            return user;
+        if (user is null) {
+            redirectManager.RedirectToWithStatus("Account/InvalidUser",
+                $"Error: Unable to load user with ID '{userManager.GetUserId(context.User)}'.", context);
         }
+
+        return user;
     }
 }
