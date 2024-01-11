@@ -2,85 +2,69 @@
 
 @inject NavigationManager NavigationManager
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Wave</a>
-    </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="auth">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
-            </NavLink>
-        </div>
-
-        <AuthorizeView>
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                        </button>
-                    </form>
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
-                    </NavLink>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
-    </nav>
-</div>
+<header>
+	<div class="navbar bg-base-200">
+		<div class="navbar-start">
+			<picture class="h-12">
+				<source type="image/jxl" srcset="img/logo.jxl" />
+				<source type="image/webp" srcset="img/logo.webp" />
+				<source type="image/svg+xml" scrset="img/logo.svg" />
+				<img class="max-h-full object-contain object-left" src="img/logo.png" alt="Wave" />
+			</picture>
+		</div>
+		<div class="navbar-center"></div>
+		<div class="navbar-end">
+			<ul class="menu menu-horizontal">
+				<AuthorizeView>
+					<Authorized>
+						<li>
+							<NavLink ActiveClass="tab-active" class="tab" href="Account/Manage">@context.User.Identity?.Name</NavLink>
+						</li>
+						<li>
+							<form action="Account/Logout" method="post">
+								<AntiforgeryToken />
+								<input type="hidden" name="ReturnUrl" value="@_currentUrl" />
+								<button type="submit" class="">Logout</button>
+							</form>
+						</li>
+					</Authorized>
+					<NotAuthorized>
+						<li>
+							<NavLink href="Account/Login">Login</NavLink>
+						</li>
+						<li>
+							<NavLink href="Account/Register">Register</NavLink>
+						</li>
+					</NotAuthorized>
+				</AuthorizeView>
+			</ul>
+		</div>
+	</div>
+	<div class="flex justify-center bg-base-300">
+		<nav class="tabs tabs-bordered">
+            <NavLink ActiveClass="tab-active" class="tab" href="" Match="NavLinkMatch.All">Home</NavLink>
+			<NavLink ActiveClass="tab-active" class="tab" href="weather">Weather</NavLink>
+			<NavLink ActiveClass="tab-active" class="tab" href="auth">Auth Required</NavLink>
+		</nav>
+	</div>
+</header>
 
 @code {
-    private string? currentUrl;
+	private string? _currentUrl;
 
-    protected override void OnInitialized()
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.LocationChanged += OnLocationChanged;
-    }
+	protected override void OnInitialized() {
+		_currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+		NavigationManager.LocationChanged += OnLocationChanged;
+	}
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-        StateHasChanged();
-    }
+	private void OnLocationChanged(object? sender, LocationChangedEventArgs e) {
+		_currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+		StateHasChanged();
+	}
 
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-    }
+	public void Dispose() {
+		NavigationManager.LocationChanged -= OnLocationChanged;
+	}
+
 }
 
