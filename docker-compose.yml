@@ -1,0 +1,31 @@
+version: '3.4'
+
+name: wave
+services:
+  web:
+    image: ${DOCKER_REGISTRY-}wave
+    build:
+      context: .
+      dockerfile: Wave/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+    links:
+        - database:db
+    environment:
+      - "WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development"
+    networks:
+      - wave
+  database:
+    image: postgres:16.1-alpine
+    restart: unless-stopped
+    environment:
+      - "POSTGRES_DB=wave"
+      - "POSTGRES_USER=wave"
+      - "POSTGRES_PASSWORD=development"
+    networks:
+      - wave
+
+
+networks:
+  wave:
