@@ -14,6 +14,8 @@ services:
         - database:db
     environment:
       - "WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development"
+    volumes:
+      - wave-files:/app/files
     networks:
       - wave
   database:
@@ -23,9 +25,13 @@ services:
       - "POSTGRES_DB=wave"
       - "POSTGRES_USER=wave"
       - "POSTGRES_PASSWORD=development"
+    volumes:
+      -  wave-db:/var/lib/postgresql
     networks:
       - wave
 
-
+volumes:
+  wave-files:
+  wave-db:
 networks:
   wave:
