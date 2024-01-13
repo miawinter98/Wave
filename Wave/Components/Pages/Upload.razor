@@ -1,0 +1,58 @@
+﻿@page "/upload"
+
+@using Microsoft.AspNetCore.Authorization
+@using Wave.Services
+@using System.IO.Pipelines
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject ImageService ImageService
+
+<PageTitle>Upload</PageTitle>
+
+<h3 class="title mb-3">Upload</h3>
+@if (Busy) {
+    <progress class="progress progress-primary w-56"></progress>
+} 
+<div>
+    <p>@Message</p>
+    @if (Path is not null) {
+        <img src="@Path" type="@ImageService.ImageMimeType" width="800" alt="" />
+    }
+</div>
+
+<InputFile OnChange="@LoadFiles" accept="image/png, image/jpeg, image/webp" />
+
+@code {
+    private const long MaxFileSize = 1024 * 1024 * 5; // 5MB should be fine
+    private string Message { get; set; } = string.Empty;
+    private string? Path { get; set; }
+    private bool Busy { get; set; }
+
+    private async Task LoadFiles(InputFileChangeEventArgs args) {
+        Busy = true;
+
+        try {
+            string tempName = System.IO.Path.GetRandomFileName();
+            string tempDirectory = System.IO.Path.Combine(".", "files", "temp");
+            Directory.CreateDirectory(tempDirectory);
+            string tempPath = System.IO.Path.Combine(tempDirectory, tempName);
+            await using var fs = new FileStream(tempPath, FileMode.Create);
+            await args.File.OpenReadStream(MaxFileSize).CopyToAsync(fs);
+
+            var guid = await ImageService.StoreImageAsync(tempPath);
+
+            if (guid is null) {
+                Message = "Image upload failed";
+            } else {
+                Message = "Image uploaded successfully";
+                Path = "/images/" + guid;
+            }
+        } catch (Exception ex) {
+            Message = $"{ex.Message} ({ex.GetType().Name}).";
+        } finally {
+            Busy = false;
+        }
+    }
+
+}
