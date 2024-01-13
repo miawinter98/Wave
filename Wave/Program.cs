@@ -5,12 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using Wave.Components;
 using Wave.Components.Account;
 using Wave.Data;
+using Wave.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables("WAVE_");
 
-// Add services to the container.
-builder.Services.AddRazorComponents();
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddControllers();
 
 #region Authentication & Authorization
 
@@ -51,6 +52,7 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 builder.Services.AddLocalization(options => {
     options.ResourcesPath = "Resources";
 });
+builder.Services.AddScoped<ImageService>();
 
 #endregion
 
@@ -66,10 +68,12 @@ if (app.Environment.IsDevelopment()) {
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.MapRazorComponents<App>();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+
+app.MapControllers();
 
 string[] cultures = ["en-US", "en-GB", "de-DE"];
 app.UseRequestLocalization(new RequestLocalizationOptions {
