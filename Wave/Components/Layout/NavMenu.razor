@@ -1,4 +1,5 @@
-﻿@implements IDisposable
+﻿@using System.Security.Claims
+@implements IDisposable
 
 @inject NavigationManager NavigationManager
 
@@ -18,7 +19,17 @@
 				<AuthorizeView>
 					<Authorized>
 						<li>
-							<NavLink ActiveClass="tab-active" class="tab" href="Account/Manage">@context.User.Identity?.Name</NavLink>
+                            <NavLink ActiveClass="tab-active" class="tab" href="Account/Manage">
+                                @if (context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value is { } id) {
+                                    <div class="avatar">
+                                        <div class="w-12 rounded">
+                                            <img src="/api/user/pfp/@id" alt="" loading="lazy"
+                                                 onerror="this.remove()" />
+                                        </div>
+                                    </div>
+                                }
+                                @context.User.Identity?.Name
+                            </NavLink>
 						</li>
 						<li>
 							<form action="Account/Logout" method="post">

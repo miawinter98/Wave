@@ -1,77 +1,78 @@
 ﻿@page "/Account/Manage"
 
-@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @using Wave.Data
+@using Wave.Services
 
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
 @inject UserManager<ApplicationUser> UserManager
-@inject SignInManager<ApplicationUser> SignInManager
-@inject IdentityUserAccessor UserAccessor
-@inject IdentityRedirectManager RedirectManager
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject ImageService ImageService
 
 <PageTitle>Profile</PageTitle>
 
-<h3>Profile</h3>
-<StatusMessage />
+<h3 class="text-xl mb-3">Profile</h3>
 
-<div class="row">
-    <div class="col-md-6">
-        <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <input type="text" value="@username" class="form-control" placeholder="Please choose your username." disabled />
-                <label for="username" class="form-label">Username</label>
+<div class="max-w-xs" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text">Username</span>
+        </div>
+        <input class="input input-bordered w-full" type="text" value="@Username"
+               placeholder="Please choose your username." disabled/>
+    </label>
+
+    @if (User?.ProfilePicture is not null) {
+        <div class="avatar w-24 my-3">
+            <div class="rounded">
+                <img src="/images/@(User.ProfilePicture.ImageId)" alt="" loading="lazy" />
             </div>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number." />
-                <label for="phone-number" class="form-label">Phone number</label>
-                <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
-        </EditForm>
-    </div>
+        </div>
+    }
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text">Profile Picture</span>
+        </div>
+        <FileUploadComponent FileUploadedCallback="ProfilePictureChanged"/>
+    </label>
 </div>
 
 @code {
-    private ApplicationUser user = default!;
-    private string? username;
-    private string? phoneNumber;
+    private ApplicationUser? User { get; set; } = default!;
+    private string? Username { get; set; }
 
     [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
-    [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-        username = await UserManager.GetUserNameAsync(user);
-        phoneNumber = await UserManager.GetPhoneNumberAsync(user);
-
-        Input.PhoneNumber ??= phoneNumber;
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+    
+    protected override async Task OnInitializedAsync() {
+        if (AuthenticationState is not null) {
+            var state = await AuthenticationState;
+            User = await UserManager.GetUserAsync(state.User);
+            Username = User.UserName;
+            await using var context = await ContextFactory.CreateDbContextAsync();
+            await context.Entry(User).Reference(u => u.ProfilePicture).LoadAsync();
+        }
     }
 
-    private async Task OnValidSubmitAsync()
-    {
-        if (Input.PhoneNumber != phoneNumber)
-        {
-            var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-            if (!setPhoneResult.Succeeded)
-            {
-                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
-            }
+    private async Task ProfilePictureChanged(string tempFilePath) {
+        var guid = await ImageService.StoreImageAsync(tempFilePath);
+        if (!guid.HasValue) throw new ApplicationException("Processing Image failed.");
+
+        await using var context = await ContextFactory.CreateDbContextAsync();
+        if (User.ProfilePicture is not null) {
+            context.Remove(User.ProfilePicture);
         }
 
-        await SignInManager.RefreshSignInAsync(user);
-        RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
+        User.ProfilePicture = new ProfilePicture() {
+            ImageId = guid.Value
+        };
+
+        context.Update(User);
+        await context.SaveChangesAsync();
+
+        // TODO notify changed pfp
     }
 
-    private sealed class InputModel
-    {
-        [Phone]
-        [Display(Name = "Phone number")]
-        public string? PhoneNumber { get; set; }
-    }
 }

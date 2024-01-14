@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
     <Folder Include="Services\" />
     <Folder Include="wwwroot\img\" />
   </ItemGroup>
