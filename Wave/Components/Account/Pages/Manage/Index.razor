@@ -60,8 +60,10 @@
         var guid = await ImageService.StoreImageAsync(tempFilePath);
         if (!guid.HasValue) throw new ApplicationException("Processing Image failed.");
 
+        Guid? imageToDelete = null;
         await using var context = await ContextFactory.CreateDbContextAsync();
         if (User.ProfilePicture is not null) {
+            imageToDelete = User.ProfilePicture.ImageId;
             context.Remove(User.ProfilePicture);
         }
 
@@ -72,7 +74,9 @@
         context.Update(User);
         await context.SaveChangesAsync();
 
-        // TODO notify changed pfp
+        if (imageToDelete is not null)
+            ImageService.Delete(imageToDelete.Value);
+        await InvokeAsync(StateHasChanged);
     }
 
 }

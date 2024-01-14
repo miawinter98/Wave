@@ -30,7 +30,8 @@
         try {
             string tempPath = await FileUtilities.StoreTemporary(args.File.OpenReadStream(MaxFileSize));
             await FileUploadedCallback.InvokeAsync(tempPath);
-            Message = string.Empty; 
+            Message = string.Empty;
+            File.Delete(tempPath);
         } catch (Exception ex) {
             Message = "File upload failed: " + ex.Message;
         } finally {

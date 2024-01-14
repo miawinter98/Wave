@@ -1,4 +1,5 @@
 ﻿using ImageMagick;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Wave.Services;
 
@@ -46,5 +47,10 @@ public class ImageService(ILogger<ImageService> logger) {
             Logger.LogInformation(ex, "Failed to process uploaded image.");
             return null;
         }
+    }
+
+    public void Delete(Guid imageId) {
+        string path = Path.Combine(BasePath, imageId + ImageExtension);
+        File.Delete(path);
     }
 }
