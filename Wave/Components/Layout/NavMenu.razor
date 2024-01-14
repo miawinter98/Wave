@@ -15,40 +15,56 @@
 		</div>
 		<div class="navbar-center"></div>
 		<div class="navbar-end">
-			<ul class="menu menu-horizontal">
-				<AuthorizeView>
-					<Authorized>
-						<li>
-                            <NavLink ActiveClass="tab-active" class="tab" href="Account/Manage">
-                                @if (context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value is { } id) {
-                                    <div class="avatar">
-                                        <div class="w-12 rounded">
-                                            <img src="/api/user/pfp/@id" alt="" loading="lazy"
-                                                 onerror="this.remove()" />
-                                        </div>
-                                    </div>
-                                }
+            <ul class="menu menu-horizontal gap-2">
+                <AuthorizeView>
+                    <Authorized>
+                        <li>
+                            <NavLink ActiveClass="tab-active" href="Account/Manage">
                                 @context.User.Identity?.Name
                             </NavLink>
-						</li>
-						<li>
-							<form action="Account/Logout" method="post">
-								<AntiforgeryToken />
-								<input type="hidden" name="ReturnUrl" value="@_currentUrl" />
-								<button type="submit" class="">Logout</button>
-							</form>
-						</li>
-					</Authorized>
-					<NotAuthorized>
-						<li>
-							<NavLink href="Account/Login">Login</NavLink>
-						</li>
-						<li>
-							<NavLink href="Account/Register">Register</NavLink>
-						</li>
-					</NotAuthorized>
-				</AuthorizeView>
-			</ul>
+                        </li>
+                        <li>
+                            <form action="Account/Logout" method="post">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="ReturnUrl" value="@_currentUrl" />
+                                <button type="submit" class="flex gap-2">
+                                    Logout
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                        <path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 0 1 5.25 2h5.5A2.25 2.25 0 0 1 13 4.25v2a.75.75 0 0 1-1.5 0v-2a.75.75 0 0 0-.75-.75h-5.5a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 0 0 .75-.75v-2a.75.75 0 0 1 1.5 0v2A2.25 2.25 0 0 1 10.75 18h-5.5A2.25 2.25 0 0 1 3 15.75V4.25Z" clip-rule="evenodd" />
+                                        <path fill-rule="evenodd" d="M6 10a.75.75 0 0 1 .75-.75h9.546l-1.048-.943a.75.75 0 1 1 1.004-1.114l2.5 2.25a.75.75 0 0 1 0 1.114l-2.5 2.25a.75.75 0 1 1-1.004-1.114l1.048-.943H6.75A.75.75 0 0 1 6 10Z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </li>
+                    </Authorized>
+                    <NotAuthorized>
+                        <li>
+                            <NavLink href="Account/Login">
+                                Login
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path fill-rule="evenodd" d="M17 4.25A2.25 2.25 0 0 0 14.75 2h-5.5A2.25 2.25 0 0 0 7 4.25v2a.75.75 0 0 0 1.5 0v-2a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 .75.75v11.5a.75.75 0 0 1-.75.75h-5.5a.75.75 0 0 1-.75-.75v-2a.75.75 0 0 0-1.5 0v2A2.25 2.25 0 0 0 9.25 18h5.5A2.25 2.25 0 0 0 17 15.75V4.25Z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M1 10a.75.75 0 0 1 .75-.75h9.546l-1.048-.943a.75.75 0 1 1 1.004-1.114l2.5 2.25a.75.75 0 0 1 0 1.114l-2.5 2.25a.75.75 0 1 1-1.004-1.114l1.048-.943H1.75A.75.75 0 0 1 1 10Z" clip-rule="evenodd" />
+                                </svg>
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink href="Account/Register">
+                                Register
+                            </NavLink>
+                        </li>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </ul>
+            <AuthorizeView>
+                @if (context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value is { } id) {
+                    <div class="avatar">
+                        <div class="w-8 rounded">
+                            <img src="/api/user/pfp/@id" alt="" loading="lazy"
+                                 onerror="this.remove()" />
+                        </div>
+                    </div>
+                }
+            </AuthorizeView>
 		</div>
 	</div>
 	<div class="flex justify-center bg-base-300">
