@@ -1,0 +1,41 @@
+﻿@using Wave.Utilities
+
+@if (Busy) {
+    <progress class="progress progress-primary w-full max-w-xs mb-3"></progress>
+}
+<div class="form-control">
+    <InputFile class="file-input file-input-bordered w-full max-w-xs" disabled="@Busy"
+               OnChange="@LoadFiles" accept="@AcceptTypes" />
+    @if (!string.IsNullOrWhiteSpace(Message)) {
+        <div class="label">
+            <span class="label-text-alt text-error">@Message</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public long MaxFileSize { get; set; } = 1024 * 1024 * 5; // 5MB should be fine
+    [Parameter]
+    public string AcceptTypes { get; set; } = "image/png, image/jpeg, image/webp";
+    [Parameter]
+    public required EventCallback<string> FileUploadedCallback { get; set; }
+
+    private string Message { get; set; } = string.Empty;
+    private bool Busy { get; set; }
+
+    private async Task LoadFiles(InputFileChangeEventArgs args) {
+        Busy = true;
+
+        try {
+            string tempPath = await FileUtilities.StoreTemporary(args.File.OpenReadStream(MaxFileSize));
+            await FileUploadedCallback.InvokeAsync(tempPath);
+            Message = string.Empty; 
+        } catch (Exception ex) {
+            Message = "File upload failed: " + ex.Message;
+        } finally {
+            Busy = false;
+        }
+    }
+
+}
