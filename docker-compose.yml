@@ -26,7 +26,7 @@ services:
       - "POSTGRES_USER=wave"
       - "POSTGRES_PASSWORD=development"
     volumes:
-      -  wave-db:/var/lib/postgresql
+      -  wave-db:/var/lib/postgresql/data
     networks:
       - wave
 
