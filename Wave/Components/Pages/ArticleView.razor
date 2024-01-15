@@ -24,7 +24,7 @@
         @if (Article.LastModified is not null) {
             <time datetime="@Article.LastModified.Value.ToString("u")"
                   title="@Article.LastModified.Value.ToString("g")">
-                &ensp;(@Article.LastModified.Humanize())
+                &ensp;(@Localizer["ModifiedOn"] @Article.LastModified.Humanize())
             </time>
         }
     </small>
