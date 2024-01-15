@@ -31,8 +31,10 @@ Welcome to your new app.
     protected override async Task OnInitializedAsync() {
         await using var context = await ContextFactory.CreateDbContextAsync();
 
+        var now = DateTimeOffset.UtcNow;
         var articles = await context.Set<Article>()
             .Include(a => a.Author)
+            .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
             .OrderBy(a => a.PublishDate)
             .Take(10)
             .ToListAsync();

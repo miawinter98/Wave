@@ -68,7 +68,12 @@
 		<nav class="tabs tabs-bordered">
             <NavLink ActiveClass="tab-active" class="tab" href="" Match="NavLinkMatch.All">Home</NavLink>
 			<NavLink ActiveClass="tab-active" class="tab" href="weather">Weather</NavLink>
-			<NavLink ActiveClass="tab-active" class="tab" href="auth">Auth Required</NavLink>
+            <NavLink ActiveClass="tab-active" class="tab" href="auth">Auth Required</NavLink>
+            <AuthorizeView>
+                <Authorized>
+                    <NavLink ActiveClass="tab-active" class="tab" href="article/new">New Article</NavLink>
+                </Authorized>
+            </AuthorizeView>
 		</nav>
 	</div>
 </header>

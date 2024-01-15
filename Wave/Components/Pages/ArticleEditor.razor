@@ -1,0 +1,176 @@
+﻿@page "/article/new"
+@page "/article/{id:guid}/edit"
+@using Wave.Data
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel.DataAnnotations
+@using Markdig
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+
+@attribute [Authorize]
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory;
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@inject IStringLocalizer<ArticleEditor> Localizer
+
+@if (Article is not null) {
+    <PageTitle>@Localizer["PageTitle_Edit"] - @Article.Title</PageTitle>
+} else {
+    <PageTitle>@Localizer["PageTitle_New"]</PageTitle>
+}
+
+<h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["EditorTitle"]</h1>
+
+<EditForm method="post" FormName="article-editor" Model="@Model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <input type="hidden" @bind-value="@Model.Id"/>
+
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text">@Localizer["Title_Label"]</span>
+        </div>
+        <InputText class="input input-bordered w-full" maxlength="256" aria-required
+                   @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" />
+        <div class="label">
+            <span class="label-text-alt text-error">
+                <ValidationMessage For="() => Model.Title" />
+            </span>
+        </div>
+    </label>
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text">@Localizer["PublishDate_Label"]</span>
+        </div>
+        <InputDate class="input input-bordered w-full" aria-required
+                   @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" />
+        <div class="label">
+            <span class="label-text-alt text-error">
+                <ValidationMessage For="() => Model.PublishDate" />
+            </span>
+        </div>
+    </label>
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text">@Localizer["Body_Label"]</span>
+        </div>
+        <InputTextArea class="textarea textarea-bordered w-full" rows="10" aria-required
+                       @bind-Value="@Model.Body" placeholder="@Localizer["Body_Placeholder"]" />
+        <div class="label">
+            <span class="label-text-alt text-error">
+                <ValidationMessage For="() => Model.Body" />
+            </span>
+        </div>
+    </label>
+    
+    <button type="submit" class="btn btn-primary btn-wide">@Localizer["EditorSubmit"]</button>
+</EditForm>
+
+@if (Article is not null) {
+    <section>
+        <h2 class="text-2xl lg:text-4xl my-3">Preview</h2>
+        <div class="card bg-base-200">
+            <div class="card-body">
+                <h3 class="card-title">@Article.Title</h3>
+                <div class="prose prose-neutral max-w-none">
+                    @Content
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter]
+    public Guid? Id { get; set; }
+    [SupplyParameterFromForm]
+    private InputModel Model { get; set; } = null!;
+    
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private Article? Article { get; set; } 
+    private MarkupString? Content => Article is null ? null : new MarkupString(Article.BodyHtml);
+    
+    protected override async Task OnInitializedAsync() {
+        if (Id is not null) {
+            // We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
+            // running into a null pointer on the Article property and panicking
+
+            // ReSharper disable once MethodHasAsyncOverload
+            await using var context = ContextFactory.CreateDbContext();
+            // ReSharper disable once MethodHasAsyncOverload
+            var now = DateTimeOffset.UtcNow;
+            Article = context.Set<Article>()
+                .Include(a => a.Author)
+                .Include(a => a.Reviewer)
+                .First(a => a.Id == Id);
+
+            if (Article is null) throw new ApplicationException("Article not found.");
+        }
+
+        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+        Model ??= new InputModel();
+        Model.Id ??= Article?.Id;
+        Model.Title ??= Article?.Title;
+        Model.Body ??= Article?.Body;
+        Model.PublishDate ??= Article?.PublishDate;
+    }
+
+    private async Task OnValidSubmit() {
+        await using var context = await ContextFactory.CreateDbContextAsync();
+        if (AuthenticationState is null) throw new ApplicationException("???");
+
+        var state = await AuthenticationState;
+        var user = await UserManager.GetUserAsync(state.User);
+        if (user is null) throw new ApplicationException("???2");
+        context.Entry(user).State = EntityState.Unchanged;
+
+        Article article;
+        if (Model.Id is not null) {
+            article = await context.Set<Article>()
+                .Include(a => a.Author)
+                .Include(a => a.Reviewer)
+                .FirstAsync(a => a.Id == Model.Id);
+            article.Title = Model.Title!;
+            article.Body = Model.Body!;
+        } else {
+            article = new Article {
+                Title = Model.Title!,
+                Body = Model.Body!,
+                Author = user,
+                Status = ArticleStatus.Published // TODO remove
+            };
+            await context.AddAsync(article);
+        }
+        if (Model.PublishDate is not null) article.PublishDate = Model.PublishDate.Value;
+
+        if (user.Id != article.Author.Id) 
+            throw new ApplicationException("You do not have permissions to edit this article");
+
+        article.LastModified = DateTimeOffset.UtcNow;
+
+        var pipeline = new MarkdownPipelineBuilder()
+            .UsePipeTables()
+            .UseEmphasisExtras()
+            .DisableHtml()
+            .Build();
+        article.BodyHtml = Markdown.ToHtml(article.Body, pipeline);
+        
+        await context.SaveChangesAsync();
+        if (article.Status >= ArticleStatus.Published &&  article.PublishDate <= DateTimeOffset.UtcNow) {
+            Navigation.NavigateTo($"/article/{article.Id}");
+        } else {
+            Navigation.NavigateTo($"/article/{article.Id}/edit");
+        }
+    }
+
+    private sealed class InputModel {
+        public Guid? Id { get; set; }
+        [Required(AllowEmptyStrings = false), MaxLength(256)]
+        public string? Title { get; set; }
+        [Required(AllowEmptyStrings = false)]
+        public string? Body { get; set; }
+        
+        public DateTimeOffset? PublishDate { get; set; }
+    }
+}

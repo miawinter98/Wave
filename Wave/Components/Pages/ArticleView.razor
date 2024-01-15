@@ -10,6 +10,11 @@
 <PageTitle>Wave - @Article.Title</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light">@Article.Title</h1>
+<AuthorizeView>
+    <Authorized>
+        <a class="btn btn-info my-3" href="article/@Article.Id/edit">Edit</a>
+    </Authorized>
+</AuthorizeView>
 <p class="mb-6">
     <small class="text-sm text-neutral-content">
         @Article.PublishDate.Humanize()
