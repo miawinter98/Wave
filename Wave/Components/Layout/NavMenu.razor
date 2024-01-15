@@ -57,12 +57,7 @@
             </ul>
             <AuthorizeView>
                 @if (context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value is { } id) {
-                    <div class="avatar">
-                        <div class="w-8 rounded">
-                            <img src="/api/user/pfp/@id" alt="" loading="lazy"
-                                 onerror="this.remove()" />
-                        </div>
-                    </div>
+                    <ProfilePictureComponent ProfileId="@id" />
                 }
             </AuthorizeView>
 		</div>

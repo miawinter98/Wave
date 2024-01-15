@@ -1,0 +1,11 @@
+﻿<div class="avatar">
+    <div class="w-8 rounded">
+        <img src="/api/user/pfp/@ProfileId" alt="" loading="lazy"
+             onerror="this.remove()" />
+    </div>
+</div>
+
+@code {
+    [Parameter] 
+    public string ProfileId { get; set; } = string.Empty;
+}
