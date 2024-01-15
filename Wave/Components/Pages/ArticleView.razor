@@ -1,0 +1,43 @@
+﻿@page "/article/{id:guid}"
+@using Microsoft.EntityFrameworkCore
+@using Wave.Data
+
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory;
+
+<PageTitle>Wave - @Article.Title</PageTitle>
+
+<h1 class="text-3xl lg:text-5xl font-light mb-6">@Article.Title</h1>
+<p class="text-sm mb-3">By @Article.Author.Name</p>
+@if (Article.Reviewer is not null && Article.Reviewer.Id != Article.Author.Id) {
+    <p class="text-sm mb-3">Reviewed by @Article.Reviewer.Name</p>
+}
+
+<div class="prose">
+    @Content
+</div>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private Article Article { get; set; } = null!;
+    private MarkupString Content => new(Article.BodyHtml);
+
+    protected override async Task OnInitializedAsync() {
+        // We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
+        // running into a null pointer on the Article property and panicking
+
+        // ReSharper disable once MethodHasAsyncOverload
+        await using var context = ContextFactory.CreateDbContext();
+        // ReSharper disable once MethodHasAsyncOverload
+        var now = DateTimeOffset.UtcNow;
+        Article = context.Set<Article>()
+            .Include(a => a.Author)
+            .Include(a => a.Reviewer)
+            .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
+            .First(a => a.Id == Id);
+
+        if (Article is null) throw new ApplicationException("Article not found.");
+    }
+
+}

@@ -84,4 +84,10 @@ app.UseRequestLocalization(new RequestLocalizationOptions {
     .AddSupportedCultures(cultures)
     .AddSupportedUICultures(cultures));
 
+{
+    using var scope = app.Services.CreateScope();
+    using var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.Migrate();
+}
+
 app.Run();

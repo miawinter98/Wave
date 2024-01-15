@@ -1,6 +1,11 @@
 ﻿@page "/"
 @using Microsoft.Extensions.Localization
+@using Microsoft.EntityFrameworkCore
+@using Wave.Data
 
+@rendermode InteractiveServer
+@attribute [StreamRendering]
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory;
 @inject IStringLocalizer<Home> Localizer
 
 <PageTitle>Home</PageTitle>
@@ -8,3 +13,29 @@
 <h1>@Localizer["Greeting"]</h1>
 
 Welcome to your new app.
+
+<div>
+    @foreach (Article article in Articles) {
+        <div>
+            <a href="/article/@article.Id">
+                <p>@article.Title</p>
+                <p>By @article.Author.Name</p>
+            </a>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Article> Articles { get; } = [];
+
+    protected override async Task OnInitializedAsync() {
+        await using var context = await ContextFactory.CreateDbContextAsync();
+
+        var articles = await context.Set<Article>()
+            .Include(a => a.Author)
+            .OrderBy(a => a.PublishDate)
+            .Take(10)
+            .ToListAsync();
+        Articles.AddRange(articles);
+    }
+}
