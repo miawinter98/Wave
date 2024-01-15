@@ -5,6 +5,7 @@
 @using System.Globalization
 
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory;
+@inject IStringLocalizer<ArticleView> Localizer
 
 <PageTitle>Wave - @Article.Title</PageTitle>
 
@@ -13,7 +14,7 @@
     <small class="text-sm text-neutral-content">
         @Article.PublishDate.Humanize()
         @if (Article.LastModified is not null) {
-            <text>&ensp;(Modified @Article.LastModified.Humanize())</text>
+            <text>&ensp;(@Localizer["ModifiedOn"] @Article.LastModified.Humanize())</text>
         }
     </small>
 </p>
@@ -24,11 +25,12 @@
     @Content
 </div>
 
+<hr class="my-3" />
 
 <div class="flex gap-2">
-    <ProfilePill Profile="Article.Author" RoleTag="Author" />
+    <ProfilePill Profile="Article.Author" RoleTag="@Localizer["Author"]" />
     @if (Article.Reviewer is not null && Article.Reviewer.Id != Article.Author.Id) {
-        <ProfilePill Profile="Article.Reviewer" RoleTag="Reviewer" />
+        <ProfilePill Profile="Article.Reviewer" RoleTag="@Localizer["Reviewer"]" />
     }
 </div>
 
