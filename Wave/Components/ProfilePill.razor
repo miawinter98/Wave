@@ -1,0 +1,21 @@
+﻿@using Wave.Data
+
+<div class="rounded bg-base-200 p-2 flex gap-4 justify-center">
+    <div class="w-12 h-12">
+        <ProfilePictureComponent ProfileId="@Profile.Id" />
+    </div>
+
+    <div class="flex flex-col">
+        @Profile.Name
+        @if (RoleTag is not null) {
+            <span class="badge badge-sm badge-primary">@RoleTag</span>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public required ApplicationUser Profile { get; set; }
+    [Parameter]
+    public string? RoleTag { get; set; }
+}

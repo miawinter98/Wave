@@ -7,10 +7,12 @@
 <PageTitle>Wave - @Article.Title</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light mb-6">@Article.Title</h1>
-<p class="text-sm mb-3">By @Article.Author.Name</p>
-@if (Article.Reviewer is not null && Article.Reviewer.Id != Article.Author.Id) {
-    <p class="text-sm mb-3">Reviewed by @Article.Reviewer.Name</p>
-}
+<div class="flex gap-2 mb-6">
+    <ProfilePill Profile="Article.Author" RoleTag="Author" />
+    @if (Article.Reviewer is not null && Article.Reviewer.Id != Article.Author.Id) {
+        <ProfilePill Profile="Article.Reviewer" RoleTag="Reviewer" />
+    }
+</div>
 
 <div class="prose">
     @Content
