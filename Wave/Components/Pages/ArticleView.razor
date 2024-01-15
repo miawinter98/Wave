@@ -17,9 +17,15 @@
 </AuthorizeView>
 <p class="mb-6">
     <small class="text-sm text-neutral-content">
-        @Article.PublishDate.Humanize()
+        <time datetime="@Article.PublishDate.ToString("u")"
+              title="@Article.PublishDate.ToString("g")">
+            @Article.PublishDate.Humanize()
+        </time>
         @if (Article.LastModified is not null) {
-            <text>&ensp;(@Localizer["ModifiedOn"] @Article.LastModified.Humanize())</text>
+            <time datetime="@Article.LastModified.Value.ToString("u")"
+                  title="@Article.LastModified.Value.ToString("g")">
+                &ensp;(@Article.LastModified.Humanize())
+            </time>
         }
     </small>
 </p>
