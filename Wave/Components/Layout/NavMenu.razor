@@ -57,7 +57,9 @@
             </ul>
             <AuthorizeView>
                 @if (context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value is { } id) {
-                    <ProfilePictureComponent ProfileId="@id" />
+                    <div class="w-8">
+                        <ProfilePictureComponent ProfileId="@id" />
+                    </div>
                 }
             </AuthorizeView>
 		</div>
