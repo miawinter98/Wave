@@ -1,22 +1,37 @@
 ﻿@page "/article/{id:guid}"
 @using Microsoft.EntityFrameworkCore
 @using Wave.Data
+@using Humanizer
+@using System.Globalization
 
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory;
 
 <PageTitle>Wave - @Article.Title</PageTitle>
 
-<h1 class="text-3xl lg:text-5xl font-light mb-6">@Article.Title</h1>
-<div class="flex gap-2 mb-6">
+<h1 class="text-3xl lg:text-5xl font-light">@Article.Title</h1>
+<p class="mb-6">
+    <small class="text-sm text-neutral-content">
+        @Article.PublishDate.Humanize()
+        @if (Article.LastModified is not null) {
+            <text>&ensp;(Modified @Article.LastModified.Humanize())</text>
+        }
+    </small>
+</p>
+
+<hr class="my-3" />
+
+<div class="prose mb-6">
+    @Content
+</div>
+
+
+<div class="flex gap-2">
     <ProfilePill Profile="Article.Author" RoleTag="Author" />
     @if (Article.Reviewer is not null && Article.Reviewer.Id != Article.Author.Id) {
         <ProfilePill Profile="Article.Reviewer" RoleTag="Reviewer" />
     }
 </div>
 
-<div class="prose">
-    @Content
-</div>
 
 @code {
     [Parameter]

@@ -7,6 +7,7 @@
     "author": "Mia Rose Winter",
     "license": "MIT",
     "devDependencies": {
+        "@tailwindcss/typography": "^0.5.10",
         "autoprefixer": "^10.4.16",
         "cssnano": "^6.0.3",
         "daisyui": "^4.6.0",
