@@ -15,15 +15,32 @@
 Welcome to your new app.
 
 <div>
-    @foreach (Article article in Articles) {
-        <div>
-            <a href="/article/@article.Id">
-                <p>@article.Title</p>
-                <p>By @article.Author.Name</p>
-            </a>
-        </div>
-    }
+	@foreach (Article article in Articles) {
+		<div>
+			<a href="/article/@article.Id">
+				<p>@article.Title</p>
+				<p>By @article.Author.Name</p>
+			</a>
+		</div>
+	}
 </div>
+
+<AuthorizeView>
+	<Authorized>
+		<h3 class="text-2xl my-3">Claims</h3>
+		<dl>
+			<dt>Author?</dt>
+			<dd>@context.User.IsInRole("Author")</dd>
+			<dt>Reviewer?</dt>
+			<dd>@context.User.IsInRole("Reviewer")</dd>
+			<dt>Moderator?</dt>
+			<dd>@context.User.IsInRole("Moderator")</dd>
+			<dt>Admin?</dt>
+			<dd>@context.User.IsInRole("Admin")</dd>
+		</dl>
+		
+	</Authorized>
+</AuthorizeView>
 
 @code {
     private List<Article> Articles { get; } = [];

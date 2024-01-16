@@ -8,7 +8,7 @@
 @using Microsoft.AspNetCore.Identity
 
 @attribute [Authorize(Policy = "ArticleEditPermissions")]
-@inject IDbContextFactory<ApplicationDbContext> ContextFactory;
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject NavigationManager Navigation
 @inject UserManager<ApplicationUser> UserManager
 @inject IStringLocalizer<ArticleEditor> Localizer
@@ -29,7 +29,7 @@
         <div class="label">
             <span class="label-text">@Localizer["Title_Label"]</span>
         </div>
-        <InputText class="input input-bordered w-full" maxlength="256" aria-required
+        <InputText class="input input-bordered w-full" maxlength="256" aria-required disabled="@CannotEdit"
                    @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" />
         <div class="label">
             <span class="label-text-alt text-error">
@@ -41,7 +41,7 @@
         <div class="label">
             <span class="label-text">@Localizer["PublishDate_Label"]</span>
         </div>
-        <InputDate class="input input-bordered w-full" aria-required
+        <InputDate class="input input-bordered w-full" disabled="@CannotEdit"
                    @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" />
         <div class="label">
             <span class="label-text-alt text-error">
@@ -53,7 +53,7 @@
         <div class="label">
             <span class="label-text">@Localizer["Body_Label"]</span>
         </div>
-        <InputTextArea class="textarea textarea-bordered w-full" rows="10" aria-required
+        <InputTextArea class="textarea textarea-bordered w-full" rows="10" aria-required disabled="@CannotEdit"
                        @bind-Value="@Model.Body" placeholder="@Localizer["Body_Placeholder"]" />
         <div class="label">
             <span class="label-text-alt text-error">
@@ -62,7 +62,9 @@
         </div>
     </label>
     
-    <button type="submit" class="btn btn-primary btn-wide">@Localizer["EditorSubmit"]</button>
+    <button type="submit" class="btn btn-primary btn-wide" disabled="@CannotEdit">
+	    @Localizer["EditorSubmit"]
+    </button>
 </EditForm>
 
 @if (Article is not null) {
@@ -88,9 +90,12 @@
     [CascadingParameter]
     private Task<AuthenticationState>? AuthenticationState { get; set; }
 
+    private ApplicationUser User { get; set; } = null!;
+    private bool IsAdmin { get; set; }
     private Article? Article { get; set; } 
     private MarkupString? Content => Article is null ? null : new MarkupString(Article.BodyHtml);
-    
+    private bool CannotEdit => User is null || !IsAdmin && Article is not null && Article.Author.Id != User.Id;
+
     protected override async Task OnInitializedAsync() {
         if (Id is not null) {
             // We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
@@ -99,7 +104,6 @@
             // ReSharper disable once MethodHasAsyncOverload
             await using var context = ContextFactory.CreateDbContext();
             // ReSharper disable once MethodHasAsyncOverload
-            var now = DateTimeOffset.UtcNow;
             Article = context.Set<Article>()
                 .Include(a => a.Author)
                 .Include(a => a.Reviewer)
@@ -114,16 +118,17 @@
         Model.Title ??= Article?.Title;
         Model.Body ??= Article?.Body;
         Model.PublishDate ??= Article?.PublishDate;
+        
+        if (AuthenticationState is null) throw new ApplicationException("???");
+        var state = await AuthenticationState;
+        var user = await UserManager.GetUserAsync(state.User);
+        User = user ?? throw new ApplicationException("???2");
+        IsAdmin = await UserManager.IsInRoleAsync(User, "Admin");
     }
 
     private async Task OnValidSubmit() {
         await using var context = await ContextFactory.CreateDbContextAsync();
-        if (AuthenticationState is null) throw new ApplicationException("???");
-
-        var state = await AuthenticationState;
-        var user = await UserManager.GetUserAsync(state.User);
-        if (user is null) throw new ApplicationException("???2");
-        context.Entry(user).State = EntityState.Unchanged;
+        context.Entry(User).State = EntityState.Unchanged;
 
         Article article;
         if (Model.Id is not null) {
@@ -137,16 +142,18 @@
             article = new Article {
                 Title = Model.Title!,
                 Body = Model.Body!,
-                Author = user,
+                Author = User,
                 Status = ArticleStatus.Published // TODO remove
             };
             await context.AddAsync(article);
         }
         if (Model.PublishDate is not null) article.PublishDate = Model.PublishDate.Value;
 
-        if (user.Id != article.Author.Id) 
+        if (User.Id != article.Author.Id && !IsAdmin) 
             throw new ApplicationException("You do not have permissions to edit this article");
-
+        if (User.Id != article.Author.Id) {
+	        article.Reviewer = User; // If an admin edits this article, add them as reviewer
+        }
         article.LastModified = DateTimeOffset.UtcNow;
 
         var pipeline = new MarkdownPipelineBuilder()
