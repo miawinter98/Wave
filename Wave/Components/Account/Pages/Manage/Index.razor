@@ -13,34 +13,101 @@
 
 <PageTitle>Profile</PageTitle>
 
-<h3 class="text-xl mb-3">Profile</h3>
+<div class="flex gap-4 flex-wrap">
+	<section class="max-w-xs" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
+		<h2 class="text-2xl lg:text-4xl mb-3">Profile</h2>
 
-<div class="max-w-xs" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
-    <label class="form-control w-full">
-        <div class="label">
-            <span class="label-text">Username</span>
-        </div>
-        <input class="input input-bordered w-full" type="text" value="@Username"
-               placeholder="Please choose your username." disabled/>
-    </label>
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Username</span>
+			</div>
+			<input class="input input-bordered w-full" type="text" value="@Username"
+			       placeholder="Please choose your username." disabled/>
+		</label>
 
-    @if (User?.ProfilePicture is not null) {
-        <div class="avatar w-24 my-3">
-            <div class="rounded">
-                <img src="/images/@(User.ProfilePicture.ImageId)" alt="" loading="lazy" />
-            </div>
-        </div>
-    }
-    <label class="form-control w-full">
-        <div class="label">
-            <span class="label-text">Profile Picture</span>
-        </div>
-        <FileUploadComponent FileUploadedCallback="ProfilePictureChanged"/>
-    </label>
+		@if (User?.ProfilePicture is not null) {
+			<div class="avatar w-24 my-3">
+				<div class="rounded">
+					<img src="/images/@(User.ProfilePicture.ImageId)" alt="" loading="lazy"/>
+				</div>
+			</div>
+		}
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Profile Picture</span>
+			</div>
+			<FileUploadComponent FileUploadedCallback="ProfilePictureChanged"/>
+		</label>
+	</section>
+	<section>
+        <h2 class="text-2xl lg:text-4xl mb-3">Permissions</h2>
+        <ul>
+	        <li class="flex gap-2 content-center">
+                <AuthorizeView Policy="ArticleEditPermissions">
+			        <Authorized>
+				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
+					        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+				        </svg>
+			        </Authorized>
+			        <NotAuthorized>
+				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
+					        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+				        </svg>
+			        </NotAuthorized>
+		        </AuthorizeView>
+                Create or Edit Articles
+	        </li>
+			<li class="flex gap-2 content-center">
+				<AuthorizeView Policy="ArticleReviewPermissions">
+			        <Authorized>
+				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
+					        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+				        </svg>
+			        </Authorized>
+			        <NotAuthorized>
+				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
+					        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+				        </svg>
+			        </NotAuthorized>
+		        </AuthorizeView>
+		        Review Articles
+	        </li>
+			<li class="flex gap-2 content-center">
+				<AuthorizeView Policy="ArticleDeletePermissions">
+			        <Authorized>
+				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
+					        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+				        </svg>
+			        </Authorized>
+			        <NotAuthorized>
+				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
+					        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+				        </svg>
+			        </NotAuthorized>
+		        </AuthorizeView>
+		        Delete Articles
+	        </li>
+			<li class="flex gap-2 content-center">
+				<AuthorizeView Policy="RoleAssignPermissions">
+			        <Authorized>
+				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
+					        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+				        </svg>
+			        </Authorized>
+			        <NotAuthorized>
+				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
+					        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+				        </svg>
+			        </NotAuthorized>
+		        </AuthorizeView>
+		        Assign Roles to User
+	        </li>
+        </ul>
+	</section>
 </div>
 
 @code {
-    private ApplicationUser? User { get; set; } = default!;
+    private ApplicationUser? User { get; set; }
     private string? Username { get; set; }
 
     [CascadingParameter]
