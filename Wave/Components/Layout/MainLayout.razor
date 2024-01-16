@@ -1,16 +1,39 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="flex flex-col h-screen">
-	<NavMenu />
+<div class="drawer md:drawer-open drawer-end">
+	<input id="main-drawer" type="checkbox" class="drawer-toggle" />
+	<div class="drawer-content">
 
-	<main class="flex-1 container mx-auto px-12 py-8">
-		@Body
-	</main>
-	
-	<footer class="footer footer-center p-4 bg-base-300 text-base-content">
-		<span class="block">
-			Powered by 
-			<a class="link link-primary" target="_blank" href="https://github.com/miawinter98/Wave">Wave</a>
-		</span>
-	</footer>
+	</div>
+	<div class="drawer-content">
+		<div class="flex flex-col h-screen overflow-x-auto">
+			<header class="md:hidden p-4 flex justify-between bg-base-200">
+				<div class="h-12">
+					<LogoPartial />
+				</div>
+				<label for="main-drawer" class="btn btn-square btn-ghost drawer-button" title="open navigation">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+					</svg>
+				</label>
+			</header>
+			<main class="flex-1 container mx-auto px-12 py-8">
+				@Body
+			</main>
+			<footer class="footer footer-center p-4 bg-base-300 text-base-content">
+				<span class="block">
+					Powered by 
+					<a class="link link-primary" target="_blank" href="https://github.com/miawinter98/Wave">Wave</a>
+				</span>
+			</footer>
+		</div>
+	</div>
+	<div class="drawer-side">
+		<label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+		
+		<div class="bg-base-200 p-4 h-full flex flex-col gap-4">
+			<NavMenu />
+		</div>
+	</div>
 </div>
+
