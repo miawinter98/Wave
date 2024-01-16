@@ -1,0 +1,81 @@
+﻿@page "/Admin"
+
+@using Microsoft.AspNetCore.Identity
+@using Wave.Components.Account
+@using Wave.Components.Account.Shared
+@using Wave.Data
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+@inject IdentityUserAccessor UserAccessor
+@inject RoleManager<IdentityRole> RoleManager
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityRedirectManager RedirectManager
+
+<StatusMessage Message="@Message" />
+
+<EditForm method="post" FormName="Admin" Model="Model" OnValidSubmit="Promote">
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text">Password</span>
+        </div>
+        <InputText class="input input-bordered w-full" maxlength="256" aria-required type="password"
+                   @bind-Value="@Model.Password" />
+        <div class="label">
+            <span class="label-text-alt text-error">
+                <ValidationMessage For="() => Model.Password" />
+            </span>
+        </div>
+    </label>
+    <button type="submit" class="btn btn-primary btn-wide">
+        Promote to Admin
+    </button>
+</EditForm>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+    private ApplicationUser User { get; set; } = default!;
+    private string Password { get; set; } = string.Empty;
+    [SupplyParameterFromForm]
+    private InputModel Model { get; set; } = new();
+
+    private string? Message { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        User = await UserAccessor.GetRequiredUserAsync(HttpContext);
+
+        string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "admin.txt");
+        if (File.Exists(path)) Password = await File.ReadAllTextAsync(path);
+    }
+
+    private async Task Promote() {
+        if (string.IsNullOrWhiteSpace(Password)) {
+            RedirectManager.RedirectToWithStatus("/Admin", "Error: This tool is not enabled.", HttpContext);
+            return;
+        }
+
+        if (Password != Model.Password) {
+            RedirectManager.RedirectToWithStatus("/Admin", "Error: Password Invalid.", HttpContext);
+            return;
+        }
+
+        if (!await RoleManager.RoleExistsAsync("Admin")) {
+            var result = await RoleManager.CreateAsync(new IdentityRole("Admin"));
+
+            if (!result.Succeeded) {
+                RedirectManager.RedirectToWithStatus("/Admin", "Error: Could not create Admin role, check logs.", HttpContext);
+                return;
+            }
+        }
+        await UserManager.AddToRoleAsync(User, "Admin");
+        File.Delete(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "admin.txt"));
+        await SignInManager.RefreshSignInAsync(User);
+        Message = "You have been promoted, this tool is now disabled.";
+    }
+
+    private sealed class InputModel {
+        public string Password { get; set; } = string.Empty;
+    }
+}

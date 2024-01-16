@@ -95,6 +95,16 @@ app.UseRequestLocalization(new RequestLocalizationOptions {
     using var scope = app.Services.CreateScope();
     using var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     context.Database.Migrate();
+
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    
+    if (userManager.GetUsersInRoleAsync("Admin").Result.Any() is false) {
+        string admin = Guid.NewGuid().ToString("N")[..16];
+        Console.WriteLine(
+            "There is currently no user in your installation with the admin role, " +
+            "go to /Admin and use the following password to self promote your account: " + admin);
+        File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "admin.txt"), admin);
+    }
 }
 
 app.Run();
