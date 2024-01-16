@@ -10,6 +10,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         base.OnModelCreating(builder);
 
         builder.Entity<ApplicationUser>(user => {
+	        user.Property(u => u.FullName).HasMaxLength(64);
+	        user.Property(u => u.AboutTheAuthor).HasMaxLength(512);
+	        user.Property(u => u.Biography).HasMaxLength(4096);
+
             user.HasOne(u => u.ProfilePicture).WithOne().HasForeignKey(typeof(ProfilePicture))
                 .OnDelete(DeleteBehavior.SetNull);
 
