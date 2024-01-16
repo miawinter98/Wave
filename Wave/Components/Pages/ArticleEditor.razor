@@ -41,7 +41,7 @@
         <div class="label">
             <span class="label-text">@Localizer["PublishDate_Label"]</span>
         </div>
-        <InputDate class="input input-bordered w-full" disabled="@CannotEdit"
+        <InputDate class="input input-bordered w-full" disabled="@CannotEdit" Type="InputDateType.DateTimeLocal"
                    @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" />
         <div class="label">
             <span class="label-text-alt text-error">
@@ -117,7 +117,7 @@
         Model.Id ??= Article?.Id;
         Model.Title ??= Article?.Title;
         Model.Body ??= Article?.Body;
-        Model.PublishDate ??= Article?.PublishDate;
+        Model.PublishDate ??= Article?.PublishDate.LocalDateTime;
         
         if (AuthenticationState is null) throw new ApplicationException("???");
         var state = await AuthenticationState;
@@ -177,7 +177,7 @@
         public string? Title { get; set; }
         [Required(AllowEmptyStrings = false)]
         public string? Body { get; set; }
-        
+
         public DateTimeOffset? PublishDate { get; set; }
     }
 }
