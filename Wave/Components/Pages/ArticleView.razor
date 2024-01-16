@@ -10,7 +10,7 @@
 <PageTitle>Wave - @Article.Title</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light">@Article.Title</h1>
-<AuthorizeView>
+<AuthorizeView Policy="ArticleEditPermissions">
     <Authorized>
         <a class="btn btn-info my-3" href="article/@Article.Id/edit">Edit</a>
     </Authorized>

@@ -69,7 +69,7 @@
             <NavLink ActiveClass="tab-active" class="tab" href="" Match="NavLinkMatch.All">Home</NavLink>
 			<NavLink ActiveClass="tab-active" class="tab" href="weather">Weather</NavLink>
             <NavLink ActiveClass="tab-active" class="tab" href="auth">Auth Required</NavLink>
-            <AuthorizeView>
+            <AuthorizeView Policy="ArticleEditPermissions">
                 <Authorized>
                     <NavLink ActiveClass="tab-active" class="tab" href="article/new">New Article</NavLink>
                 </Authorized>

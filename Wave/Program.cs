@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,13 +21,19 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
-builder.Services.AddAuthorization();
-builder.Services.AddAuthentication(options =>
-    {
+// Authors: Can create Articles, require them to be reviewed
+// Reviewers: Can review Articles, but cannot create them themselves
+// Moderators: Can delete Articles / take them Offline
+// Admins: Can do anything, and assign roles to other users
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("ArticleEditPermissions", p => p.RequireRole("Author", "Admin"))
+    .AddPolicy("ArticleReviewPermissions", p => p.RequireRole("Reviewer", "Admin"))
+    .AddPolicy("ArticleDeletePermissions", p => p.RequireRole("Moderator", "Admin"))
+    .AddPolicy("RoleAssignPermissions", p => p.RequireRole("Admin"));
+builder.Services.AddAuthentication(options => {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
+    }).AddIdentityCookies();
 
 #endregion
 

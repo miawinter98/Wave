@@ -7,7 +7,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 
-@attribute [Authorize]
+@attribute [Authorize(Policy = "ArticleEditPermissions")]
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory;
 @inject NavigationManager Navigation
 @inject UserManager<ApplicationUser> UserManager
