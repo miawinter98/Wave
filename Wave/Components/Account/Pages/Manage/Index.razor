@@ -14,9 +14,17 @@
 <StatusMessage Message="@Message" />
 
 <div class="flex gap-4 flex-wrap">
-	<section class="max-w-xs" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
+    <section class="w-80 max-w-xs" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
 		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Title"]</h2>
 		
+        <label class="form-control w-full">
+            <div class="label">
+                <span class="label-text">@Localizer["UserName_Label"]</span>
+            </div>
+            <input class="input input-bordered w-full" type="text" value="@UserName"
+                   placeholder="Please choose your username." disabled/>
+        </label>
+
         <EditForm FormName="update-profile" Model="@Model" OnValidSubmit="@SubmitFullNameUpdate" method="post" Enhance="false">
             <DataAnnotationsValidator />
             <label class="form-control w-full">
@@ -35,16 +43,8 @@
                 @Localizer["FullName_Submit"]
             </button>
         </EditForm>
-
-        <label class="form-control w-full">
-			<div class="label">
-				<span class="label-text">@Localizer["UserName_Label"]</span>
-			</div>
-			<input class="input input-bordered w-full" type="text" value="@UserName"
-			       placeholder="Please choose your username." disabled/>
-		</label>
     </section>
-	<section>
+    <section class="w-80 max-w-xs">
 		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Permissions"]</h2>
         <ul>
 	        <li class="flex gap-2 content-center">
