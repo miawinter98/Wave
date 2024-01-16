@@ -1,44 +1,49 @@
 ﻿@page "/Account/Manage"
 
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.EntityFrameworkCore
 @using Wave.Data
-@using Wave.Services
+@using System.ComponentModel.DataAnnotations
 
-@rendermode InteractiveServer
-@inject NavigationManager Navigation
+@inject IdentityUserAccessor UserAccessor
 @inject UserManager<ApplicationUser> UserManager
-@inject IDbContextFactory<ApplicationDbContext> ContextFactory
-@inject ImageService ImageService
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IStringLocalizer<Index> Localizer
 
 <PageTitle>Profile</PageTitle>
+
+<StatusMessage Message="@Message" />
 
 <div class="flex gap-4 flex-wrap">
 	<section class="max-w-xs" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
 		<h2 class="text-2xl lg:text-4xl mb-3">Profile</h2>
+		
+        <EditForm FormName="update-profile" Model="@Model" OnValidSubmit="@SubmitFullNameUpdate" method="post" Enhance="false">
+            <DataAnnotationsValidator />
+            <label class="form-control w-full">
+                <div class="label">
+                    <span class="label-text">@Localizer["FullName_Label"]</span>
+                </div>
+                <InputText class="input input-bordered w-full" maxlength="64" autocomplete="name"
+                           @bind-Value="@Model.FullName" placeholder="@Localizer["FullName_Placeholder"]" />
+                <div class="label">
+                    <span class="label-text-alt text-error">
+                        <ValidationMessage For="() => Model.FullName" />
+                    </span>
+                </div>
+            </label>
+            <button type="submit" class="btn btn-primary w-full">
+                @Localizer["FullName_Submit"]
+            </button>
+        </EditForm>
 
-		<label class="form-control w-full">
+        <label class="form-control w-full">
 			<div class="label">
 				<span class="label-text">Username</span>
 			</div>
-			<input class="input input-bordered w-full" type="text" value="@Username"
+			<input class="input input-bordered w-full" type="text" value="@UserName"
 			       placeholder="Please choose your username." disabled/>
 		</label>
-
-		@if (User?.ProfilePicture is not null) {
-			<div class="avatar w-24 my-3">
-				<div class="rounded">
-					<img src="/images/@(User.ProfilePicture.ImageId)" alt="" loading="lazy"/>
-				</div>
-			</div>
-		}
-		<label class="form-control w-full">
-			<div class="label">
-				<span class="label-text">Profile Picture</span>
-			</div>
-			<FileUploadComponent FileUploadedCallback="ProfilePictureChanged"/>
-		</label>
-	</section>
+    </section>
 	<section>
         <h2 class="text-2xl lg:text-4xl mb-3">Permissions</h2>
         <ul>
@@ -107,43 +112,30 @@
 </div>
 
 @code {
-    private ApplicationUser? User { get; set; }
-    private string? Username { get; set; }
-
+	private string? Message { get; set; }
+    [SupplyParameterFromForm]
+    private InputModel Model { get; set; } = new();
     [CascadingParameter]
-    private Task<AuthenticationState>? AuthenticationState { get; set; }
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private ApplicationUser User { get; set; } = default!;
+    private string UserName { get; set; } = string.Empty;
     
     protected override async Task OnInitializedAsync() {
-        if (AuthenticationState is not null) {
-            var state = await AuthenticationState;
-            User = await UserManager.GetUserAsync(state.User);
-            Username = User.UserName;
-            await using var context = await ContextFactory.CreateDbContextAsync();
-            await context.Entry(User).Reference(u => u.ProfilePicture).LoadAsync();
-        }
+        UserName = UserManager.GetUserName(HttpContext.User)!;
+        User = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        Model.FullName ??= User.FullName;
     }
 
-    private async Task ProfilePictureChanged(string tempFilePath) {
-        var guid = await ImageService.StoreImageAsync(tempFilePath);
-        if (!guid.HasValue) throw new ApplicationException("Processing Image failed.");
-
-        Guid? imageToDelete = null;
-        await using var context = await ContextFactory.CreateDbContextAsync();
-        if (User.ProfilePicture is not null) {
-            imageToDelete = User.ProfilePicture.ImageId;
-            context.Remove(User.ProfilePicture);
-        }
-
-        User.ProfilePicture = new ProfilePicture() {
-            ImageId = guid.Value
-        };
-
-        context.Update(User);
-        await context.SaveChangesAsync();
-
-        if (imageToDelete is not null)
-            ImageService.Delete(imageToDelete.Value);
-        await InvokeAsync(StateHasChanged);
+	private async Task SubmitFullNameUpdate() {
+        User.FullName = Model.FullName?.Trim();
+        await UserManager.UpdateAsync(User);
+        await SignInManager.RefreshSignInAsync(User);
+        Message = Localizer["FullName_Success"];
     }
 
+    private sealed class InputModel {
+        [MaxLength(64)]
+        public string? FullName { get; set; }
+    }
 }

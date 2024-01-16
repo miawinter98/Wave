@@ -1,0 +1,65 @@
+﻿@page "/Account/Manage/ProfilePicture"
+@using Wave.Data
+@using Wave.Services
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject ImageService ImageService
+@inject IStringLocalizer<ProfilePicture> Localizer
+
+<PageTitle>@Localizer["Title"]</PageTitle>
+
+<section class="max-w-xs" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
+    <h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Title"]</h2>
+    
+    <div class="w-24 h-24">
+        <ProfilePictureComponent ProfileId="@User?.Id" />
+    </div>
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text">@Localizer["ProfilePicture_Label"]</span>
+        </div>
+        <FileUploadComponent FileUploadedCallback="ProfilePictureChanged"/>
+    </label>
+</section>
+
+@code {
+    private ApplicationUser? User { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    
+    protected override async Task OnInitializedAsync() {
+        var state = await AuthenticationState;
+        User = await UserManager.GetUserAsync(state.User);
+    }
+
+    private async Task ProfilePictureChanged(string tempFilePath) {
+        if (User is null) return;
+
+        var guid = await ImageService.StoreImageAsync(tempFilePath);
+        if (!guid.HasValue) throw new ApplicationException("Processing Image failed.");
+
+        Guid? imageToDelete = null;
+        await using var context = await ContextFactory.CreateDbContextAsync();
+        await context.Entry(User).Reference(u => u.ProfilePicture).LoadAsync();
+        if (User.ProfilePicture is not null) {
+            imageToDelete = User.ProfilePicture.ImageId;
+            context.Remove(User.ProfilePicture);
+        }
+
+        User.ProfilePicture = new Data.ProfilePicture() {
+            ImageId = guid.Value
+        };
+
+        context.Update(User);
+        await context.SaveChangesAsync();
+
+        if (imageToDelete is not null)
+            ImageService.Delete(imageToDelete.Value);
+        Navigation.Refresh(true);
+    }
+}

@@ -28,12 +28,10 @@
         <Authorized>
             <li class="flex content-center gap-2">
                 <NavLink href="Account/Manage">
-                    @context.User.Identity?.Name
-                    @if (context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value is { } id) {
-                        <div class="w-8">
-	                        <ProfilePictureComponent ProfileId="@id" />
-                        </div>
-                    }
+                    @context.User.FindFirst("FullName")!.Value
+                    <div class="w-8">
+                        <ProfilePictureComponent ProfileId="@context.User.FindFirst("Id")!.Value" />
+                    </div>
                 </NavLink>
             </li>
             <li>
