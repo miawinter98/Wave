@@ -9,13 +9,13 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IStringLocalizer<Index> Localizer
 
-<PageTitle>Profile</PageTitle>
+<PageTitle>@Localizer["Title"]</PageTitle>
 
 <StatusMessage Message="@Message" />
 
 <div class="flex gap-4 flex-wrap">
 	<section class="max-w-xs" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
-		<h2 class="text-2xl lg:text-4xl mb-3">Profile</h2>
+		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Title"]</h2>
 		
         <EditForm FormName="update-profile" Model="@Model" OnValidSubmit="@SubmitFullNameUpdate" method="post" Enhance="false">
             <DataAnnotationsValidator />
@@ -38,14 +38,14 @@
 
         <label class="form-control w-full">
 			<div class="label">
-				<span class="label-text">Username</span>
+				<span class="label-text">@Localizer["UserName_Label"]</span>
 			</div>
 			<input class="input input-bordered w-full" type="text" value="@UserName"
 			       placeholder="Please choose your username." disabled/>
 		</label>
     </section>
 	<section>
-        <h2 class="text-2xl lg:text-4xl mb-3">Permissions</h2>
+		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Permissions"]</h2>
         <ul>
 	        <li class="flex gap-2 content-center">
                 <AuthorizeView Policy="ArticleEditPermissions">
@@ -60,7 +60,7 @@
 				        </svg>
 			        </NotAuthorized>
 		        </AuthorizeView>
-                Create or Edit Articles
+				@Localizer["Permission_ArticleEdit"]
 	        </li>
 			<li class="flex gap-2 content-center">
 				<AuthorizeView Policy="ArticleReviewPermissions">
@@ -75,7 +75,7 @@
 				        </svg>
 			        </NotAuthorized>
 		        </AuthorizeView>
-		        Review Articles
+                @Localizer["Permission_ArticleReview"]
 	        </li>
 			<li class="flex gap-2 content-center">
 				<AuthorizeView Policy="ArticleDeletePermissions">
@@ -90,22 +90,22 @@
 				        </svg>
 			        </NotAuthorized>
 		        </AuthorizeView>
-		        Delete Articles
+                @Localizer["Permission_ArticleDelete"]
 	        </li>
 			<li class="flex gap-2 content-center">
-				<AuthorizeView Policy="RoleAssignPermissions">
-			        <Authorized>
-				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
-					        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-				        </svg>
-			        </Authorized>
-			        <NotAuthorized>
-				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
-					        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-				        </svg>
-			        </NotAuthorized>
-		        </AuthorizeView>
-		        Assign Roles to User
+                <AuthorizeView Policy="RoleAssignPermissions">
+                    <Authorized>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </Authorized>
+                    <NotAuthorized>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </NotAuthorized>
+                </AuthorizeView>
+                @Localizer["Permission_RoleAssign"]
 	        </li>
         </ul>
 	</section>
