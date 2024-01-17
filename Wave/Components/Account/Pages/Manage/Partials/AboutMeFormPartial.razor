@@ -14,7 +14,7 @@
 				<HelpDropdownComponent Body="@Localizer["AboutTheAuthor_Explanation"]" />
 			</span>
 		</div>
-		<InputTextArea class="textarea textarea-bordered w-full" rows="10" maxlength="512"
+		<InputTextArea class="textarea textarea-bordered w-full h-24" maxlength="512"
 		               @bind-Value="@Model.AboutTheAuthor" placeholder="@Localizer["AboutTheAuthor_Placeholder"]" />
 		<div class="label">
 			<span class="label-text-alt text-error"><ValidationMessage For="() => Model.AboutTheAuthor" /></span>
@@ -28,7 +28,7 @@
 				<HelpDropdownComponent Body="@Localizer["Biography_Explanation"]" />
 			</span>
 		</div>
-		<InputTextArea class="textarea textarea-bordered w-full" rows="10" maxlength="512"
+		<InputTextArea class="textarea textarea-bordered w-full h-48" maxlength="4096"
 					   @bind-Value="@Model.Biography" placeholder="@Localizer["Biography_Placeholder"]" />
 		<div class="label">
 			<span class="label-text-alt text-error"><ValidationMessage For="() => Model.Biography" /></span>
