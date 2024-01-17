@@ -25,43 +25,21 @@
 <EditForm method="post" FormName="article-editor" Model="@Model" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <input type="hidden" @bind-value="@Model.Id"/>
-
-    <label class="form-control w-full">
-        <div class="label">
-            <span class="label-text">@Localizer["Title_Label"]</span>
-        </div>
-        <InputText class="input input-bordered w-full" maxlength="256" aria-required disabled="@CannotEdit"
+    
+    <InputLabelComponent LabelText="@Localizer["Title_Label"]" For="() => Model.Title">
+        <InputText class="input input-bordered w-full" maxlength="256" required aria-required disabled="@CannotEdit"
                    @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" />
-        <div class="label">
-            <span class="label-text-alt text-error">
-                <ValidationMessage For="() => Model.Title" />
-            </span>
-        </div>
-    </label>
-    <label class="form-control w-full">
-        <div class="label">
-            <span class="label-text">@Localizer["PublishDate_Label"]</span>
-        </div>
+    </InputLabelComponent>
+    
+    <InputLabelComponent LabelText="@Localizer["PublishDate_Label"]" For="() => Model.PublishDate">
         <InputDate class="input input-bordered w-full" disabled="@CannotEdit" Type="InputDateType.DateTimeLocal"
                    @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" />
-        <div class="label">
-            <span class="label-text-alt text-error">
-                <ValidationMessage For="() => Model.PublishDate" />
-            </span>
-        </div>
-    </label>
-    <label class="form-control w-full">
-        <div class="label">
-            <span class="label-text">@Localizer["Body_Label"]</span>
-        </div>
-        <InputTextArea class="textarea textarea-bordered w-full" rows="10" aria-required disabled="@CannotEdit"
+    </InputLabelComponent>
+    
+    <InputLabelComponent LabelText="@Localizer["Body_Label"]" For="() => Model.Body">
+        <InputTextArea class="textarea textarea-bordered w-full h-96" required aria-required disabled="@CannotEdit"
                        @bind-Value="@Model.Body" placeholder="@Localizer["Body_Placeholder"]" />
-        <div class="label">
-            <span class="label-text-alt text-error">
-                <ValidationMessage For="() => Model.Body" />
-            </span>
-        </div>
-    </label>
+    </InputLabelComponent>
     
     <button type="submit" class="btn btn-primary btn-wide" disabled="@CannotEdit">
 	    @Localizer["EditorSubmit"]
