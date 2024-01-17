@@ -1,0 +1,43 @@
+﻿@using System.Linq.Expressions
+@using System.Reflection
+@using System.ComponentModel
+@using System.ComponentModel.DataAnnotations
+
+<label class="form-control w-full">
+    <div class="label">
+        @if (Label is not null) {
+            @Label
+        } else if (!string.IsNullOrWhiteSpace(LabelText)) {
+            <span class="label-text">@LabelText</span>
+        } else {
+            <span class="label-text">@GetDisplayName()</span>
+        }
+    </div>
+    @ChildContent
+    @if (For is not null) {
+        <div class="label">
+            <span class="label-text-alt text-error">
+                <ValidationMessage For="For"/>
+            </span>
+        </div>
+    }
+</label>
+
+@code {
+    [Parameter]
+    public string? LabelText { get; set; }
+    [Parameter] 
+    public RenderFragment? Label { get; set; }
+    [Parameter]
+    public required RenderFragment ChildContent { get; set; }
+    [Parameter] 
+    public Expression<Func<object?>>? For { get; set; }
+
+    private string GetDisplayName() {
+        if (For is null) return string.Empty;
+        var expression = (MemberExpression)For.Body;
+        var display = expression.Member.GetCustomAttribute(typeof(DisplayAttribute)) as DisplayAttribute;
+        var displayName = expression.Member.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+        return display?.GetName() ?? displayName?.DisplayName ?? expression.Member.Name;
+    }
+}
