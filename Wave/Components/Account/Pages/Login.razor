@@ -9,120 +9,109 @@
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject IStringLocalizer<Login> Localizer
 
-<PageTitle>Log in</PageTitle>
+<PageTitle>@Localizer["Title"]</PageTitle>
 
-<h1>Log in</h1>
-<div class="row">
-    <div class="col-md-4">
-        <section>
-            <StatusMessage Message="@errorMessage" />
-            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
-                <DataAnnotationsValidator />
-                <h2>Use a local account to log in.</h2>
-                <hr />
-                <ValidationSummary class="text-danger" role="alert" />
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                    <label for="email" class="form-label">Email</label>
-                    <ValidationMessage For="() => Input.Email" class="text-danger" />
-                </div>
-                <div class="form-floating mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                    <label for="password" class="form-label">Password</label>
-                    <ValidationMessage For="() => Input.Password" class="text-danger" />
-                </div>
-                <div class="checkbox mb-3">
-                    <label class="form-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
-                        Remember me
-                    </label>
-                </div>
-                <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-                </div>
-                <div>
-                    <p>
-                        <a href="Account/ForgotPassword">Forgot your password?</a>
-                    </p>
-                    <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
-                    </p>
-                    <p>
-                        <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
-                    </p>
-                </div>
-            </EditForm>
-        </section>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to log in.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
-    </div>
+<StatusMessage Message="@_errorMessage" />
+<div class="flex gap-y-4 gap-x-8 flex-wrap h-full place-content-center">
+    <section class="w-80 max-w-xs">
+        <h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Title"]</h2>
+        <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login" class="w-full">
+            <DataAnnotationsValidator />
+            
+            <InputLabelComponent LabelText="@Localizer["Email_Label"]" For="() => Input.Email">
+                <InputText @bind-Value="Input.Email" class="input input-bordered w-full" autocomplete="username" 
+                           required aria-required="true" placeholder="@Localizer["Email_Placeholder"]" />
+            </InputLabelComponent>
+            <InputLabelComponent LabelText="@Localizer["Password_Label"]" For="() => Input.Password">
+                <InputText @bind-Value="Input.Password" class="input input-bordered w-full" autocomplete="current-password" type="password"
+                           required aria-required="true" placeholder="@Localizer["Password_Placeholder"]" />
+            </InputLabelComponent>
+            <div class="form-control">
+                <label class="label cursor-pointer">
+                    <span class="label-text">@Localizer["RememberMe_Label"]</span>
+                    <InputCheckbox @bind-Value="Input.RememberMe" class="checkbox" />
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-full">
+                @Localizer["Submit"]
+            </button>
+        </EditForm>
+        <ul class="mt-3 flex flex-col gap-1 text-center">
+            <li>
+                <a class="hover:link" href="Account/ForgotPassword">
+                    @Localizer["ResetPassword_Label"]
+                </a>
+            </li>
+            <li>
+                <a class="hover:link" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">
+                    @Localizer["Register_Label"]
+                </a>
+            </li>
+            <li>
+                <a class="hover:link" href="Account/ResendEmailConfirmation">
+                    @Localizer["ResendMailConfirmation_Label"]
+                </a>
+            </li>
+        </ul>
+    </section>
+    
+    <!--
+    <section class="w-80 max-w-xs">
+        <h2 class="text-2xl lg:text-4xl mb-3">Use another service to log in.</h2>
+        <hr />
+        <ExternalLoginPicker />
+    </section>
+    -->
 </div>
 
 @code {
-    private string? errorMessage;
+    private string? _errorMessage;
 
-    [CascadingParameter]
+    [CascadingParameter] 
     private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromForm]
+    [SupplyParameterFromForm] 
     private InputModel Input { get; set; } = new();
-
-    [SupplyParameterFromQuery]
+    [SupplyParameterFromQuery] 
     private string? ReturnUrl { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (HttpMethods.IsGet(HttpContext.Request.Method))
-        {
+    protected override async Task OnInitializedAsync() {
+        if (HttpMethods.IsGet(HttpContext.Request.Method)) {
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
         }
     }
 
-    public async Task LoginUser()
-    {
+    public async Task LoginUser() {
         // This doesn't count login failures towards account lockout
         // To enable password failures to trigger account lockout, set lockoutOnFailure: true
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-        if (result.Succeeded)
-        {
+
+        if (result.Succeeded) {
             Logger.LogInformation("User logged in.");
             RedirectManager.RedirectTo(ReturnUrl);
-        }
-        else if (result.RequiresTwoFactor)
-        {
-            RedirectManager.RedirectTo(
-                "Account/LoginWith2fa",
+        } else if (result.RequiresTwoFactor) {
+            RedirectManager.RedirectTo("Account/LoginWith2fa",
                 new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
-        }
-        else if (result.IsLockedOut)
-        {
+        } else if (result.IsLockedOut) {
             Logger.LogWarning("User account locked out.");
             RedirectManager.RedirectTo("Account/Lockout");
-        }
-        else
-        {
-            errorMessage = "Error: Invalid login attempt.";
+        } else {
+            _errorMessage = "Error: Invalid login attempt.";
         }
     }
 
-    private sealed class InputModel
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = "";
+    private sealed class InputModel {
+        [Required] [EmailAddress] public string Email { get; set; } = "";
 
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
 
-        [Display(Name = "Remember me?")]
-        public bool RememberMe { get; set; }
+        [Display(Name = "Remember me?")] public bool RememberMe { get; set; }
     }
+
 }
