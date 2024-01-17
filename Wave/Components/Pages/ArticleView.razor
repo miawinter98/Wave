@@ -10,12 +10,7 @@
 <PageTitle>Wave - @Article.Title</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light">@Article.Title</h1>
-<AuthorizeView Policy="ArticleEditPermissions">
-    <Authorized>
-        <a class="btn btn-info my-3" href="article/@Article.Id/edit">Edit</a>
-    </Authorized>
-</AuthorizeView>
-<p class="mb-6">
+<p class="mb-3">
     <small class="text-sm text-neutral-content">
         <time datetime="@Article.PublishDate.ToString("u")"
               title="@Article.PublishDate.ToString("g")">
@@ -29,6 +24,11 @@
         }
     </small>
 </p>
+<AuthorizeView Policy="ArticleEditPermissions">
+    <Authorized>
+        <a class="btn btn-info mb-3" href="article/@Article.Id/edit">Edit</a>
+    </Authorized>
+</AuthorizeView>
 
 <hr class="my-3" />
 
