@@ -2,7 +2,7 @@
 
 @using Microsoft.AspNetCore.Identity
 @using Wave.Data
-@using System.ComponentModel.DataAnnotations
+@using Wave.Components.Account.Pages.Manage.Partials
 
 @inject IdentityUserAccessor UserAccessor
 @inject UserManager<ApplicationUser> UserManager
@@ -14,36 +14,25 @@
 <StatusMessage Message="@Message" />
 
 <div class="flex gap-4 flex-wrap">
-    <section class="w-80 max-w-xs" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
+	<section class="w-80 max-w-xs" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
 		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Title"]</h2>
-		
-        <label class="form-control w-full">
-            <div class="label">
-                <span class="label-text">@Localizer["UserName_Label"]</span>
-            </div>
-            <input class="input input-bordered w-full" type="text" value="@UserName"
-                   placeholder="Please choose your username." disabled/>
-        </label>
-
-        <EditForm FormName="update-profile" Model="@Model" OnValidSubmit="@SubmitFullNameUpdate" method="post" Enhance="false">
-            <DataAnnotationsValidator />
-            <label class="form-control w-full">
-                <div class="label">
-                    <span class="label-text">@Localizer["FullName_Label"]</span>
-                </div>
-                <InputText class="input input-bordered w-full" maxlength="64" autocomplete="name"
-                           @bind-Value="@Model.FullName" placeholder="@Localizer["FullName_Placeholder"]" />
-                <div class="label">
-                    <span class="label-text-alt text-error">
-                        <ValidationMessage For="() => Model.FullName" />
-                    </span>
-                </div>
-            </label>
-            <button type="submit" class="btn btn-primary w-full">
-                @Localizer["FullName_Submit"]
-            </button>
-        </EditForm>
-    </section>
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">@Localizer["UserName_Label"]</span>
+			</div>
+			<input class="input input-bordered w-full" type="text" value="@UserName"
+			       placeholder="Please choose your username." disabled/>
+		</label>
+		@if (User is not null) {
+			<ProfileFormPartial User="@User" />
+		}
+	</section>
+	<section class="w-80 max-w-xs">
+		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["AboutMe"]</h2>
+		@if (User is not null) {
+			<AboutMeFormPartial User="@User" />
+		}
+	</section>
     <section class="w-80 max-w-xs">
 		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Permissions"]</h2>
         <ul>
@@ -113,29 +102,14 @@
 
 @code {
 	private string? Message { get; set; }
-    [SupplyParameterFromForm]
-    private InputModel Model { get; set; } = new();
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private ApplicationUser User { get; set; } = default!;
+    private ApplicationUser? User { get; set; } 
     private string UserName { get; set; } = string.Empty;
     
     protected override async Task OnInitializedAsync() {
         UserName = UserManager.GetUserName(HttpContext.User)!;
         User = await UserAccessor.GetRequiredUserAsync(HttpContext);
-        Model.FullName ??= User.FullName;
-    }
-
-	private async Task SubmitFullNameUpdate() {
-        User.FullName = Model.FullName?.Trim();
-        await UserManager.UpdateAsync(User);
-        await SignInManager.RefreshSignInAsync(User);
-        Message = Localizer["FullName_Success"];
-    }
-
-    private sealed class InputModel {
-        [MaxLength(64)]
-        public string? FullName { get; set; }
     }
 }

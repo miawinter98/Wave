@@ -1,0 +1,52 @@
+﻿@using Wave.Data
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IStringLocalizer<Wave.Components.Account.Pages.Manage.Index> Localizer
+
+<EditForm FormName="update-profile" Model="@Model" OnValidSubmit="@OnValidSubmit" method="post" Enhance="false">
+	<DataAnnotationsValidator />
+	<label class="form-control w-full">
+		<div class="label">
+			<span class="label-text">@Localizer["FullName_Label"]</span>
+		</div>
+		<InputText class="input input-bordered w-full" maxlength="64" autocomplete="name"
+		           @bind-Value="@Model.FullName" placeholder="@Localizer["FullName_Placeholder"]" />
+		<div class="label">
+			<span class="label-text-alt text-error">
+				<ValidationMessage For="() => Model.FullName" />
+			</span>
+		</div>
+	</label>
+	<button type="submit" class="btn btn-primary w-full">
+		@Localizer["Submit"]
+	</button>
+</EditForm>
+
+@code {
+	[Parameter]
+	public required ApplicationUser? User { get; set; }
+
+	[SupplyParameterFromForm(FormName = "update-profile")]
+	private InputModel Model { get; set; } = new();
+
+	protected override void OnInitialized() {
+		Model.FullName ??= User?.FullName;
+	}
+
+	private async Task OnValidSubmit() {
+		if (User is null) return;
+
+		User.FullName = Model.FullName?.Trim();
+		await UserManager.UpdateAsync(User);
+		await SignInManager.RefreshSignInAsync(User);
+		// Message = Localizer["FullName_Success"];
+	}
+	
+	private sealed class InputModel {
+		[MaxLength(64)]
+		public string? FullName { get; set; }
+	}
+}

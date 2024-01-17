@@ -107,10 +107,7 @@
   <data name="FullName_Placeholder" xml:space="preserve">
     <value>Enter your full Name</value>
   </data>
-  <data name="FullName_Submit" xml:space="preserve">
-    <value>Save</value>
-  </data>
-  <data name="UserName_Label" xml:space="preserve">
+    <data name="UserName_Label" xml:space="preserve">
     <value>User Name</value>
   </data>
   <data name="Permissions" xml:space="preserve">
@@ -128,4 +125,29 @@
   <data name="Permission_RoleAssign" xml:space="preserve">
     <value>Assign roles to users</value>
   </data>
+    <data name="AboutMe" xml:space="preserve">
+        <value>About Me</value>
+    </data>
+    <data name="AboutTheAuthor_Label" xml:space="preserve">
+        <value>About the Author</value>
+    </data>
+    <data name="AboutTheAuthor_Explanation" xml:space="preserve">
+        <value>This description gets embedded next to your name and profile picture in articles that you wrote, it is intended to tell the reader about yourself and your qualifications and skills.</value>
+    </data>
+    <data name="AboutTheAuthor_Placeholder" xml:space="preserve">
+        <value>John Smith has a degree of arts in cooking...</value>
+    </data>
+    <data name="Biography_Label" xml:space="preserve">
+        <value>Biography</value>
+    </data>
+    <data name="Biography_Explanation" xml:space="preserve">
+        <value>This is a free form text that will be shown on your personal page.</value>
+    </data>
+    <data name="Biography_Placeholder" xml:space="preserve">
+        <value># My Journey
+I started cooking at the young age of 7...</value>
+    </data>
+    <data name="Submit" xml:space="preserve">
+        <value>Save</value>
+    </data>
 </root>
