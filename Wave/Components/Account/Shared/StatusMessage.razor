@@ -1,29 +1,34 @@
-﻿@if (!string.IsNullOrEmpty(DisplayMessage))
-{
-    var statusMessageClass = DisplayMessage.StartsWith("Error") ? "danger" : "success";
-    <div class="alert alert-@statusMessageClass" role="alert">
-        @DisplayMessage
+﻿@if (!string.IsNullOrEmpty(DisplayMessage)) {
+    string statusMessageClass = DisplayMessage.StartsWith("Error") ? "alert-error" : "alert-success";
+    <div class="alert @statusMessageClass shadow" role="alert">
+        <div> </div>
+        <div>
+            @DisplayMessage
+        </div>
+        <button class="btn btn-sm btn-square btn-ghost" onclick="this.parentElement.remove();">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+            </svg>
+        </button>
     </div>
 }
 
 @code {
-    private string? messageFromCookie;
+    private string? _messageFromCookie;
 
-    [Parameter]
+    [Parameter] 
     public string? Message { get; set; }
-
-    [CascadingParameter]
+    [CascadingParameter] 
     private HttpContext HttpContext { get; set; } = default!;
 
-    private string? DisplayMessage => Message ?? messageFromCookie;
+    private string? DisplayMessage => Message ?? _messageFromCookie;
 
-    protected override void OnInitialized()
-    {
-        messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
+    protected override void OnInitialized() {
+        _messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
 
-        if (messageFromCookie is not null)
-        {
+        if (_messageFromCookie is not null) {
             HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
         }
     }
+
 }
