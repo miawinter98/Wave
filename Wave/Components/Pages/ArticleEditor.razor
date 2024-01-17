@@ -6,6 +6,7 @@
 @using Markdig
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
+@using Wave.Utilities
 
 @attribute [Authorize(Policy = "ArticleEditPermissions")]
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
@@ -156,12 +157,7 @@
         }
         article.LastModified = DateTimeOffset.UtcNow;
 
-        var pipeline = new MarkdownPipelineBuilder()
-            .UsePipeTables()
-            .UseEmphasisExtras()
-            .DisableHtml()
-            .Build();
-        article.BodyHtml = Markdown.ToHtml(article.Body, pipeline);
+        article.BodyHtml = MarkdownUtilities.Parse(article.Body);
         
         await context.SaveChangesAsync();
         if (article.Status >= ArticleStatus.Published &&  article.PublishDate <= DateTimeOffset.UtcNow) {
