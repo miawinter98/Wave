@@ -15,9 +15,9 @@
 @inject IStringLocalizer<ArticleEditor> Localizer
 
 @if (Article is not null) {
-    <PageTitle>@Localizer["PageTitle_Edit"] - @Article.Title</PageTitle>
+    <PageTitle>@(TitlePrefix + Localizer["PageTitle_Edit"]) | @Article.Title</PageTitle>
 } else {
-    <PageTitle>@Localizer["PageTitle_New"]</PageTitle>
+    <PageTitle>@(TitlePrefix + Localizer["PageTitle_New"])</PageTitle>
 }
 
 <h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["EditorTitle"]</h1>
@@ -61,6 +61,9 @@
 }
 
 @code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+
     [Parameter]
     public Guid? Id { get; set; }
     [SupplyParameterFromForm]

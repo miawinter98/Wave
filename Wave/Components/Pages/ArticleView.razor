@@ -7,7 +7,7 @@
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory;
 @inject IStringLocalizer<ArticleView> Localizer
 
-<PageTitle>Wave - @Article.Title</PageTitle>
+<PageTitle>@(TitlePrefix + Article.Title)</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light">@Article.Title</h1>
 <p class="mb-3">
@@ -66,6 +66,9 @@
 
 
 @code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+
     [Parameter]
     public Guid Id { get; set; }
 

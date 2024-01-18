@@ -8,7 +8,7 @@
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory;
 @inject IStringLocalizer<Home> Localizer
 
-<PageTitle>@Localizer["Title"]</PageTitle>
+<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light mb-3">@Localizer["Title"]</h1>
 
@@ -54,6 +54,9 @@
 }
 
 @code {
+    [CascadingParameter(Name = "TitlePrefix")]
+    private string TitlePrefix { get; set; } = default!;
+
     private List<Article> Articles { get; } = [];
     private bool HasMore { get; set; }
 

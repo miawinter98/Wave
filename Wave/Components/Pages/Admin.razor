@@ -12,6 +12,9 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
+@inject IStringLocalizer<Admin> Localizer
+
+<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
 
 <StatusMessage Message="@Message" />
 
@@ -34,6 +37,9 @@
 </EditForm>
 
 @code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
     private ApplicationUser User { get; set; } = default!;

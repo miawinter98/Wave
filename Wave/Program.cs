@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Wave.Components;
 using Wave.Components.Account;
 using Wave.Data;
@@ -61,6 +62,10 @@ builder.Services.AddLocalization(options => {
     options.ResourcesPath = "Resources";
 });
 builder.Services.AddScoped<ImageService>();
+
+builder.Services.Configure<Customization>(builder.Configuration.GetSection(nameof(Customization)));
+builder.Services.AddCascadingValue("TitlePrefix", 
+    sf => (sf.GetService<IOptions<Customization>>()?.Value.AppName ?? "Wave") + " - ");
 
 #endregion
 

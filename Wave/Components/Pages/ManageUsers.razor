@@ -3,13 +3,13 @@
 @using Microsoft.AspNetCore.Identity
 @using Wave.Data
 
-@rendermode @(new InteractiveServerRenderMode(false))
+@rendermode InteractiveServer
 @attribute [Authorize(Policy = "RoleAssignPermissions")]
 @attribute [StreamRendering]
 @inject UserManager<ApplicationUser> UserManager
 @inject IStringLocalizer<ManageUsers> Localizer
 
-<PageTitle>@Localizer["Title"]</PageTitle>
+<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["Title"]</h1>
 
@@ -41,6 +41,9 @@
 <ToastComponent @ref="Toast" />
 
 @code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+
 	public ToastComponent Toast { get; set; } = null!;
 
 	private IList<ApplicationUser> Authors { get; set; } = new List<ApplicationUser>();
@@ -49,10 +52,11 @@
 	private IList<ApplicationUser> Admins { get; set; } = new List<ApplicationUser>();
 	
 	[CascadingParameter]
-	private Task<AuthenticationState>? AuthenticationState { get; set; }
+	private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
 	private ApplicationUser? User { get; set; }
 
-	protected override async Task OnInitializedAsync() {
+	protected override async Task OnAfterRenderAsync(bool firstRender) {
+		if (!firstRender) return;
 		var state = await AuthenticationState;
 		User = await UserManager.GetUserAsync(state.User);
 
