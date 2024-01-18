@@ -7,12 +7,26 @@
 @rendermode InteractiveServer
 @attribute [Authorize(Policy = "RoleAssignPermissions")]
 @attribute [StreamRendering]
+
+@inject RoleManager<IdentityRole> RoleManager
 @inject UserManager<ApplicationUser> UserManager
 @inject IStringLocalizer<ManageUsers> Localizer
 
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["Title"]</h1> 
+
+<ModalComponent Id="@ModalId">
+    <ChildContent>
+        <InputLabelComponent LabelText="@Localizer["UserName_Label"]">
+            <InputText class="input input-bordered w-full" type="email" autocomplete="off"
+                       @bind-Value="@UserName" />
+        </InputLabelComponent>
+    </ChildContent>
+    <Actions>
+        <button class="btn btn-primary" @onclick="Add">@Localizer["UserName_Submit"]</button>
+    </Actions>
+</ModalComponent>
 
 <section class="mb-3 overflow-x-auto">
     <h3 class="text-xl lg:text-3xl mb-2">
@@ -26,7 +40,7 @@
                 <option value="@role">@Localizer[role.ToString()]</option>
             }
         </InputSelect>
-        <button class="btn btn-sm btn-square btn-ghost text-success">
+        <button class="btn btn-sm btn-square btn-ghost text-success" onclick="@(ModalId).showModal()">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
@@ -47,6 +61,7 @@
 	[CascadingParameter(Name = "TitlePrefix")]
 	private string TitlePrefix { get; set; } = default!;
 	public ToastComponent Toast { get; set; } = null!;
+    private string ModalId { get; } = "UserDialog";
 
 	[CascadingParameter]
 	private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
@@ -54,6 +69,8 @@
     private Role CurrentRole { get; set; } = Role.Admin;
     private List<ApplicationUser> Users { get; } = [];
 	private bool Busy { get; set; }
+
+    private string UserName { get; set; }
 
 	protected override async Task OnAfterRenderAsync(bool firstRender) {
 		if (!firstRender) return;
@@ -75,6 +92,27 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private async Task Add() {
+        var user = await UserManager.FindByNameAsync(UserName);
+
+        if (user is null) {
+            Toast.ShowError(Localizer["Error_UserNotFound"]);
+            return;
+        }
+
+        if (!await RoleManager.RoleExistsAsync(CurrentRole.ToString())) {
+            var result = await RoleManager.CreateAsync(new IdentityRole(CurrentRole.ToString()));
+
+            if (result.Succeeded is not true) {
+                Toast.ShowError(Localizer["Error_CreateRole"]);
+                return;
+            }
+        }
+        await UserManager.AddToRoleAsync(user, CurrentRole.ToString());
+        await LoadAsync(CurrentRole);
+        Toast.ShowSuccess(Localizer["Success_AddUser"]);
+    }
+
 	private async Task RemoveAsync(ApplicationUser user, Role role) {
 		if (User is null) return;
 		if (user.Id == User.Id) {
@@ -82,7 +120,9 @@
 			return;
 		}
 		await UserManager.RemoveFromRoleAsync(user, role.ToString());
-	}
+        Toast.ShowSuccess(Localizer["Success_RemoveUser"]);
+        await LoadAsync(CurrentRole);
+    }
 
     private enum Role {
         Author, Reviewer, Moderator, Admin

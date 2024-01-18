@@ -1,0 +1,25 @@
+﻿<dialog id="@Id" class="modal">
+    <div class="modal-box">
+        @ChildContent
+        <div class="modal-action">
+            @Actions
+            @if (ShowCloseButton) {
+                <form method="dialog">
+                    <!-- if there is a button in form, it will close the modal -->
+                    <button class="btn" type="submit">Close</button>
+                </form>
+            }
+        </div>
+    </div>
+</dialog>
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    [Parameter]
+    public required RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+    [Parameter]
+    public bool ShowCloseButton { get; set; } = true;
+}

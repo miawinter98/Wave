@@ -1,24 +1,24 @@
 ﻿@using Wave.Data
 
-<table class="table table-fixed">
+<table class="table">
 	<thead>
 	<tr>
-		<th></th>
+		<th class="max-md:hidden"> </th>
 		<th>Name</th>
-		<th>Email</th>
-		<th></th>
+		<th class="max-md:hidden">Email</th>
+		<th> </th>
 	</tr>
 	</thead>
 	<tbody>
 	@foreach (var user in Users) {
 	<tr>
-		<td>
+		<td class="max-md:hidden">
 			<div class="w-6 h-6">
 				<ProfilePictureComponent ProfileId="@user.Id" />
 			</div>
 		</td>
 		<td>@user.Name</td>
-		<td>@user.Email</td>
+		<td class="max-md:hidden">@user.Email</td>
 		<td>
 			<button class="btn btn-sm btn-error" title="remove" @onclick="async () => await RemoveClicked(user)">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
