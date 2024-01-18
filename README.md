@@ -9,10 +9,76 @@
 
 Under Construction
 
+## Configuring Wave
+
+Wave allows you to configure it in many different formats and in multiple places, and 
+you can even use multiple of the following methods to supply configuration information. 
+Please keep in mind that first, asp.net configuration keys are case-insensitive, and second,
+that there is a precedence in the different formats, so a value for the same key in two 
+formats will be overwritten by one.
+
+### Configuration Locations 
+
+There are two main locations where Wave (and asp.net) takes it's configuration from: 
+The Environment, and the `/configuration` volume. Environment variables allow you to quickly 
+set up a docker container, but the more you need to configure the more unmaintainable an 
+`.env` file (or an `environment:` section in docker compose) becomes, so if you find yourself 
+customizing a lot of Waves behavior, consider using one of the many supported configuration 
+file formats.
+
+### Configuration Keys
+
+I will provide you the different configuration keys with a dot notation, like `Email.Smtp.Host`.
+In environment variables, these dots need to be replaced with two underscore characters: `__`
+and prefixed with `WAVE_`.  
+In config files, those dots are hierarchy level, and you need to implement that dialects' 
+syntax for it. Here some examples for `Email.Smtp.Host`:
+
+**Environment**
+
+```
+WAVE_Email__Smtp__Host=smtp.example.com
+```
+
+**JSON**
+```json
+{
+    "Email": {
+        "Smtp:": {
+            "Host": "smtp.example.com"
+        }
+    }
+}
+```
+
+**YAML**
+
+```yml
+Email:
+  Smtp:
+    Host: smtp.example.com
+```
+
+### Supported Configuration Formats
+
+Wave will take configuration from the following files in the `/configuration` volume, files
+later in this chain will have precedence over files earlier in that chain:
+
+- config.json
+- config.yml
+- config.toml
+- config.ini
+- config.xml
+
+After this, values from the Environment will take the highest precedence. 
+
 ## Installation
 
 TODO
 
+## Configuring Email
+
+TODO
 
 ## License and Attribution
 
