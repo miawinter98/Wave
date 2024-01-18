@@ -11,12 +11,12 @@ using Wave.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
-    .AddEnvironmentVariables("WAVE_")
     .AddJsonFile("/configuration/config.json", true, false)
     .AddYamlFile("/configuration/config.yml", true, false)
     .AddTomlFile("/configuration/config.toml", true, false)
     .AddIniFile( "/configuration/config.ini", true, false)
-    .AddXmlFile( "/configuration/config.xml", true, false);
+    .AddXmlFile( "/configuration/config.xml", true, false)
+    .AddEnvironmentVariables("WAVE_");
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers();
