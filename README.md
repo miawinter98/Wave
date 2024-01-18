@@ -78,7 +78,28 @@ TODO
 
 ## Configuring Email
 
-TODO
+Wave may send user related mails every now and then, to confirm an account, reset a password, etc.
+In order to support that, Wave needs to have a way to send Emails, currently SMTP is supported
+
+### SMTP
+
+The following configuration is required for Wave to connect to an smtp server 
+(formatted in YAML for brevity).
+
+```yml
+Email:
+  Smtp:
+    Host: smtp.example.com
+    Port: 25
+    SenderEmail: noreply@example.com
+    SenderName: Wave
+    Username: user
+    Password: password
+    Ssl: true
+```
+
+`Username` and `Password` are optional if your server does not require it, and `Ssl` is 
+`true` by default, only set it to false if you really need to, keeping security in mind.
 
 ## License and Attribution
 
