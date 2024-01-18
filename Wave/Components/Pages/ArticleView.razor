@@ -53,7 +53,7 @@
             return Article;
         }
         
-        // You cannot access your own drafts
+        // You can only access your own drafts
         if (Article.Status is ArticleStatus.Draft) {
             if (Article.Author.Id == principal.FindFirst("Id")!.Value) {
                 return Article;
