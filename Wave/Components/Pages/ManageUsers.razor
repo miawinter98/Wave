@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Wave.Data
+@using Humanizer
 
 @rendermode InteractiveServer
 @attribute [Authorize(Policy = "RoleAssignPermissions")]
@@ -11,31 +12,33 @@
 
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
 
-<h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["Title"]</h1>
+<h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["Title"]</h1> 
 
 <section class="mb-3 overflow-x-auto">
-	<h3 class="text-xl lg:text-3xl mb-2">
-		@Localizer["Authors"]
-		<!-- TODO:: implement -->
-		<button class="btn btn-sm btn-square btn-ghost text-success">
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-			</svg>
-		</button>
-	</h3>
-	<UserTable Users="Authors" RemoveCallback="@(async u => await Remove(u, "Author"))" />
-</section>
-<section class="mb-3 overflow-x-auto">
-	<h3 class="text-xl lg:text-3xl mb-2">@Localizer["Reviewers"]</h3>
-	<UserTable Users="Reviewers" RemoveCallback="@(async u => await Remove(u, "Reviewer"))" />
-</section>
-<section class="mb-3 overflow-x-auto">
-	<h3 class="text-xl lg:text-3xl mb-2">@Localizer["Moderators"]</h3>
-	<UserTable Users="Moderators" RemoveCallback="@(async u => await Remove(u, "Moderator"))" />
-</section>
-<section class="mb-3 overflow-x-auto">
-	<h3 class="text-xl lg:text-3xl mb-2">@Localizer["Administrators"]</h3>
-	<UserTable Users="Admins" RemoveCallback="@(async u => await Remove(u, "Admin"))" />
+    <h3 class="text-xl lg:text-3xl mb-2">
+        @Localizer[CurrentRole.ToString().Pluralize()]
+    </h3>
+    <div class="flex gap-2">
+        <InputSelect class="select select-bordered select-sm w-full max-w-xs" Value="CurrentRole"
+                     ValueExpression="() => CurrentRole"
+                     TValue="Role" ValueChanged="async c => await LoadAsync(c)">
+            @foreach (var role in Enum.GetValues<Role>()) {
+                <option value="@role">@Localizer[role.ToString()]</option>
+            }
+        </InputSelect>
+        <button class="btn btn-sm btn-square btn-ghost text-success">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+        </button>
+    </div>
+    @if (Busy) {
+        <div class="flex place-content-center">
+            <span class="loading loading-spinner loading-lg"></span>
+        </div>
+    } else {
+        <UserTable Users="Users" RemoveCallback="@(async u => await RemoveAsync(u, CurrentRole))"/>
+    }
 </section>
 
 <ToastComponent @ref="Toast" />
@@ -43,35 +46,45 @@
 @code {
 	[CascadingParameter(Name = "TitlePrefix")]
 	private string TitlePrefix { get; set; } = default!;
-
 	public ToastComponent Toast { get; set; } = null!;
 
-	private IList<ApplicationUser> Authors { get; set; } = new List<ApplicationUser>();
-	private IList<ApplicationUser> Reviewers { get; set; } = new List<ApplicationUser>();
-	private IList<ApplicationUser> Moderators { get; set; } = new List<ApplicationUser>();
-	private IList<ApplicationUser> Admins { get; set; } = new List<ApplicationUser>();
-	
 	[CascadingParameter]
 	private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
 	private ApplicationUser? User { get; set; }
+    private Role CurrentRole { get; set; } = Role.Admin;
+    private List<ApplicationUser> Users { get; } = [];
+	private bool Busy { get; set; }
 
 	protected override async Task OnAfterRenderAsync(bool firstRender) {
 		if (!firstRender) return;
 		var state = await AuthenticationState;
 		User = await UserManager.GetUserAsync(state.User);
+        await LoadAsync(CurrentRole);
+    }
 
-		Authors = await UserManager.GetUsersInRoleAsync("Author");
-		Reviewers = await UserManager.GetUsersInRoleAsync("Reviewer");
-		Moderators = await UserManager.GetUsersInRoleAsync("Moderator");
-		Admins = await UserManager.GetUsersInRoleAsync("Admin");
-	}
+    private async Task LoadAsync(Role role) {
+        try {
+            Busy = true;
+            var users = await UserManager.GetUsersInRoleAsync(role.ToString());
+            Users.Clear();
+            CurrentRole = role;
+            Users.AddRange(users);
+        } finally {
+            Busy = false;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
 
-	private async Task Remove(ApplicationUser user, string role) {
+	private async Task RemoveAsync(ApplicationUser user, Role role) {
 		if (User is null) return;
 		if (user.Id == User.Id) {
 			Toast.ShowError(Localizer["Error_EditSelf"]);
 			return;
 		}
-		await UserManager.RemoveFromRoleAsync(user, role);
+		await UserManager.RemoveFromRoleAsync(user, role.ToString());
 	}
+
+    private enum Role {
+        Author, Reviewer, Moderator, Admin
+    }
 }

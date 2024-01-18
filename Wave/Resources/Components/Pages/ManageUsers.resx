@@ -110,7 +110,7 @@
     <data name="Moderators" xml:space="preserve">
         <value>Moderators</value>
     </data>
-    <data name="Administrators" xml:space="preserve">
+    <data name="Admins" xml:space="preserve">
         <value>Administrators</value>
     </data>
     <data name="Error_EditSelf" xml:space="preserve">
