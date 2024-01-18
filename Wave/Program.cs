@@ -59,8 +59,6 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders()
     .AddClaimsPrincipalFactory<UserClaimsFactory>();
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-
 #endregion
 
 #region Services
@@ -73,6 +71,14 @@ builder.Services.AddScoped<ImageService>();
 builder.Services.Configure<Customization>(builder.Configuration.GetSection(nameof(Customization)));
 builder.Services.AddCascadingValue("TitlePrefix", 
     sf => (sf.GetService<IOptions<Customization>>()?.Value.AppName ?? "Wave") + " - ");
+
+var smtpConfig = builder.Configuration.GetSection("Email:Smtp");
+if (smtpConfig.Exists()) {
+    builder.Services.Configure<SmtpConfiguration>(smtpConfig);
+    builder.Services.AddScoped<IEmailSender<ApplicationUser>, SmtpEmailSender>();
+} else {
+    builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+}
 
 #endregion
 
