@@ -1,0 +1,31 @@
+﻿@page "/review"
+@using Wave.Data
+@using Microsoft.EntityFrameworkCore
+
+@attribute [Authorize(Policy = "ArticleReviewPermissions")]
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IStringLocalizer<Review> Localizer
+
+<div class="flex gap-x-8 gap-y-4">
+	@foreach (var article in Articles) {
+		<ArticleTile Article="article" />
+	} 
+	@if(Articles.Count < 1) {
+		<p>@Localizer["NoArticles"]</p>
+	}
+</div>
+
+@code {
+	private List<Article> Articles { get; } = [];
+
+	protected override async Task OnInitializedAsync() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+
+		Articles.AddRange(await
+			context.Set<Article>()
+				.Include(a => a.Author)
+				.Where(a => a.Status == ArticleStatus.InReview)
+				.OrderByDescending(a => a.PublishDate)
+				.ToListAsync());
+	}
+}

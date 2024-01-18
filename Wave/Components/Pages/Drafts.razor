@@ -1,0 +1,37 @@
+﻿@page "/drafts"
+@using Microsoft.EntityFrameworkCore
+@using Wave.Data
+@using Microsoft.AspNetCore.Identity
+
+@attribute [Authorize(Policy = "ArticleEditPermissions")]
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject UserManager<ApplicationUser> UserManager
+@inject IStringLocalizer<Drafts> Localizer
+
+<div class="flex gap-x-8 gap-y-4">
+	@foreach (var article in Articles) {
+		<ArticleTile Article="article" />
+	}
+	@if (Articles.Count < 1) {
+		<p>@Localizer["NoArticles"]</p>
+	}
+</div>
+
+@code {
+	[CascadingParameter]
+	private HttpContext HttpContext { get; set; } = default!;
+	
+	private List<Article> Articles { get; } = [];
+
+	protected override async Task OnInitializedAsync() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+		string userId = UserManager.GetUserId(HttpContext.User)!;
+
+		Articles.AddRange(await
+			context.Set<Article>()
+				.Include(a => a.Author)
+				.Where(a => a.Status == ArticleStatus.Draft && a.Author.Id == userId)
+				.OrderByDescending(a => a.PublishDate)
+				.ToListAsync());
+	}
+}

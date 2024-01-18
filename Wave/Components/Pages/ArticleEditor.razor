@@ -124,8 +124,7 @@
             article = new Article {
                 Title = Model.Title!,
                 Body = Model.Body!,
-                Author = User,
-                Status = ArticleStatus.Published // TODO remove
+                Author = User
             };
             await context.AddAsync(article);
         }

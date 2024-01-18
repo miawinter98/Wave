@@ -11,9 +11,15 @@
 		<li><NavLink href="" Match="NavLinkMatch.All">Home</NavLink></li>
 		<AuthorizeView Policy="ArticleEditPermissions">
 			<Authorized>
-				<li><NavLink href="article/new">New Article</NavLink></li>
+                <li><NavLink href="article/new">New Article</NavLink></li>
+                <li><NavLink href="drafts">Drafts</NavLink></li>
 			</Authorized>
         </AuthorizeView>
+		<AuthorizeView Policy="ArticleReviewPermissions">
+			<Authorized>
+				<li><NavLink href="review">In Review</NavLink></li>
+			</Authorized>
+		</AuthorizeView>
         <AuthorizeView Policy="RoleAssignPermissions">
             <Authorized>
                 <li><NavLink href="manage/users">Manage users</NavLink></li>
