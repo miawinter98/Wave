@@ -5,6 +5,7 @@ USER app
 WORKDIR /app
 RUN mkdir ./files && chown app ./files
 VOLUME /app/files
+VOLUME /configuration
 EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build

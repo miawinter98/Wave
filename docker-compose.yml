@@ -16,6 +16,7 @@ services:
       - "WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development"
     volumes:
       - wave-files:/app/files
+      - wave-config:/configuration
     networks:
       - wave
   database:
@@ -32,6 +33,7 @@ services:
 
 volumes:
   wave-files:
+  wave-config:
   wave-db:
 networks:
   wave:

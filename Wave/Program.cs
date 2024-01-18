@@ -9,7 +9,10 @@ using Wave.Data;
 using Wave.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddEnvironmentVariables("WAVE_");
+builder.Configuration
+    .AddEnvironmentVariables("WAVE_")
+    .AddJsonFile("/configuration/config.json", true, false)
+    .AddYamlFile("/configuration/config.yml", true, false);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers();
