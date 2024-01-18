@@ -2,27 +2,28 @@
 @implements IDisposable
 
 @inject NavigationManager NavigationManager
+@inject IStringLocalizer<NavMenu> Localizer
 
 <header class="h-12 hidden md:block">
 	<LogoPartial />
 </header>                         
 <nav class="flex-1">
 	<ul class="menu">
-		<li><NavLink href="" Match="NavLinkMatch.All">Home</NavLink></li>
+        <li><NavLink href="" Match="NavLinkMatch.All">@Localizer["Home_Label"]</NavLink></li>
 		<AuthorizeView Policy="ArticleEditPermissions">
 			<Authorized>
-                <li><NavLink href="article/new">New Article</NavLink></li>
-                <li><NavLink href="drafts">Drafts</NavLink></li>
+                <li><NavLink href="article/new">@Localizer["ArticleNew_Label"]</NavLink></li>
+                <li><NavLink href="drafts">@Localizer["Drafts_Label"]</NavLink></li>
 			</Authorized>
         </AuthorizeView>
 		<AuthorizeView Policy="ArticleReviewPermissions">
 			<Authorized>
-				<li><NavLink href="review">In Review</NavLink></li>
+                <li><NavLink href="review">@Localizer["Review_Label"]</NavLink></li>
 			</Authorized>
 		</AuthorizeView>
         <AuthorizeView Policy="RoleAssignPermissions">
             <Authorized>
-                <li><NavLink href="manage/users">Manage users</NavLink></li>
+                <li><NavLink href="manage/users">@Localizer["ManageUsers_Label"]</NavLink></li>
             </Authorized>
         </AuthorizeView>
 	</ul>
@@ -43,7 +44,7 @@
                     <AntiforgeryToken />
                     <input type="hidden" name="ReturnUrl" value="@_currentUrl" />
                     <button type="submit" class="flex gap-2">
-                        Logout
+	                    @Localizer["Logout_Label"]
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                             <path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 0 1 5.25 2h5.5A2.25 2.25 0 0 1 13 4.25v2a.75.75 0 0 1-1.5 0v-2a.75.75 0 0 0-.75-.75h-5.5a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 0 0 .75-.75v-2a.75.75 0 0 1 1.5 0v2A2.25 2.25 0 0 1 10.75 18h-5.5A2.25 2.25 0 0 1 3 15.75V4.25Z" clip-rule="evenodd" />
                             <path fill-rule="evenodd" d="M6 10a.75.75 0 0 1 .75-.75h9.546l-1.048-.943a.75.75 0 1 1 1.004-1.114l2.5 2.25a.75.75 0 0 1 0 1.114l-2.5 2.25a.75.75 0 1 1-1.004-1.114l1.048-.943H6.75A.75.75 0 0 1 6 10Z" clip-rule="evenodd" />
@@ -55,7 +56,7 @@
         <NotAuthorized>
             <li>
                 <NavLink href="Account/Login">
-                    Login
+	                @Localizer["Login_Label"]
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                         <path fill-rule="evenodd" d="M17 4.25A2.25 2.25 0 0 0 14.75 2h-5.5A2.25 2.25 0 0 0 7 4.25v2a.75.75 0 0 0 1.5 0v-2a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 .75.75v11.5a.75.75 0 0 1-.75.75h-5.5a.75.75 0 0 1-.75-.75v-2a.75.75 0 0 0-1.5 0v2A2.25 2.25 0 0 0 9.25 18h5.5A2.25 2.25 0 0 0 17 15.75V4.25Z" clip-rule="evenodd" />
                         <path fill-rule="evenodd" d="M1 10a.75.75 0 0 1 .75-.75h9.546l-1.048-.943a.75.75 0 1 1 1.004-1.114l2.5 2.25a.75.75 0 0 1 0 1.114l-2.5 2.25a.75.75 0 1 1-1.004-1.114l1.048-.943H1.75A.75.75 0 0 1 1 10Z" clip-rule="evenodd" />
@@ -64,7 +65,7 @@
             </li>
             <li>
                 <NavLink href="Account/Register">
-                    Register
+	                @Localizer["SignUp_Label"]
                 </NavLink>
             </li>
         </NotAuthorized>
