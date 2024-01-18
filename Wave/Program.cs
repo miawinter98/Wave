@@ -15,7 +15,8 @@ builder.Configuration
     .AddJsonFile("/configuration/config.json", true, false)
     .AddYamlFile("/configuration/config.yml", true, false)
     .AddTomlFile("/configuration/config.toml", true, false)
-    .AddIniFile( "/configuration/config.ini", true, false);
+    .AddIniFile( "/configuration/config.ini", true, false)
+    .AddXmlFile( "/configuration/config.xml", true, false);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers();
