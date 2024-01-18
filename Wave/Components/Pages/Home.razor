@@ -8,53 +8,84 @@
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory;
 @inject IStringLocalizer<Home> Localizer
 
-<PageTitle>Home</PageTitle>
+<PageTitle>@Localizer["Title"]</PageTitle>
 
-<h1>@Localizer["Greeting"]</h1>
+<h1 class="text-3xl lg:text-5xl font-light mb-3">@Localizer["Title"]</h1>
 
-Welcome to your new app.
+@if (Articles.Count < 1) {
+    <div class="flex place-content-center h-full text-primary">
+        <span class="loading loading-spinner loading-lg"></span>
+    </div>
+}
 
-<div>
-	@foreach (Article article in Articles) {
-		<div>
-			<a href="/article/@article.Id">
-				<p>@article.Title</p>
-				<p>By @article.Author.Name</p>
-			</a>
-		</div>
-	}
+@if (Articles.FirstOrDefault() is {} featured) {
+    <article class="mb-6">
+        <a href="/article/@featured.Id">
+            <div class="hero bg-neutral text-neutral-content">
+                <div class="hero-content">
+                    <div class="flex flex-col space-y-6">
+                        <h2 class="text-2xl lg:text-4xl font-bold">
+                            @featured.Title<br />
+                            <small class="text-sm">@featured.PublishDate.ToString("g")</small>
+                        </h2>
+                        <p class="line-clamp-6">
+                            @featured.Body[..Math.Min(400, featured.Body.Length)]
+                        </p>
+                        <div class="flex">
+                            <ProfilePill Profile="featured.Author" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </article>
+}
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-4 mb-6">
+    @foreach (var article in Articles.Skip(1)) {
+        <ArticleTile Article="article" />
+    }
 </div>
 
-<AuthorizeView>
-	<Authorized>
-		<h3 class="text-2xl my-3">Claims</h3>
-		<dl>
-			<dt>Author?</dt>
-			<dd>@context.User.IsInRole("Author")</dd>
-			<dt>Reviewer?</dt>
-			<dd>@context.User.IsInRole("Reviewer")</dd>
-			<dt>Moderator?</dt>
-			<dd>@context.User.IsInRole("Moderator")</dd>
-			<dt>Admin?</dt>
-			<dd>@context.User.IsInRole("Admin")</dd>
-		</dl>
-		
-	</Authorized>
-</AuthorizeView>
+@if (HasMore) {
+    <div class="flex place-content-center">
+        <button class="btn btn-wide" @onclick="More">@Localizer["More"]</button>
+    </div>
+}
 
 @code {
     private List<Article> Articles { get; } = [];
+    private bool HasMore { get; set; }
 
-    protected override async Task OnInitializedAsync() {
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (firstRender) {
+            await using var context = await ContextFactory.CreateDbContextAsync();
+
+            var now = DateTimeOffset.UtcNow;
+            var query = context.Set<Article>()
+                .Include(a => a.Author)
+                .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
+                .OrderByDescending(a => a.PublishDate);
+            var articles = await query.Take(11).ToListAsync();
+            HasMore = (await query.CountAsync()) > 11;
+            Articles.AddRange(articles);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task More() {
+        HasMore = false;
         await using var context = await ContextFactory.CreateDbContextAsync();
 
         var now = DateTimeOffset.UtcNow;
-        var articles = await context.Set<Article>()
+        var query = context.Set<Article>()
             .Include(a => a.Author)
             .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
-            .OrderBy(a => a.PublishDate)
-            .Take(10)
-            .ToListAsync();
+            .OrderByDescending(a => a.PublishDate)
+            .Skip(Articles.Count);
+        var articles = await query.Take(10).ToListAsync();
         Articles.AddRange(articles);
+        HasMore = (await query.CountAsync()) > 10;
     }
+
 }

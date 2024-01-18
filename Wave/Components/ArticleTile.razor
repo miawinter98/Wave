@@ -1,0 +1,20 @@
+﻿@using Wave.Data
+
+<a href="/article/@Article.Id">
+    <article class="card card-compact bg-base-200 rounded-none h-full">
+        <div class="card-body">
+            <h3 class="card-title line-clamp-2">@Article.Title</h3>
+            <small class="text-sm">By @Article.Author.Name</small>
+            <p class="flex-none line-clamp-3">
+                @Article.Body
+            </p>
+        </div>
+    </article>
+</a>
+
+@code {
+    [Parameter]
+    public required Article Article { get; set; }
+
+
+}
