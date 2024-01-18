@@ -36,7 +36,9 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("ArticleEditPermissions", p => p.RequireRole("Author", "Admin"))
     .AddPolicy("ArticleReviewPermissions", p => p.RequireRole("Reviewer", "Admin"))
     .AddPolicy("ArticleDeletePermissions", p => p.RequireRole("Moderator", "Admin"))
-    .AddPolicy("RoleAssignPermissions", p => p.RequireRole("Admin"));
+    .AddPolicy("RoleAssignPermissions", p => p.RequireRole("Admin"))
+    
+    .AddPolicy("ArticleEditOrReviewPermissions", p => p.RequireRole("Author", "Reviewer", "Admin"));
 builder.Services.AddAuthentication(options => {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;

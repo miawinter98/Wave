@@ -1,69 +1,35 @@
 ﻿@page "/article/{id:guid}"
 @using Microsoft.EntityFrameworkCore
 @using Wave.Data
-@using Humanizer
-@using System.Globalization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
+@using System.Diagnostics.CodeAnalysis
 
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory;
+@inject RoleManager<IdentityRole> RoleManager
 @inject IStringLocalizer<ArticleView> Localizer
 
 <PageTitle>@(TitlePrefix + Article.Title)</PageTitle>
 
-<h1 class="text-3xl lg:text-5xl font-light">@Article.Title</h1>
-<p class="mb-3">
-    <small class="text-sm text-neutral-content">
-        <time datetime="@Article.PublishDate.ToString("u")"
-              title="@Article.PublishDate.ToString("g")">
-            @Article.PublishDate.Humanize()
-        </time>
-        @if (Article.LastModified is not null) {
-            <time datetime="@Article.LastModified.Value.ToString("u")"
-                  title="@Article.LastModified.Value.ToString("g")">
-                &ensp;(@Localizer["ModifiedOn"] @Article.LastModified.Humanize())
-            </time>
+<ErrorBoundary>
+    <ChildContent>
+        <AuthorizeView Policy="ArticleEditOrReviewPermissions">
+            <Authorized>
+                <ArticleComponent Article="@GetArticleProtected(context.User)" />
+            </Authorized>
+            <NotAuthorized>
+                <ArticleComponent Article="@GetArticlePublic()" />
+            </NotAuthorized>
+        </AuthorizeView>
+    </ChildContent>
+    <ErrorContent>
+        <h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["NotFound_Title"]</h1>
+        <p class="my-3">@Localizer["NotFound_Description"]</p>
+        @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToLower() == "development") {
+            <p>@context.Message</p>
         }
-    </small>
-</p>
-<AuthorizeView Policy="ArticleEditPermissions">
-    <Authorized>
-        <a class="btn btn-info mb-3" href="article/@Article.Id/edit">Edit</a>
-    </Authorized>
-</AuthorizeView>
-
-<hr class="my-3" />
-
-<article class="prose prose-neutral max-w-none mb-6">
-    @Content
-</article>
-
-<hr class="my-3" />
-
-@if (!string.IsNullOrWhiteSpace(Article.Author.AboutTheAuthor)) {
-    <section class="mb-2">
-        <h2 class="text-2xl lg:text-4xl mb-3">About The Author</h2>
-        <div class="card sm:card-side card-compact bg-neutral text-neutral-content rounded shadow">
-            <figure class="sm:max-w-32">
-                <img src="/api/user/pfp/@Article.Author.Id" alt="" width="800">
-            </figure>
-            <div class="card-body">
-                <h3 class="card-title">@Article.Author.Name</h3>
-                <p>
-                    @Article.Author.AboutTheAuthor
-                </p>
-            </div>
-        </div>
-    </section>
-}
-
-<div class="flex gap-2">
-    @if (string.IsNullOrWhiteSpace(Article.Author.AboutTheAuthor)) {
-        <ProfilePill Profile="Article.Author" RoleTag="@Localizer["Author"]"/>
-    }
-    @if (Article.Reviewer is not null && Article.Reviewer.Id != Article.Author.Id) {
-        <ProfilePill Profile="Article.Reviewer" RoleTag="@Localizer["Reviewer"]"/>
-    }
-</div>
-
+    </ErrorContent>
+</ErrorBoundary>
 
 @code {
 	[CascadingParameter(Name = "TitlePrefix")]
@@ -71,9 +37,39 @@
 
     [Parameter]
     public Guid Id { get; set; }
+    private Article Article { get; set; } = default!;
 
-    private Article Article { get; set; } = null!;
-    private MarkupString Content => new(Article.BodyHtml);
+    private Article GetArticlePublic() {
+        if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
+            return Article;
+        }
+        throw new ApplicationException("Article is not public.");
+    }
+
+    [SuppressMessage("ReSharper", "ConvertIfStatementToSwitchStatement")]
+    private Article GetArticleProtected(ClaimsPrincipal principal) {
+        // Admins always get access
+        if (principal.IsInRole("Admin")) {
+            return Article;
+        }
+        
+        // You cannot access your own drafts
+        if (Article.Status is ArticleStatus.Draft) {
+            if (Article.Author.Id == principal.FindFirst("Id")!.Value) {
+                return Article;
+            }
+            throw new ApplicationException("Cannot access draft article without being author or admin.");
+        }
+        // InReview Articles can only be accessed by reviewers
+        if (Article.Status is ArticleStatus.InReview) {
+            if (principal.IsInRole("Reviewer")) {
+                return Article;
+            }
+            throw new ApplicationException("Cannot access in-review article without being a reviewer or admin.");
+        }
+
+        throw new ApplicationException("User does not have access to this article.");
+    }
 
     protected override async Task OnInitializedAsync() {
         // We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
@@ -86,7 +82,7 @@
         Article = context.Set<Article>()
             .Include(a => a.Author)
             .Include(a => a.Reviewer)
-            .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
+            // .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
             .First(a => a.Id == Id);
 
         if (Article is null) throw new ApplicationException("Article not found.");

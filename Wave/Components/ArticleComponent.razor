@@ -1,0 +1,72 @@
+﻿@using Wave.Data
+@using Humanizer
+
+@inject IStringLocalizer<ArticleComponent> Localizer
+
+<h1 class="text-3xl lg:text-5xl font-light">
+    @Article.Title
+</h1>
+<p class="mb-3">
+    <small class="text-sm text-neutral-content">
+        <time datetime="@Article.PublishDate.ToString("u")"
+              title="@Article.PublishDate.ToString("g")">
+            @Article.PublishDate.Humanize()
+        </time>
+        @if (Article.LastModified is not null) {
+            <time datetime="@Article.LastModified.Value.ToString("u")"
+                  title="@Article.LastModified.Value.ToString("g")">
+                &ensp;(@Localizer["ModifiedOn"] @Article.LastModified.Humanize())
+            </time>
+        }
+        @if (Article.Status <= ArticleStatus.Published) {
+            <span class="badge badge-sm badge-outline badge-warning">
+                @Article.Status.Humanize()
+            </span>
+        }
+    </small>
+</p>
+<AuthorizeView Policy="ArticleEditPermissions">
+    <Authorized>
+        <a class="btn btn-info mb-3" href="article/@Article.Id/edit">Edit</a>
+    </Authorized>
+</AuthorizeView>
+
+<hr class="my-3" />
+
+<article class="prose prose-neutral max-w-none mb-6">
+    @Content
+</article>
+
+<hr class="my-3" />
+
+@if (!string.IsNullOrWhiteSpace(Article.Author.AboutTheAuthor)) {
+    <section class="mb-2">
+        <h2 class="text-2xl lg:text-4xl mb-3">About The Author</h2>
+        <div class="card sm:card-side card-compact bg-neutral text-neutral-content rounded shadow">
+            <figure class="sm:max-w-32">
+                <img src="/api/user/pfp/@Article.Author.Id" alt="" width="800">
+            </figure>
+            <div class="card-body">
+                <h3 class="card-title">@Article.Author.Name</h3>
+                <p>
+                    @Article.Author.AboutTheAuthor
+                </p>
+            </div>
+        </div>
+    </section>
+}
+
+<div class="flex gap-2">
+    @if (string.IsNullOrWhiteSpace(Article.Author.AboutTheAuthor)) {
+        <ProfilePill Profile="Article.Author" RoleTag="@Localizer["Author"]"/>
+    }
+    @if (Article.Reviewer is not null && Article.Reviewer.Id != Article.Author.Id) {
+        <ProfilePill Profile="Article.Reviewer" RoleTag="@Localizer["Reviewer"]"/>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public required Article Article { get; set; }
+    private MarkupString Content => new(Article.BodyHtml);
+}
