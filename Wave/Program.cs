@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Tomlyn.Extensions.Configuration;
 using Wave.Components;
 using Wave.Components.Account;
 using Wave.Data;
@@ -12,7 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
     .AddEnvironmentVariables("WAVE_")
     .AddJsonFile("/configuration/config.json", true, false)
-    .AddYamlFile("/configuration/config.yml", true, false);
+    .AddYamlFile("/configuration/config.yml", true, false)
+    .AddTomlFile("/configuration/config.toml", true, false)
+    .AddIniFile( "/configuration/config.ini", true, false);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers();
