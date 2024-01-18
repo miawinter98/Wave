@@ -27,10 +27,11 @@
 		await using var context = await ContextFactory.CreateDbContextAsync();
 		string userId = UserManager.GetUserId(HttpContext.User)!;
 
+        bool admin = HttpContext.User.IsInRole("Admin");
 		Articles.AddRange(await
 			context.Set<Article>()
 				.Include(a => a.Author)
-				.Where(a => a.Status == ArticleStatus.Draft && a.Author.Id == userId)
+				.Where(a => a.Status == ArticleStatus.Draft && (admin || a.Author.Id == userId))
 				.OrderByDescending(a => a.PublishDate)
 				.ToListAsync());
 	}
