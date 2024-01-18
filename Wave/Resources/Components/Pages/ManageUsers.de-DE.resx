@@ -113,7 +113,25 @@
     <data name="Admins" xml:space="preserve">
         <value>Administrator*innen</value>
     </data>
-    <data name="Error_EditSelf" xml:space="preserve">
-        <value>Du kannst keine Rollen von dir selbst bearbeiten</value>
-    </data>
+  <data name="Error_EditSelf" xml:space="preserve">
+    <value>Du kannst deine eigene Rolle nicht bearbeiten</value>
+  </data>
+  <data name="UserName_Label" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+  <data name="UserName_Submit" xml:space="preserve">
+    <value>Zur Rolle hinzufügen</value>
+  </data>
+  <data name="Error_UserNotFound" xml:space="preserve">
+    <value>Benutzer nicht gefunden</value>
+  </data>
+  <data name="Error_CreateRole" xml:space="preserve">
+    <value>Unbekannter fehler beim erstellen der Rolle</value>
+  </data>
+  <data name="Success_AddUser" xml:space="preserve">
+    <value>Benutzer erfolgreich zur Rolle hinzugefügt</value>
+  </data>
+  <data name="Success_RemoveUser" xml:space="preserve">
+    <value>Benutzer erfolgreich von Rolle entfernt</value>
+  </data>
 </root>
