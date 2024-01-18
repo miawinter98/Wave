@@ -3,12 +3,10 @@
 @using Wave.Data
 @using Microsoft.EntityFrameworkCore
 @using System.ComponentModel.DataAnnotations
-@using Markdig
-@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Wave.Utilities
 
-@attribute [Authorize(Policy = "ArticleEditPermissions")]
+@attribute [Authorize(Policy = "ArticleEditOrReviewPermissions")]
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject NavigationManager Navigation
 @inject UserManager<ApplicationUser> UserManager
@@ -106,6 +104,8 @@
         var user = await UserManager.GetUserAsync(state.User);
         User = user ?? throw new ApplicationException("???2");
         IsAdmin = await UserManager.IsInRoleAsync(User, "Admin");
+
+        // TODO properly check if user can edit this article (see HandleRoles)
     }
 
     private async Task OnValidSubmit() {
@@ -130,12 +130,8 @@
         }
         if (Model.PublishDate is not null) article.PublishDate = Model.PublishDate.Value;
 
-        if (User.Id != article.Author.Id && !IsAdmin) 
-            throw new ApplicationException("You do not have permissions to edit this article");
-        if (User.Id != article.Author.Id) {
-	        article.Reviewer = User; // If an admin edits this article, add them as reviewer
-        }
         article.LastModified = DateTimeOffset.UtcNow;
+        HandleRoles(article, User);
 
         article.BodyHtml = MarkdownUtilities.Parse(article.Body);
         
@@ -145,6 +141,27 @@
         } else {
             Navigation.NavigateTo($"/article/{article.Id}/edit");
         }
+    }
+
+    private async Task HandleRoles(Article article, ApplicationUser me) {
+        // it's our draft
+        if (article.Status is ArticleStatus.Draft && article.Author.Id == me.Id) return;
+
+        var roles = await UserManager.GetRolesAsync(me);
+
+        // reviewers and admins can review articles
+        if (article.Status is ArticleStatus.InReview && roles.Any(r => r is "Admin" or "Reviewer")) {
+            article.Reviewer = me;
+            return;
+        }
+
+        // published articles may only be edited my admins or moderators 
+        if (article.Status is ArticleStatus.Published && roles.Any(r => r is "Admin" or "Reviewer")) {
+            article.Reviewer = me; // TODO replace with editor or something?
+            return;
+        }
+
+        throw new ApplicationException("You do not have permissions to edit this article");
     }
 
     private sealed class InputModel {
