@@ -9,6 +9,10 @@
 
 Under Construction
 
+## Quickstart
+
+TODO
+
 ## Configuring Wave
 
 Wave allows you to configure it in many different formats and in multiple places, and 
