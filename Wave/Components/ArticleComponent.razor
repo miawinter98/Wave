@@ -25,11 +25,6 @@
         }
     </small>
 </p>
-<AuthorizeView Policy="ArticleEditPermissions">
-    <Authorized>
-        <a class="btn btn-info mb-3" href="article/@Article.Id/edit">Edit</a>
-    </Authorized>
-</AuthorizeView>
 
 <hr class="my-3" />
 
@@ -56,7 +51,7 @@
     </section>
 }
 
-<div class="flex gap-2">
+<div class="flex gap-2 flex-wrap">
     @if (string.IsNullOrWhiteSpace(Article.Author.AboutTheAuthor)) {
         <ProfilePill Profile="Article.Author" RoleTag="@Localizer["Author"]"/>
     }
