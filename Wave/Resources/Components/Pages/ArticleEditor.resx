@@ -128,4 +128,16 @@
   <data name="EditorSubmit" xml:space="preserve">
     <value>Save</value>
   </data>
+  <data name="Draft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="InReview" xml:space="preserve">
+    <value>In Review</value>
+  </data>
+  <data name="Published" xml:space="preserve">
+    <value>Published</value>
+  </data>
+  <data name="ViewArticle_Label" xml:space="preserve">
+    <value>Open</value>
+  </data>
 </root>

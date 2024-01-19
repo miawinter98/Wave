@@ -128,4 +128,16 @@
   <data name="Title_Placeholder" xml:space="preserve">
     <value>Mein neues Käsekuchenrezept</value>
   </data>
+  <data name="Draft" xml:space="preserve">
+    <value>Entwurf</value>
+  </data>
+  <data name="InReview" xml:space="preserve">
+    <value>In Rezension</value>
+  </data>
+  <data name="Published" xml:space="preserve">
+    <value>Veröffentlicht</value>
+  </data>
+  <data name="ViewArticle_Label" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
 </root>

@@ -18,105 +18,123 @@
 } else {
     <PageTitle>@(TitlePrefix + Localizer["PageTitle_New"])</PageTitle>
 }
-
-<h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["EditorTitle"]</h1>
-
-<div>
-    <ul class="steps">
-        <li class="step @(Article?.Status >= ArticleStatus.Draft ? "step-primary": "")">@Localizer["Draft"]</li>
-        <li class="step @(Article?.Status >= ArticleStatus.InReview ? "step-primary": "")">@Localizer["InReview"]</li>
-        <li class="step @(Article?.Status >= ArticleStatus.Published ? "step-primary": "")">@Localizer["Published"]</li>
-    </ul>
-</div>
-
-<EditForm method="post" FormName="article-editor" Model="@Model" OnValidSubmit="OnValidSubmit">
-    <DataAnnotationsValidator />
-    <input type="hidden" @bind-value="@Model.Id"/>
-    
-    <InputLabelComponent LabelText="@Localizer["Title_Label"]" For="() => Model.Title">
-        <InputText class="input input-bordered w-full" maxlength="256" required aria-required disabled="@CannotEdit"
-                   @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off" />
-    </InputLabelComponent>
-    <InputLabelComponent LabelText="@Localizer["PublishDate_Label"]" For="() => Model.PublishDate">
-        @if (Article?.Status is null or ArticleStatus.Draft) {
-            <InputDate class="input input-bordered w-full" disabled="@CannotEdit" Type="InputDateType.DateTimeLocal"
-                       @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" autocomplete="off" />
-        } else {
-            <input class="input input-bordered w-full" 
-                   type="datetime-local" readonly value="@Article?.PublishDate.ToString("yyyy-MM-dd\\THH:mm:ss")" />
-        }
-    </InputLabelComponent>
-
-    <AdvancedMarkdownEditor Title="@Model.Title" MarkdownCallback="() => Model.Body">
-        <InputLabelComponent LabelText="@Localizer["Body_Label"]" For="() => Model.Body">
-            <textarea class="textarea textarea-bordered w-full min-h-96 h-full" required aria-required disabled="@CannotEdit"
-                      @bind="@Model.Body" @bind:event="oninput" placeholder="@Localizer["Body_Placeholder"]" autocomplete="off"></textarea>
-        </InputLabelComponent>
-    </AdvancedMarkdownEditor>
-    
-    <div class="flex gap-2 flex-wrap mt-3">
-        <button type="submit" class="btn btn-primary w-full sm:btn-wide" disabled="@CannotEdit">
-            @Localizer["EditorSubmit"]
-        </button>
-        @if (Article is not null) {
-            <a class="btn w-full sm:btn-wide" href="/article/@(Article.Id)">
-                @Localizer["ViewArticle_Label"]
-            </a>
-        }
+@if (Busy) {
+    <div class="flex place-content-center">
+        <span class="loading loading-spinner loading-lg"></span>
     </div>
-</EditForm>
+} else {
+    <ErrorBoundary>
+        <ChildContent>
+            <h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["EditorTitle"]</h1>
+
+            <div class="w-full">
+                <ul class="steps w-full max-w-xs">
+                    <li class="step @(Article?.Status >= ArticleStatus.Draft ? "step-primary": "")">@Localizer["Draft"]</li>
+                    <li class="step @(Article?.Status >= ArticleStatus.InReview ? "step-primary": "")">@Localizer["InReview"]</li>
+                    <li class="step @(Article?.Status >= ArticleStatus.Published ? "step-primary": "")">@Localizer["Published"]</li>
+                </ul>
+            </div>
+
+            <EditForm method="post" FormName="article-editor" Model="@Model" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <input type="hidden" @bind-value="@Model.Id" />
+
+                <InputLabelComponent LabelText="@Localizer["Title_Label"]" For="() => Model.Title">
+                    <InputText class="input input-bordered w-full" maxlength="256" required aria-required
+                               @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off" />
+                </InputLabelComponent>
+                <InputLabelComponent LabelText="@Localizer["PublishDate_Label"]" For="() => Model.PublishDate">
+                    @if (Article?.Status is null or ArticleStatus.Draft)
+                    {
+                        <InputDate class="input input-bordered w-full" Type="InputDateType.DateTimeLocal"
+                                   @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" autocomplete="off" />
+                    }
+                    else
+                    {
+                        <input class="input input-bordered w-full"
+                               type="datetime-local" readonly value="@Article?.PublishDate.ToString("yyyy-MM-dd\\THH:mm:ss")" />
+                    }
+                </InputLabelComponent>
+
+                <AdvancedMarkdownEditor Title="@Model.Title" MarkdownCallback="() => Model.Body">
+                    <InputLabelComponent LabelText="@Localizer["Body_Label"]" For="() => Model.Body">
+                        <textarea class="textarea textarea-bordered w-full min-h-96 h-full" required aria-required
+                                  @bind="@Model.Body" @bind:event="oninput" placeholder="@Localizer["Body_Placeholder"]" autocomplete="off"></textarea>
+                    </InputLabelComponent>
+                </AdvancedMarkdownEditor>
+
+                <div class="flex gap-2 flex-wrap mt-3">
+                    <button type="submit" class="btn btn-primary w-full sm:btn-wide">
+                        @Localizer["EditorSubmit"]
+                    </button>
+                    @if (Article is not null)
+                    {
+                        <a class="btn w-full sm:btn-wide" href="/article/@(Article.Id)">
+                            @Localizer["ViewArticle_Label"]
+                        </a>
+                    }
+                </div>
+            </EditForm>
+        </ChildContent>
+        <ErrorContent>
+            <h1 class="text-3xl lg:text-5xl font-light mb-6">Not found</h1>
+        </ErrorContent>
+    </ErrorBoundary>
+}
 
 @code {
-	[CascadingParameter(Name = "TitlePrefix")]
-	private string TitlePrefix { get; set; } = default!;
+    [CascadingParameter(Name = "TitlePrefix")]
+    private string TitlePrefix { get; set; } = default!;
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
 
     [Parameter]
     public Guid? Id { get; set; }
     [SupplyParameterFromForm]
-    private InputModel Model { get; set; } = null!;
-    
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthenticationState { get; set; }
+    private InputModel Model { get; set; } = new();
 
-    private ApplicationUser User { get; set; } = null!;
-    private bool IsAdmin { get; set; }
-    private Article? Article { get; set; } 
-    private MarkupString? Content => Article is null ? null : new MarkupString(Article.BodyHtml);
-    private bool CannotEdit => User is null || !IsAdmin && Article is not null && Article.Author.Id != User.Id;
+    private ApplicationUser? User { get; set; }
+    private Article? Article { get; set; }
+    private bool Busy { get; set; } = true;
 
     protected override async Task OnInitializedAsync() {
-        if (Id is not null) {
-            // We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
-            // running into a null pointer on the Article property and panicking
-
-            // ReSharper disable once MethodHasAsyncOverload
-            await using var context = ContextFactory.CreateDbContext();
-            // ReSharper disable once MethodHasAsyncOverload
-            Article = context.Set<Article>()
-                .Include(a => a.Author)
-                .Include(a => a.Reviewer)
-                .First(a => a.Id == Id);
-
-            if (Article is null) throw new ApplicationException("Article not found.");
-        }
-
-        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
-        Model ??= new InputModel();
-        Model.Id ??= Article?.Id;
-        Model.Title ??= Article?.Title;
-        Model.Body ??= Article?.Body;
-        Model.PublishDate ??= Article?.PublishDate.LocalDateTime;
-        
         if (AuthenticationState is null) throw new ApplicationException("???");
         var state = await AuthenticationState;
         var user = await UserManager.GetUserAsync(state.User);
         User = user ?? throw new ApplicationException("???2");
-        IsAdmin = await UserManager.IsInRoleAsync(User, "Admin");
 
-        // TODO properly check if user can edit this article (see HandleRoles)
+        if (Id is not null) {
+            await using var context = await ContextFactory.CreateDbContextAsync();
+            Article = await context.Set<Article>()
+                .Include(a => a.Author)
+                .Include(a => a.Reviewer)
+                .FirstAsync(a => a.Id == Id);
+            if (Article is null) throw new ApplicationException("Article not found.");
+
+            // Check permissions
+            if (state.User.IsInRole("Admin")) {
+                // Admins always have access
+            } else if (Article.Status is ArticleStatus.Draft && Article.Author.Id == User.Id) {
+                // It's our draft
+            } else if (Article.Status is ArticleStatus.InReview && state.User.IsInRole("Reviewer")) {
+                // It's in reviewer, and we are reviewer
+            } else if (Article.Status is ArticleStatus.Published && state.User.IsInRole("Moderator")) {
+                // It's published, and we are moderator
+            } else {
+                throw new ApplicationException("You do not have permissions to edit this article");
+            }
+        }
+        Model.Id ??= Article?.Id;
+        Model.Title ??= Article?.Title;
+        Model.Body ??= Article?.Body;
+        Model.PublishDate ??= Article?.PublishDate.LocalDateTime;
+        Busy = false;
     }
 
     private async Task OnValidSubmit() {
+        if (User is null) return;
+        Busy = true;
+
         await using var context = await ContextFactory.CreateDbContextAsync();
         context.Entry(User).State = EntityState.Unchanged;
 
@@ -138,17 +156,12 @@
         }
         if (Model.PublishDate is not null) article.PublishDate = Model.PublishDate.Value;
 
+        await HandleRoles(article, User);
         article.LastModified = DateTimeOffset.UtcNow;
-        HandleRoles(article, User);
-
         article.BodyHtml = MarkdownUtilities.Parse(article.Body);
         
         await context.SaveChangesAsync();
-        if (article.Status >= ArticleStatus.Published &&  article.PublishDate <= DateTimeOffset.UtcNow) {
-            Navigation.NavigateTo($"/article/{article.Id}");
-        } else {
-            Navigation.NavigateTo($"/article/{article.Id}/edit");
-        }
+        Navigation.NavigateTo($"/article/{article.Id}");
     }
 
     private async Task HandleRoles(Article article, ApplicationUser me) {
