@@ -122,4 +122,7 @@
     <data name="SignUp_Label" xml:space="preserve">
         <value>Sign Up</value>
     </data>
+  <data name="Future_Label" xml:space="preserve">
+    <value>Publishing</value>
+  </data>
 </root>
