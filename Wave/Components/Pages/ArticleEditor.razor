@@ -44,7 +44,7 @@
                                @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off" />
                 </InputLabelComponent>
                 <InputLabelComponent LabelText="@Localizer["PublishDate_Label"]" For="() => Model.PublishDate">
-                    @if (Article?.Status is null or not ArticleStatus.Published) {
+                    @if (Article?.Status is null or not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow) {
                         <InputDate class="input input-bordered w-full" Type="InputDateType.DateTimeLocal"
                                    @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" autocomplete="off" />
                     } else {
