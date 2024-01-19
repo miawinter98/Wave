@@ -44,13 +44,10 @@
                                @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off" />
                 </InputLabelComponent>
                 <InputLabelComponent LabelText="@Localizer["PublishDate_Label"]" For="() => Model.PublishDate">
-                    @if (Article?.Status is null or ArticleStatus.Draft)
-                    {
+                    @if (Article?.Status is null or not ArticleStatus.Published) {
                         <InputDate class="input input-bordered w-full" Type="InputDateType.DateTimeLocal"
                                    @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" autocomplete="off" />
-                    }
-                    else
-                    {
+                    } else {
                         <input class="input input-bordered w-full"
                                type="datetime-local" readonly value="@Article?.PublishDate.ToString("yyyy-MM-dd\\THH:mm:ss")" />
                     }
