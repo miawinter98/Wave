@@ -1,0 +1,74 @@
+﻿@implements IDisposable
+@rendermode InteractiveServer
+@using Wave.Utilities
+
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
+    <div class="flex">
+        @ChildContent
+    </div>
+    <div class="bg-base-200 p-2">
+        @if (!string.IsNullOrWhiteSpace(Title)) {
+            <h2 class="text-2xl lg:text-4xl font-bold mb-6">@Title</h2>
+        }
+        @if (!string.IsNullOrWhiteSpace(Markdown)) {
+            <div class="prose prose-neutral max-w-none">
+                @HtmlPreview
+            </div>
+        } else {
+            <div class="flex flex-col gap-4">
+                <div class="skeleton h-4 w-full"></div>
+                <div class="skeleton h-4 w-full"></div>
+                <div class="skeleton h-32 w-full"></div>
+                <div class="skeleton h-4 w-full"></div>
+                <div class="skeleton h-4 w-full"></div>
+                <div class="skeleton h-4 w-full"></div>
+            </div>
+        }
+        </div>
+</section>
+
+@code {
+    [Parameter]
+    public required Func<string?> MarkdownCallback { get; set; }
+    [Parameter]
+    public string? Title { get; set; }
+    [Parameter]
+    public required RenderFragment ChildContent { get; set; }
+
+    private string? Markdown { get; set; }
+    private MarkupString HtmlPreview { get; set; } = new();
+
+    private CancellationTokenSource? Token { get; set; }
+    private Timer? Timer { get; set; }
+
+    protected override void OnInitialized() {
+        Timer = new Timer(_ => {
+            UpdateHtml();
+        }, null, TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3));
+    }
+
+    private void UpdateHtml() {
+        try {
+            string? markdown = MarkdownCallback.Invoke();
+            if (string.IsNullOrWhiteSpace(markdown)) return;
+
+            Token?.Cancel();
+            Token = new CancellationTokenSource();
+
+            string html = MarkdownUtilities.Parse(markdown);
+            Markdown = markdown;
+            HtmlPreview = new MarkupString(html);
+            InvokeAsync(StateHasChanged);
+        } catch (Exception ex) {
+            Console.Error.WriteLine(ex);
+        } finally {
+            Token = null;
+        }
+    }
+
+    public void Dispose() {
+        Timer?.Dispose();
+        Timer = null;
+    }
+
+}

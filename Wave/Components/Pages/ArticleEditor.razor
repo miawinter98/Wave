@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Wave.Utilities
 
+@rendermode InteractiveServer
 @attribute [Authorize(Policy = "ArticleEditOrReviewPermissions")]
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject NavigationManager Navigation
@@ -20,43 +21,50 @@
 
 <h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["EditorTitle"]</h1>
 
+<div>
+    <ul class="steps">
+        <li class="step @(Article?.Status >= ArticleStatus.Draft ? "step-primary": "")">@Localizer["Draft"]</li>
+        <li class="step @(Article?.Status >= ArticleStatus.InReview ? "step-primary": "")">@Localizer["InReview"]</li>
+        <li class="step @(Article?.Status >= ArticleStatus.Published ? "step-primary": "")">@Localizer["Published"]</li>
+    </ul>
+</div>
+
 <EditForm method="post" FormName="article-editor" Model="@Model" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <input type="hidden" @bind-value="@Model.Id"/>
     
     <InputLabelComponent LabelText="@Localizer["Title_Label"]" For="() => Model.Title">
         <InputText class="input input-bordered w-full" maxlength="256" required aria-required disabled="@CannotEdit"
-                   @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" />
+                   @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off" />
     </InputLabelComponent>
-    
     <InputLabelComponent LabelText="@Localizer["PublishDate_Label"]" For="() => Model.PublishDate">
-        <InputDate class="input input-bordered w-full" disabled="@CannotEdit" Type="InputDateType.DateTimeLocal"
-                   @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" />
+        @if (Article?.Status is null or ArticleStatus.Draft) {
+            <InputDate class="input input-bordered w-full" disabled="@CannotEdit" Type="InputDateType.DateTimeLocal"
+                       @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" autocomplete="off" />
+        } else {
+            <input class="input input-bordered w-full" 
+                   type="datetime-local" readonly value="@Article?.PublishDate.ToString("yyyy-MM-dd\\THH:mm:ss")" />
+        }
     </InputLabelComponent>
-    
-    <InputLabelComponent LabelText="@Localizer["Body_Label"]" For="() => Model.Body">
-        <InputTextArea class="textarea textarea-bordered w-full h-96" required aria-required disabled="@CannotEdit"
-                       @bind-Value="@Model.Body" placeholder="@Localizer["Body_Placeholder"]" />
-    </InputLabelComponent>
-    
-    <button type="submit" class="btn btn-primary btn-wide" disabled="@CannotEdit">
-	    @Localizer["EditorSubmit"]
-    </button>
-</EditForm>
 
-@if (Article is not null) {
-    <section>
-        <h2 class="text-2xl lg:text-4xl my-3">Preview</h2>
-        <div class="card bg-base-200">
-            <div class="card-body">
-                <h3 class="card-title">@Article.Title</h3>
-                <div class="prose prose-neutral max-w-none">
-                    @Content
-                </div>
-            </div>
-        </div>
-    </section>
-}
+    <AdvancedMarkdownEditor Title="@Model.Title" MarkdownCallback="() => Model.Body">
+        <InputLabelComponent LabelText="@Localizer["Body_Label"]" For="() => Model.Body">
+            <textarea class="textarea textarea-bordered w-full min-h-96 h-full" required aria-required disabled="@CannotEdit"
+                      @bind="@Model.Body" @bind:event="oninput" placeholder="@Localizer["Body_Placeholder"]" autocomplete="off"></textarea>
+        </InputLabelComponent>
+    </AdvancedMarkdownEditor>
+    
+    <div class="flex gap-2 flex-wrap mt-3">
+        <button type="submit" class="btn btn-primary w-full sm:btn-wide" disabled="@CannotEdit">
+            @Localizer["EditorSubmit"]
+        </button>
+        @if (Article is not null) {
+            <a class="btn w-full sm:btn-wide" href="/article/@(Article.Id)">
+                @Localizer["ViewArticle_Label"]
+            </a>
+        }
+    </div>
+</EditForm>
 
 @code {
 	[CascadingParameter(Name = "TitlePrefix")]
