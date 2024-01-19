@@ -2,11 +2,10 @@
 @using Microsoft.EntityFrameworkCore
 @using Wave.Data
 @using System.Security.Claims
-@using Microsoft.AspNetCore.Identity
 @using System.Diagnostics.CodeAnalysis
 
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory;
-@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager Navigation
 @inject IStringLocalizer<ArticleView> Localizer
 
 <PageTitle>@(TitlePrefix + Article.Title)</PageTitle>
@@ -16,6 +15,20 @@
         <AuthorizeView Policy="ArticleEditOrReviewPermissions">
             <Authorized>
                 <ArticleComponent Article="@GetArticleProtected(context.User)" />
+                <div class="flex gap-2 mt-3 flex-wrap">
+                    <a class="btn btn-info w-full sm:btn-wide" href="article/@Article.Id/edit">@Localizer["Edit"]</a>
+                    @if (Article.Status is ArticleStatus.Draft) {
+                        <form @formname="submit-for-review" method="post" @onsubmit="SubmitForReview" class="max-sm:w-full">
+                            <AntiforgeryToken />
+                            <button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Review_Submit"]</button>
+                        </form>
+                    } else if (Article.Status is ArticleStatus.InReview) {
+                        <form @formname="submit-for-publish" method="post" @onsubmit="SubmitForPublish" class="max-sm:w-full">
+                            <AntiforgeryToken />
+                            <button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Publish_Submit"]</button>
+                        </form>
+                    }
+                </div>
             </Authorized>
             <NotAuthorized>
                 <ArticleComponent Article="@GetArticlePublic()" />
@@ -25,8 +38,9 @@
     <ErrorContent>
         <h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["NotFound_Title"]</h1>
         <p class="my-3">@Localizer["NotFound_Description"]</p>
+        <a class="btn btn-primary" href="/">@Localizer["NotFound_BackToHome_Label"]</a>
         @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToLower() == "development") {
-            <p>@context.Message</p>
+            <p class="mt-3">[DEBUG] EXCEPTION MESSAGE: @context.Message</p>
         }
     </ErrorContent>
 </ErrorBoundary>
@@ -71,21 +85,33 @@
         throw new ApplicationException("User does not have access to this article.");
     }
 
-    protected override async Task OnInitializedAsync() {
+    protected override void OnInitialized() {
         // We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
         // running into a null pointer on the Article property and panicking
 
-        // ReSharper disable once MethodHasAsyncOverload
-        await using var context = ContextFactory.CreateDbContext();
-        // ReSharper disable once MethodHasAsyncOverload
-        var now = DateTimeOffset.UtcNow;
+        using var context = ContextFactory.CreateDbContext();
         Article = context.Set<Article>()
             .Include(a => a.Author)
             .Include(a => a.Reviewer)
-            // .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
             .First(a => a.Id == Id);
 
         if (Article is null) throw new ApplicationException("Article not found.");
+    }
+
+    private async Task SubmitForReview() {
+        await using var context = await ContextFactory.CreateDbContextAsync();
+        Article.Status = ArticleStatus.InReview;
+        context.Update(Article);
+        await context.SaveChangesAsync();
+        Navigation.NavigateTo("/");
+    }
+
+    private async Task SubmitForPublish() {
+        await using var context = await ContextFactory.CreateDbContextAsync();
+        Article.Status = ArticleStatus.Published;
+        context.Update(Article);
+        await context.SaveChangesAsync();
+        Navigation.NavigateTo("/");
     }
 
 }

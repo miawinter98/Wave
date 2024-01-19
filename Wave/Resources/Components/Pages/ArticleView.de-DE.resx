@@ -107,4 +107,22 @@
   <data name="Reviewer" xml:space="preserve">
     <value>Rezensent*in</value>
   </data>
+  <data name="NotFound_Title" xml:space="preserve">
+    <value>Artikel nicht gefunden</value>
+  </data>
+  <data name="NotFound_Description" xml:space="preserve">
+    <value>Wir konnten den Artikel nach dem Sie suchen leider nicht finden.</value>
+  </data>
+  <data name="NotFound_BackToHome_Label" xml:space="preserve">
+    <value>Zurück zur Startseite</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Artikel bearbeiten</value>
+  </data>
+  <data name="Review_Submit" xml:space="preserve">
+    <value>Rezension beantragen</value>
+  </data>
+  <data name="Publish_Submit" xml:space="preserve">
+    <value>Zur Veröffentlichung freigeben</value>
+  </data>
 </root>
