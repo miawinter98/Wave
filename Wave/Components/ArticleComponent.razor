@@ -18,8 +18,8 @@
                 &ensp;(@Localizer["ModifiedOn"] @Article.LastModified.Humanize())
             </time>
         }
-        @if (Article.Status <= ArticleStatus.Published) {
-            <span class="badge badge-sm badge-outline badge-warning">
+        @if (Article.Status < ArticleStatus.Published) {
+            <span class="badge badge-sm badge-outline badge-warning ml-2">
                 @Article.Status.Humanize()
             </span>
         }
