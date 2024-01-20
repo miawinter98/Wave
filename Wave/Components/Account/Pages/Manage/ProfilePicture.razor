@@ -13,19 +13,19 @@
 
 <PageTitle>@Localizer["Title"]</PageTitle>
 
-<section class="max-w-xs" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
-    <h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Title"]</h2>
-    
-    <div class="w-24 h-24">
-        <ProfilePictureComponent ProfileId="@User?.Id" />
-    </div>
-    <label class="form-control w-full">
-        <div class="label">
-            <span class="label-text">@Localizer["ProfilePicture_Label"]</span>
+<BoardComponent>
+    <BoardCardComponent Heading="@Localizer["Title"]">
+        <div class="w-24 h-24">
+            <ProfilePictureComponent ProfileId="@User?.Id" />
         </div>
-        <FileUploadComponent FileUploadedCallback="ProfilePictureChanged"/>
-    </label>
-</section>
+        <label class="form-control w-full">
+            <div class="label">
+                <span class="label-text">@Localizer["ProfilePicture_Label"]</span>
+            </div>
+            <FileUploadComponent FileUploadedCallback="ProfilePictureChanged"/>
+        </label>
+    </BoardCardComponent>
+</BoardComponent>
 
 @code {
     private ApplicationUser? User { get; set; }
