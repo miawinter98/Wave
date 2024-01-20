@@ -7,37 +7,38 @@
 @inject IStringLocalizer<Wave.Components.Account.Pages.Manage.Index> Localizer
 
 <EditForm FormName="about-me" Model="@Model" OnValidSubmit="OnValidSubmit" method="post" class="w-full">
-	<label class="form-control w-full">
-		<div class="label">
-			<span class="label-text">
-				@Localizer["AboutTheAuthor_Label"]
-				<HelpDropdownComponent Body="@Localizer["AboutTheAuthor_Explanation"]" />
-			</span>
-		</div>
-		<InputTextArea class="textarea textarea-bordered w-full h-24" maxlength="512"
-		               @bind-Value="@Model.AboutTheAuthor" placeholder="@Localizer["AboutTheAuthor_Placeholder"]" />
-		<div class="label">
-			<span class="label-text-alt text-error"><ValidationMessage For="() => Model.AboutTheAuthor" /></span>
-		</div>
-	</label>
-	<label class="form-control w-full">
-		<div class="label">
-			<span class="label-text">
-				@Localizer["Biography_Label"]
-				<span class="badge badge-info badge-sm badge-outline">Markdown</span>
-				<HelpDropdownComponent Body="@Localizer["Biography_Explanation"]" />
-			</span>
-		</div>
-		<InputTextArea class="textarea textarea-bordered w-full h-48" maxlength="4096"
-					   @bind-Value="@Model.Biography" placeholder="@Localizer["Biography_Placeholder"]" />
-		<div class="label">
-			<span class="label-text-alt text-error"><ValidationMessage For="() => Model.Biography" /></span>
-		</div>
-	</label>
-	
-	<button type="submit" class="btn btn-primary w-full">
-		@Localizer["Submit"]
-	</button>
+    <DataAnnotationsValidator />
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text">
+                @Localizer["AboutTheAuthor_Label"]
+                <HelpDropdownComponent Body="@Localizer["AboutTheAuthor_Explanation"]"/>
+            </span>
+        </div>
+        <InputTextArea class="textarea textarea-bordered w-full h-24" maxlength="512"
+                       @bind-Value="@Model.AboutTheAuthor" placeholder="@Localizer["AboutTheAuthor_Placeholder"]"/>
+        <div class="label">
+            <span class="label-text-alt text-error"><ValidationMessage For="() => Model.AboutTheAuthor"/></span>
+        </div>
+    </label>
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text">
+                @Localizer["Biography_Label"]
+                <span class="badge badge-info badge-sm badge-outline">Markdown</span>
+                <HelpDropdownComponent Body="@Localizer["Biography_Explanation"]"/>
+            </span>
+        </div>
+        <InputTextArea class="textarea textarea-bordered w-full h-48" maxlength="4096"
+                       @bind-Value="@Model.Biography" placeholder="@Localizer["Biography_Placeholder"]"/>
+        <div class="label">
+            <span class="label-text-alt text-error"><ValidationMessage For="() => Model.Biography"/></span>
+        </div>
+    </label>
+
+    <button type="submit" class="btn btn-primary w-full">
+        @Localizer["Submit"]
+    </button>
 </EditForm>
 
 @code {
