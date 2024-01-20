@@ -1,0 +1,13 @@
+﻿<section class="w-80 max-w-xs">
+    @if (!string.IsNullOrWhiteSpace(Heading)) {
+        <h2 class="text-2xl lg:text-4xl mb-3">@Heading</h2>
+    }
+    @ChildContent
+</section>
+
+@code {
+    [Parameter]
+    public string? Heading { get; set; }
+    [Parameter]
+    public required RenderFragment ChildContent { get; set; }
+}

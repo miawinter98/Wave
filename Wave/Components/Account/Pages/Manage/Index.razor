@@ -12,75 +12,72 @@
 
 <StatusMessage Message="@Message" />
 
-<div class="flex gap-4 flex-wrap">
-	<section class="w-80 max-w-xs">
-		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Title"]</h2>
-		<label class="form-control w-full">
-			<div class="label">
-				<span class="label-text">@Localizer["UserName_Label"]</span>
-			</div>
-			<input class="input input-bordered w-full" type="text" value="@UserName"
-			       placeholder="Please choose your username." disabled/>
-		</label>
-		@if (User is not null) {
-			<ProfileFormPartial User="@User" />
-		}
-	</section>
-	<section class="w-80 max-w-xs">
-		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["AboutMe"]</h2>
-		@if (User is not null) {
-			<AboutMeFormPartial User="@User" />
-		}
-	</section>
-    <section class="w-80 max-w-xs">
-		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Permissions"]</h2>
+<BoardComponent>
+    <BoardCardComponent Heading="@Localizer["Title"]">
+        <label class="form-control w-full">
+            <div class="label">
+                <span class="label-text">@Localizer["UserName_Label"]</span>
+            </div>
+            <input class="input input-bordered w-full" type="text" value="@UserName"
+                   placeholder="Please choose your username." disabled/>
+        </label>
+        @if (User is not null) {
+            <ProfileFormPartial User="@User" />
+        }
+    </BoardCardComponent>
+    <BoardCardComponent Heading="@Localizer["AboutMe"]">
+        @if (User is not null) {
+            <AboutMeFormPartial User="@User" />
+        }
+    </BoardCardComponent>
+    <BoardCardComponent Heading="@Localizer["Permissions"]">
         <ul>
-	        <li class="flex gap-2 content-center">
+            <li class="flex gap-2 content-center">
                 <AuthorizeView Policy="ArticleEditPermissions">
-			        <Authorized>
-				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
-					        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-				        </svg>
-			        </Authorized>
-			        <NotAuthorized>
-				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
-					        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-				        </svg>
-			        </NotAuthorized>
-		        </AuthorizeView>
-				@Localizer["Permission_ArticleEdit"]
-	        </li>
-			<li class="flex gap-2 content-center">
-				<AuthorizeView Policy="ArticleReviewPermissions">
-			        <Authorized>
-				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
-					        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-				        </svg>
-			        </Authorized>
-			        <NotAuthorized>
-				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
-					        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-				        </svg>
-			        </NotAuthorized>
-		        </AuthorizeView>
+                    <Authorized>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </Authorized>
+                    <NotAuthorized>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </NotAuthorized>
+                </AuthorizeView>
+                @Localizer["Permission_ArticleEdit"]
+            </li>
+            <li class="flex gap-2 content-center">
+                <AuthorizeView Policy="ArticleReviewPermissions">
+                    <Authorized>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </Authorized>
+                    <NotAuthorized>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </NotAuthorized>
+                </AuthorizeView>
                 @Localizer["Permission_ArticleReview"]
-	        </li>
-			<li class="flex gap-2 content-center">
-				<AuthorizeView Policy="ArticleDeletePermissions">
-			        <Authorized>
-				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
-					        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-				        </svg>
-			        </Authorized>
-			        <NotAuthorized>
-				        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
-					        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-				        </svg>
-			        </NotAuthorized>
-		        </AuthorizeView>
+            </li>
+            <li class="flex gap-2 content-center">
+                <AuthorizeView Policy="ArticleDeletePermissions">
+                    <Authorized>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </Authorized>
+                    <NotAuthorized>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </NotAuthorized>
+                </AuthorizeView>
                 @Localizer["Permission_ArticleDelete"]
-	        </li>
-			<li class="flex gap-2 content-center">
+            </li>
+            <li class="flex gap-2 content-center">
                 <AuthorizeView Policy="RoleAssignPermissions">
                     <Authorized>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
@@ -94,10 +91,10 @@
                     </NotAuthorized>
                 </AuthorizeView>
                 @Localizer["Permission_RoleAssign"]
-	        </li>
+            </li>
         </ul>
-	</section>
-</div>
+    </BoardCardComponent>
+</BoardComponent>
 
 @code {
 	private string? Message { get; set; }
