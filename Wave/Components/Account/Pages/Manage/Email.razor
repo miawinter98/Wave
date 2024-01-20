@@ -11,113 +11,113 @@
 @inject IEmailSender<ApplicationUser> EmailSender
 @inject IdentityUserAccessor UserAccessor
 @inject NavigationManager NavigationManager
+@inject IStringLocalizer<Email> Localizer
 
-<PageTitle>Manage email</PageTitle>
+<PageTitle>@Localizer["Title"]</PageTitle>
 
-<h3>Manage email</h3>
-
-<StatusMessage Message="@message"/>
-<div class="row">
-    <div class="col-md-6">
+<StatusMessage Message="@Message"/>
+<BoardComponent>
+    <BoardCardComponent Heading="@Localizer["Title"]">
         <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
             <AntiforgeryToken />
         </form>
-        <EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
+
+        <EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post" class="w-full">
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            @if (isEmailConfirmed)
-            {
-                <div class="form-floating mb-3 input-group">
-                    <input type="text" value="@email" class="form-control" placeholder="Please enter your email." disabled />
-                    <div class="input-group-append">
-                        <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
+            
+            <InputLabelComponent LabelText="@Localizer["Email_Label"]">
+                @if (IsEmailConfirmed) {
+                    <div class="join">
+                        <input type="text" value="@_email" class="input input-bordered flex-1 join-item" 
+                               placeholder="@Localizer["Email_Placeholder"]" disabled />
+                        <span class="btn btn-square btn-disabled join-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-success">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                        </span>
                     </div>
-                    <label for="email" class="form-label">Email</label>
-                </div>
-            }
-            else
-            {
-                <div class="form-floating mb-3">
-                    <input type="text" value="@email" class="form-control" placeholder="Please enter your email." disabled />
-                    <label for="email" class="form-label">Email</label>
-                    <button type="submit" class="btn btn-link" form="send-verification-form">Send verification email</button>
-                </div>
-            }
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Please enter new email." />
-                <label for="new-email" class="form-label">New email</label>
-                <ValidationMessage For="() => Input.NewEmail" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Change email</button>
+                } else {
+                    <div class="join">
+                        <input type="text" value="@_email" class="input input-bordered flex-1 join-item"
+                               placeholder="@Localizer["Email_Placeholder"]" disabled />
+                        <span class="btn btn-square btn-disabled join-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-error">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                        </span>
+                    </div>
+                    <button type="submit" class="btn btn-link mt-3" form="send-verification-form">@Localizer["EmailVerification_Submit"]</button>
+                }
+            </InputLabelComponent>
+            <InputLabelComponent LabelText="@Localizer["NewEmail_Label"]" For="() => Input.NewEmail">
+                <InputText @bind-Value="Input.NewEmail" class="input input-bordered w-full" autocomplete="email" 
+                           required aria-required="true" placeholder="@Localizer["NewEmail_Placeholder"]" />
+            </InputLabelComponent>
+            
+            <button type="submit" class="btn btn-primary w-full">
+                @Localizer["NewEmail_Submit"]
+            </button>
         </EditForm>
-    </div>
-</div>
+    </BoardCardComponent>
+</BoardComponent>
 
 @code {
-    private string? message;
-    private ApplicationUser user = default!;
-    private string? email;
-    private bool isEmailConfirmed;
-
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm(FormName = "change-email")]
     private InputModel Input { get; set; } = new();
 
-    protected override async Task OnInitializedAsync()
-    {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-        email = await UserManager.GetEmailAsync(user);
-        isEmailConfirmed = await UserManager.IsEmailConfirmedAsync(user);
+    private string? Message { get; set; }
+    private ApplicationUser User { get; set; } = default!;
+    private string? _email;
+    public bool IsEmailConfirmed { get; set; }
 
-        Input.NewEmail ??= email;
+    protected override async Task OnInitializedAsync() {
+        User = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        _email = await UserManager.GetEmailAsync(User);
+        IsEmailConfirmed = await UserManager.IsEmailConfirmedAsync(User);
+
+        Input.NewEmail ??= _email;
     }
 
-    private async Task OnValidSubmitAsync()
-    {
-        if (Input.NewEmail is null || Input.NewEmail == email)
-        {
-            message = "Your email is unchanged.";
+    private async Task OnValidSubmitAsync() {
+        if (Input.NewEmail is null || Input.NewEmail == _email) {
+            Message = Localizer["NewEmail_Unchanged"];
             return;
         }
 
-        var userId = await UserManager.GetUserIdAsync(user);
-        var code = await UserManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
+        string userId = await UserManager.GetUserIdAsync(User);
+        string code = await UserManager.GenerateChangeEmailTokenAsync(User, Input.NewEmail);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+        string callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmailChange").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["email"] = Input.NewEmail, ["code"] = code });
 
-        await EmailSender.SendConfirmationLinkAsync(user, Input.NewEmail, HtmlEncoder.Default.Encode(callbackUrl));
-
-        message = "Confirmation link to change email sent. Please check your email.";
+        await EmailSender.SendConfirmationLinkAsync(User, Input.NewEmail, HtmlEncoder.Default.Encode(callbackUrl));
+        Message = Localizer["NewEmail_Success"];
     }
 
-    private async Task OnSendEmailVerificationAsync()
-    {
-        if (email is null)
-        {
+    private async Task OnSendEmailVerificationAsync() {
+        if (_email is null) {
             return;
         }
 
-        var userId = await UserManager.GetUserIdAsync(user);
-        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        string userId = await UserManager.GetUserIdAsync(User);
+        string code = await UserManager.GenerateEmailConfirmationTokenAsync(User);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+        string callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
 
-        await EmailSender.SendConfirmationLinkAsync(user, email, HtmlEncoder.Default.Encode(callbackUrl));
-
-        message = "Verification email sent. Please check your email.";
+        await EmailSender.SendConfirmationLinkAsync(User, _email, HtmlEncoder.Default.Encode(callbackUrl));
+        Message = Localizer["EmailVerification_Success"];
     }
 
-    private sealed class InputModel
-    {
+    private sealed class InputModel {
         [Required]
         [EmailAddress]
-        [Display(Name = "New email")]
+        [Display(Name = "New Email")]
         public string? NewEmail { get; set; }
     }
 }
