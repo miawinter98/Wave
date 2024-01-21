@@ -23,7 +23,7 @@ For extensive configuration you want to mount `/configuration` to a location on 
 Afterwards you can access Wave on  `http://localhost`.
 
 To see how to create an admin account, read the following section. Afterwards for security
-you should [Configure an Email Server](#Configuring%20Email).
+you should [Configure an Email Server](#configuring-email).
 
 ```
 version: '3.4'
