@@ -1,8 +1,11 @@
 ﻿@page "/Account/Lockout"
 
-<PageTitle>Locked out</PageTitle>
+@inject IStringLocalizer<Lockout> Localizer
 
-<header>
-    <h1 class="text-danger">Locked out</h1>
-    <p class="text-danger">This account has been locked out, please try again later.</p>
-</header>
+<PageTitle>@Localizer["Title"]</PageTitle>
+
+<BoardComponent CenterContent="">
+    <BoardCardComponent Heading="@Localizer["Title"]">
+        <p class="text-error">@Localizer["Message"]</p>
+    </BoardCardComponent>
+</BoardComponent>
