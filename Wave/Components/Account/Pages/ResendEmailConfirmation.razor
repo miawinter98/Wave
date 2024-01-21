@@ -11,56 +11,55 @@
 @inject IEmailSender<ApplicationUser> EmailSender
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject IStringLocalizer<ResendEmailConfirmation> Localizer
 
-<PageTitle>Resend email confirmation</PageTitle>
+<PageTitle>@Localizer["Title"]</PageTitle>
 
-<h1>Resend email confirmation</h1>
-<h2>Enter your email.</h2>
-<hr />
-<StatusMessage Message="@message" />
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
+<StatusMessage Message="@Message" />
+
+<BoardComponent CenterContent="true">
+    <BoardCardComponent Heading="@Localizer["Title"]">
+        <p>@Localizer["Message"]</p>
+
+        <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post" class="w-full">
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
-                <label for="email" class="form-label">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Resend</button>
+            
+            <InputLabelComponent LabelText="@Localizer["Email_Label"]" For="() => Input.Email">
+                <InputText @bind-Value="Input.Email" class="input input-bordered w-full" 
+                           required aria-required="true" placeholder="@Localizer["Email_Placeholder"]" />
+
+            </InputLabelComponent>
+            
+            <button type="submit" class="btn btn-primary w-full">@Localizer["Email_Submit"]</button>
         </EditForm>
-    </div>
-</div>
+    </BoardCardComponent>
+</BoardComponent>
 
 @code {
-    private string? message;
+    private string? Message { get; set; }
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
 
-    private async Task OnValidSubmitAsync()
-    {
+    private async Task OnValidSubmitAsync() {
         var user = await UserManager.FindByEmailAsync(Input.Email!);
-        if (user is null)
-        {
-            message = "Verification email sent. Please check your email.";
+        if (user is null) {
+            Message = Localizer["Email_Success"];
             return;
         }
 
-        var userId = await UserManager.GetUserIdAsync(user);
-        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        string userId = await UserManager.GetUserIdAsync(user);
+        string code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+        string callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
         await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
-
-        message = "Verification email sent. Please check your email.";
+        
+        Message = Localizer["Email_Success"];
     }
 
-    private sealed class InputModel
-    {
+    private sealed class InputModel {
         [Required]
         [EmailAddress]
         public string Email { get; set; } = "";
