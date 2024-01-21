@@ -2,17 +2,18 @@
 @using Wave.Data
 
 @inject SignInManager<ApplicationUser> SignInManager
+@inject IStringLocalizer<ManageNavMenu> Localizer
 
 <ul class="menu" role="navigation">
-    <li><NavLink href="Account/Manage" Match="NavLinkMatch.All">Profile</NavLink></li>
-    <li><NavLink href="Account/Manage/ProfilePicture">Profile Picture</NavLink></li>
-    <li><NavLink href="Account/Manage/Email">Email</NavLink></li>
-    <li><NavLink href="Account/Manage/ChangePassword">Password</NavLink></li>
+    <li><NavLink href="Account/Manage" Match="NavLinkMatch.All">@Localizer["Link_Profile"]</NavLink></li>
+    <li><NavLink href="Account/Manage/ProfilePicture">@Localizer["Link_ProfilePicture"]</NavLink></li>
+    <li><NavLink href="Account/Manage/Email">@Localizer["Link_Email"]</NavLink></li>
+    <li><NavLink href="Account/Manage/ChangePassword">@Localizer["Link_Password"]</NavLink></li>
     @if (_hasExternalLogins) {
         <li><NavLink href="Account/Manage/ExternalLogins">External logins</NavLink></li>
     }
-    <li><NavLink href="Account/Manage/TwoFactorAuthentication">Two-factor authentication</NavLink></li>
-    <li><NavLink href="Account/Manage/PersonalData">Personal data</NavLink></li>
+    <li><NavLink href="Account/Manage/TwoFactorAuthentication">@Localizer["Link_TwoFactorAuthentication"]</NavLink></li>
+    <li><NavLink href="Account/Manage/PersonalData">@Localizer["Link_PersonalData"]</NavLink></li>
 </ul>
 
 @code {

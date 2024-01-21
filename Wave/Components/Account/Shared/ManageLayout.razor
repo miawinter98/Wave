@@ -1,6 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @layout AccountLayout
 
+@inject IStringLocalizer<ManageLayout> Localizer
+
 <div class="grid grid-cols-1 md:grid-cols-[fit-content(20rem)_1fr] gap-x-8 gap-y-4">
 	<div class="w-full md:max-w-xs">
 		<div class="bg-base-200 p-4 rounded">
@@ -8,7 +10,7 @@
 		</div>
 	</div>
 	<div class="max-w-full">
-		<h1 class="text-3xl lg:text-5xl mb-3">Manage your account</h1>
+		<h1 class="text-3xl lg:text-5xl mb-6">@Localizer["Title"]</h1>
 
 		@Body
 	</div>
