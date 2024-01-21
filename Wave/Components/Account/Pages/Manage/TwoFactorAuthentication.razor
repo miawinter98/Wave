@@ -67,12 +67,13 @@
 
             <div class="flex flex-col gap-2 mt-3">
                 <h4 class="text-xl lg:text-2xl font-bold">@Localizer["Authenticator_Title"]</h4>
+                <!-- Enhanced navigation needs to be false for EnableAuthenticator since it loads JS to generate the QR code -->
                 @if (!HasAuthenticator) {
-                    <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary w-full">
+                    <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary w-full" data-enhance-nav="false">
                         @Localizer["AuthenticatorEnable_Label"]
                     </a>
                 } else {
-                    <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary w-full">
+                    <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary w-full" data-enhance-nav="false">
                         @Localizer["AuthenticatorEnable_Label"]
                     </a>
                     <a href="Account/Manage/ResetAuthenticator" class="btn btn-primary w-full">
