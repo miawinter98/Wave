@@ -1,8 +1,13 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 using Tomlyn.Extensions.Configuration;
 using Wave.Components;
 using Wave.Components.Account;
@@ -20,6 +25,27 @@ builder.Configuration
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers();
+
+#region Data Protection & Redis
+
+if (builder.Configuration.GetConnectionString("Redis") is { } redisUri) {
+    var redis = ConnectionMultiplexer.Connect(redisUri);
+    builder.Services.AddDataProtection()
+        .PersistKeysToStackExchangeRedis(redis)
+        .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration() {
+            EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+            ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+        });
+} else {
+    builder.Services.AddDataProtection()
+        .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration() {
+            EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+            ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+        });
+    Console.WriteLine("No Redis connection string found.");
+}
+
+#endregion
 
 #region Authentication & Authorization
 
@@ -80,6 +106,7 @@ if (smtpConfig.Exists()) {
     builder.Services.AddScoped<IEmailSender<ApplicationUser>, SmtpEmailSender>();
 } else {
     builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+    Console.WriteLine("No Email provider configured.");
 }
 
 #endregion

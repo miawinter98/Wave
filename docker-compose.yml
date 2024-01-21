@@ -14,11 +14,14 @@ services:
         - database:db
     environment:
       - "WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development"
+      - "WAVE_ConnectionStrings__Redis=redis,password=development"
     volumes:
       - wave-files:/app/files
       - wave-config:/configuration
     networks:
       - wave
+    depends_on:
+      - database
   database:
     image: postgres:16.1-alpine
     restart: unless-stopped
@@ -29,11 +32,20 @@ services:
     volumes:
       -  wave-db:/var/lib/postgresql/data
     networks:
+      - wave 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass development --save 60 1 --loglevel warning
+    volumes:
+      - wave-redis:/data
+    networks:
       - wave
 
 volumes:
   wave-files:
   wave-config:
   wave-db:
+  wave-redis:
 networks:
   wave:
