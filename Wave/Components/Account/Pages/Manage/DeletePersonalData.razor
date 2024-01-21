@@ -9,78 +9,67 @@
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<DeletePersonalData> Logger
+@inject IStringLocalizer<DeletePersonalData> Localizer
 
-<PageTitle>Delete Personal Data</PageTitle>
+<PageTitle>@Localizer["Title"]</PageTitle>
 
 <StatusMessage Message="@message" />
 
-<h3>Delete Personal Data</h3>
-
-<div class="alert alert-warning" role="alert">
-    <p>
-        <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
-    </p>
-</div>
-
-<div>
-    <EditForm Model="Input" FormName="delete-user" OnValidSubmit="OnValidSubmitAsync" method="post">
-        <DataAnnotationsValidator />
-        <ValidationSummary class="text-danger" role="alert" />
-        @if (requirePassword)
-        {
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Please enter your password." />
-                <label for="password" class="form-label">Password</label>
-                <ValidationMessage For="() => Input.Password" class="text-danger" />
-            </div>
-        }
-        <button class="w-100 btn btn-lg btn-danger" type="submit">Delete data and close my account</button>
-    </EditForm>
-</div>
+<BoardComponent>
+    <BoardCardComponent Heading="@Localizer["Title"]">
+        <Alert Type="Alert.MessageType.Warning" CanRemove="false">
+            <strong class="font-bold">@Localizer["Delete_FinalWarning"]</strong>
+        </Alert>
+        
+        <EditForm Model="Input" FormName="delete-user" OnValidSubmit="OnValidSubmitAsync" method="post" class="w-full">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-error" role="alert" />
+            @if (requirePassword) {
+                <InputLabelComponent LabelText="@Localizer["Delete_Password_Label"]" For="() => Input.Password">
+                    <InputText type="password" @bind-Value="Input.Password" class="input input-bordered w-full" required
+                               autocomplete="current-password" placeholder="@Localizer["Delete_Password_Placeholder"]" />
+                </InputLabelComponent>
+            }
+            <button class="btn btn-lg btn-error w-full" type="submit">@Localizer["Delete_FinalSubmit"]</button>
+        </EditForm>
+    </BoardCardComponent>
+</BoardComponent>
 
 @code {
     private string? message;
     private ApplicationUser user = default!;
     private bool requirePassword;
 
-    [CascadingParameter]
+    [CascadingParameter] 
     private HttpContext HttpContext { get; set; } = default!;
-
-    [SupplyParameterFromForm]
+    [SupplyParameterFromForm] 
     private InputModel Input { get; set; } = new();
 
-    protected override async Task OnInitializedAsync()
-    {
-        Input ??= new();
+    protected override async Task OnInitializedAsync() {
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
         requirePassword = await UserManager.HasPasswordAsync(user);
     }
 
-    private async Task OnValidSubmitAsync()
-    {
-        if (requirePassword && !await UserManager.CheckPasswordAsync(user, Input.Password))
-        {
-            message = "Error: Incorrect password.";
+    private async Task OnValidSubmitAsync() {
+        if (requirePassword && !await UserManager.CheckPasswordAsync(user, Input.Password)) {
+            message = Localizer["Delete_ErrorWrongPassword"];
             return;
         }
 
         var result = await UserManager.DeleteAsync(user);
-        if (!result.Succeeded)
-        {
-            throw new InvalidOperationException("Unexpected error occurred deleting user.");
+        if (!result.Succeeded) {
+            throw new InvalidOperationException(Localizer["Delete_ErrorUnknown"]);
         }
 
         await SignInManager.SignOutAsync();
 
-        var userId = await UserManager.GetUserIdAsync(user);
+        string userId = await UserManager.GetUserIdAsync(user);
         Logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
 
-        RedirectManager.RedirectToCurrentPage();
+        RedirectManager.RedirectToWithStatus("/", Localizer["Delete_Success"], HttpContext);
     }
 
-    private sealed class InputModel
-    {
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = "";
+    private sealed class InputModel {
+        [DataType(DataType.Password)] public string Password { get; set; } = "";
     }
 }
