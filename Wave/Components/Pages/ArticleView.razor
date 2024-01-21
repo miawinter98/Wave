@@ -8,7 +8,7 @@
 @inject NavigationManager Navigation
 @inject IStringLocalizer<ArticleView> Localizer
 
-<PageTitle>@(TitlePrefix + Article.Title)</PageTitle>
+<PageTitle>@(TitlePrefix + (Article?.Title ?? @Localizer["NotFound_Title"]))</PageTitle>
 
 <ErrorBoundary>
     <ChildContent>
@@ -51,9 +51,10 @@
 
     [Parameter]
     public Guid Id { get; set; }
-    private Article Article { get; set; } = default!;
+    private Article? Article { get; set; } = default!;
 
     private Article GetArticlePublic() {
+        if (Article is null) throw new ApplicationException("Article not found.");
         if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
             return Article;
         }
@@ -62,6 +63,8 @@
 
     [SuppressMessage("ReSharper", "ConvertIfStatementToSwitchStatement")]
     private Article GetArticleProtected(ClaimsPrincipal principal) {
+        if (Article is null) throw new ApplicationException("Article not found.");
+
         // Admins always get access
         if (principal.IsInRole("Admin")) {
             return Article;
@@ -88,19 +91,16 @@
     protected override void OnInitialized() {
         // We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
         // running into a null pointer on the Article property and panicking
-
         using var context = ContextFactory.CreateDbContext();
         Article = context.Set<Article>()
             .Include(a => a.Author)
             .Include(a => a.Reviewer)
-            .First(a => a.Id == Id);
-
-        if (Article is null) throw new ApplicationException("Article not found.");
+            .FirstOrDefault(a => a.Id == Id);
     }
 
     private async Task SubmitForReview() {
         await using var context = await ContextFactory.CreateDbContextAsync();
-        Article.Status = ArticleStatus.InReview;
+        Article!.Status = ArticleStatus.InReview;
         context.Update(Article);
         await context.SaveChangesAsync();
         Navigation.NavigateTo("/");
@@ -108,7 +108,7 @@
 
     private async Task SubmitForPublish() {
         await using var context = await ContextFactory.CreateDbContextAsync();
-        Article.Status = ArticleStatus.Published;
+        Article!.Status = ArticleStatus.Published;
         context.Update(Article);
         await context.SaveChangesAsync();
         Navigation.NavigateTo("/");
