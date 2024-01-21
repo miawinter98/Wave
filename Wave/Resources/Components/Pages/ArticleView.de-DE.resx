@@ -125,4 +125,7 @@
   <data name="Publish_Submit" xml:space="preserve">
     <value>Zur Veröffentlichung freigeben</value>
   </data>
+  <data name="Meta_Description" xml:space="preserve">
+    <value>{1} Weiterlesen auf {0}.</value>
+  </data>
 </root>

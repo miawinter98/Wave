@@ -125,4 +125,7 @@
   <data name="Publish_Submit" xml:space="preserve">
     <value>Approv for Publishing</value>
   </data>
+  <data name="Meta_Description" xml:space="preserve">
+    <value>{1} Continue reading on {0}. </value>
+  </data>
 </root>
