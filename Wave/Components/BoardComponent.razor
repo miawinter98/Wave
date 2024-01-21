@@ -1,8 +1,10 @@
-﻿<div class="flex gap-4 flex-wrap">
+﻿<div class="flex gap-y-4 gap-x-8 flex-wrap @(CenterContent ? "h-full place-content-center" : string.Empty)">
     @ChildContent
 </div>
 
 @code {
     [Parameter]
     public required RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public bool CenterContent { get; set; }
 }

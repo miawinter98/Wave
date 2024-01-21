@@ -14,14 +14,14 @@
 <PageTitle>@Localizer["Title"]</PageTitle>
 
 <StatusMessage Message="@_errorMessage" />
-<div class="flex gap-y-4 gap-x-8 flex-wrap h-full place-content-center">
-    <section class="w-80 max-w-xs">
-        <h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Title"]</h2>
+
+<BoardComponent CenterContent="true">
+    <BoardCardComponent Heading="@Localizer["Title"]">
         <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login" class="w-full">
             <DataAnnotationsValidator />
-            
+
             <InputLabelComponent LabelText="@Localizer["Email_Label"]" For="() => Input.Email">
-                <InputText @bind-Value="Input.Email" class="input input-bordered w-full" autocomplete="username" 
+                <InputText @bind-Value="Input.Email" class="input input-bordered w-full" autocomplete="username"
                            required aria-required="true" placeholder="@Localizer["Email_Placeholder"]" />
             </InputLabelComponent>
             <InputLabelComponent LabelText="@Localizer["Password_Label"]" For="() => Input.Password">
@@ -56,8 +56,7 @@
                 </a>
             </li>
         </ul>
-    </section>
-    
+    </BoardCardComponent>
     <!--
     <section class="w-80 max-w-xs">
         <h2 class="text-2xl lg:text-4xl mb-3">Use another service to log in.</h2>
@@ -65,7 +64,7 @@
         <ExternalLoginPicker />
     </section>
     -->
-</div>
+</BoardComponent>
 
 @code {
     private string? _errorMessage;
