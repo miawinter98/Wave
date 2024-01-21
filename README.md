@@ -15,7 +15,67 @@ Under Construction
 
 ## Quickstart
 
-TODO
+This docker compose file will give you everything you need to run Wave. See the following
+sections for explanations about the configuration and makeup of Wave.
+
+For extensive configuration you want to mount `/configuration` to a location on your system.
+
+Afterwards you can access Wave on  `http://localhost`.
+
+To see how to create an admin account, read the following section. Afterwards for security
+you should [Configure an Email Server](#Configuring%20Email).
+
+```
+version: '3.4'
+
+name: wave
+services:
+  web:
+    image: miawinter/wave
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+    links:
+        - database:db
+    environment:
+      - "WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development"
+    volumes:
+      - wave-files:/app/files
+      - wave-config:/configuration
+    networks:
+      - wave
+  database:
+    image: postgres:16.1-alpine
+    restart: unless-stopped
+    environment:
+      - "POSTGRES_DB=wave"
+      - "POSTGRES_USER=wave"
+      - "POSTGRES_PASSWORD=development"
+    volumes:
+      -  wave-db:/var/lib/postgresql/data
+    networks:
+      - wave
+
+volumes:
+  wave-files:
+  wave-config:
+  wave-db:
+networks:
+  wave:
+```
+
+### Admin Access
+
+When Wave does not detect any admin account in it's database on startup , which usually happens during
+setup, a message will be printed to it's server console, in docker accessable with `docker logs wave-web-1`:
+
+`There is currently no user in your installation with the admin role, go to /Admin and use the following password to self promote your account: [password]`
+
+The password is 16 digits long, navigate to `http://localhost/Admin`, if you are not logged in you will be redirected to
+the login page. Once you are authenticated and have entered the password on the admin page, the tool will be disabled and
+you will be a member of the Admin role, giving you full access to all of Waves' features. Keep in mind that the password
+is generated every time on startup as long as there is no admin, so if you restart the container, there will be a different
+password in the console.
 
 ## Configuring Wave
 
@@ -80,10 +140,6 @@ later in this chain will have precedence over files earlier in that chain:
 
 After this, values from the Environment will take the highest precedence. 
 
-## Installation
-
-TODO
-
 ## Configuring Email
 
 Wave may send user related mails every now and then, to confirm an account, reset a password, etc.
@@ -108,6 +164,25 @@ Email:
 
 `Username` and `Password` are optional if your server does not require it, and `Ssl` is 
 `true` by default, only set it to false if you really need to, keeping security in mind.
+
+## Redis
+
+TODO implement and add description, add to quickstart
+
+## Reverse Proxy
+
+TODO add examples for at least Caddy and Nginx
+
+## Customizations
+
+TODO implement more customizations, add description
+
+Currently supported:
+
+```yml
+Customization:
+  AppName: My cool blog
+```
 
 ## License and Attribution
 
