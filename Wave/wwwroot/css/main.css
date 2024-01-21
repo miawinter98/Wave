@@ -1,3 +1,27 @@
-﻿@tailwind base;
+﻿@font-face {
+    font-display: swap;
+    font-family: 'Nunito Sans';
+    font-style: normal;
+    font-weight: 700;
+    src: url('../fonts/nunito-sans-v15-latin-700.woff2') format('woff2');
+}
+@font-face {
+    font-display: swap;
+    font-family: 'Noto Sans Display';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/noto-sans-display-v26-latin-regular.woff2') format('woff2');
+}
+
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    html, body {
+        @apply font-body;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-heading;
+    }
+}
