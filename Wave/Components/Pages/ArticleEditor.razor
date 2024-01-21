@@ -25,13 +25,13 @@
 } else {
     <ErrorBoundary>
         <ChildContent>
-            <h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["EditorTitle"]</h1>
+            <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
 
             <div class="w-full">
                 <ul class="steps w-full max-w-xs">
-                    <li class="step @(Article?.Status >= ArticleStatus.Draft ? "step-primary": "")">@Localizer["Draft"]</li>
-                    <li class="step @(Article?.Status >= ArticleStatus.InReview ? "step-primary": "")">@Localizer["InReview"]</li>
-                    <li class="step @(Article?.Status >= ArticleStatus.Published ? "step-primary": "")">@Localizer["Published"]</li>
+                    <li class="step @(Article?.Status >= ArticleStatus.Draft ? "step-secondary": "")">@Localizer["Draft"]</li>
+                    <li class="step @(Article?.Status >= ArticleStatus.InReview ? "step-secondary": "")">@Localizer["InReview"]</li>
+                    <li class="step @(Article?.Status >= ArticleStatus.Published ? "step-secondary": "")">@Localizer["Published"]</li>
                 </ul>
             </div>
 

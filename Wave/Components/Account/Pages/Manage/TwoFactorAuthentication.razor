@@ -47,16 +47,16 @@
                 </div>
 
                 if (IsMachineRemembered) {
-                    <form style="display: inline-block" @formname="forget-browser" @onsubmit="OnSubmitForgetBrowserAsync" method="post">
+                    <form style="display: inline-block" @formname="forget-browser" @onsubmit="OnSubmitForgetBrowserAsync" method="post" class="w-full">
                         <AntiforgeryToken/>
-                        <button type="submit" class="btn btn-primary w-full my-3">
+                        <button type="submit" class="btn btn-error w-full my-3">
                             @Localizer["ForgetBrowser_Submit"]
                         </button>
                     </form>
                 }
 
                 <div class="flex flex-col gap-2 mt-3">
-                    <a href="Account/Manage/Disable2fa" class="btn btn-primary w-full">
+                    <a href="Account/Manage/Disable2fa" class="btn btn-error w-full">
                         @Localizer["Disable_Label"]
                     </a>
                     <a href="Account/Manage/GenerateRecoveryCodes" class="btn btn-primary w-full">
@@ -76,7 +76,7 @@
                     <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary w-full" data-enhance-nav="false">
                         @Localizer["AuthenticatorEnable_Label"]
                     </a>
-                    <a href="Account/Manage/ResetAuthenticator" class="btn btn-primary w-full">
+                    <a href="Account/Manage/ResetAuthenticator" class="btn btn-error w-full">
                         @Localizer["AuthenticatorReset_Label"]
                     </a>
                 }

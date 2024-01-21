@@ -36,7 +36,7 @@
         </AuthorizeView>
     </ChildContent>
     <ErrorContent>
-        <h1 class="text-3xl lg:text-5xl font-light mb-6">@Localizer["NotFound_Title"]</h1>
+        <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["NotFound_Title"]</h1>
         <p class="my-3">@Localizer["NotFound_Description"]</p>
         <a class="btn btn-primary" href="/">@Localizer["NotFound_BackToHome_Label"]</a>
         @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToLower() == "development") {

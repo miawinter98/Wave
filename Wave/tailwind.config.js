@@ -30,15 +30,20 @@ module.exports = {
         themes: [
             {
                 "wave-light": {
-                    "primary": "#fff133",
+                    "primary": "#F2E530",
                     "secondary": "#ffb3c8",
-                    "accent": "#75dfff",
-                    "neutral": "#75dfff",
+                    "accent": "#6FD4F2",
+                    "neutral": "#A69D21",
 
                     "base-100": "#FAF8F2",
                     "base-200": "#CCC7B8",
                     "base-300": "#99917A",
                     "base-content": "#000000",
+
+                    "info": "#2494F0",
+                    "success": "#2CDB00",
+                    "warning": "#FFF000",
+                    "error": "#B3020E",
 
                     "--rounded-box": "0.5rem",
                     "--rounded-btn": "0.2rem",
@@ -48,14 +53,19 @@ module.exports = {
             {
                 "wave-dark": {
                     "primary": "#fff133",
-                    "secondary": "#ffb3c8",
+                    "secondary": "#DB9AAC",
                     "accent": "#75dfff",
-                    "neutral": "#75dfff",
+                    "neutral": "#A69D21",
 
                     "base-100": "#29141A",
                     "base-200": "#140A0D",
                     "base-300": "#0D0A0B",
                     "base-content": "#eae9fc",
+
+                    "info": "#007EE6",
+                    "success": "#1C8A00",
+                    "warning": "#E3D400",
+                    "error": "#610107",
 
                     "--rounded-box": "0.5rem",
                     "--rounded-btn": "0.2rem",

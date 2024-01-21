@@ -3,11 +3,11 @@
 
 @inject IStringLocalizer<Pages.ArticleView> Localizer
 
-<h1 class="text-3xl lg:text-5xl font-light">
+<h1 class="text-3xl lg:text-5xl font-light text-primary">
     @Article.Title
 </h1>
-<p class="mb-3">
-    <small class="text-sm text-neutral-content">
+<p class="mb-6">
+    <small class="text-sm text-secondary">
         <time datetime="@Article.PublishDate.ToString("u")"
               title="@Article.PublishDate.ToString("g")">
             @Article.PublishDate.Humanize()
@@ -37,7 +37,7 @@
 @if (!string.IsNullOrWhiteSpace(Article.Author.AboutTheAuthor)) {
     <section class="mb-2">
         <h2 class="text-2xl lg:text-4xl mb-3">About The Author</h2>
-        <div class="card sm:card-side card-compact bg-neutral text-neutral-content rounded shadow">
+        <div class="card sm:card-side card-compact bg-secondary text-secondary-content rounded shadow">
             <figure class="sm:max-w-32">
                 <img src="/api/user/pfp/@Article.Author.Id" alt="" width="800">
             </figure>
