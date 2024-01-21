@@ -1,6 +1,7 @@
 ﻿@page "/Account/LoginWith2fa"
 
 @using System.ComponentModel.DataAnnotations
+@using System.Globalization
 @using Microsoft.AspNetCore.Identity
 @using Wave.Data
 
@@ -16,7 +17,7 @@
 
 <BoardComponent CenterContent="true">
     <BoardCardComponent Heading="@Localizer["Title"]">
-        <p>@Localizer["Message"]</p>
+        <p class="text-justify hyphens-auto" lang="@CultureInfo.CurrentCulture">@Localizer["Message"]</p>
         <EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post">
             <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
             <input type="hidden" name="RememberMe" value="@RememberMe" />
