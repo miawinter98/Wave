@@ -7,6 +7,10 @@
 ![](https://img.shields.io/github/forks/miawinter98/Wave?label=github%20forks&logo=github)
 ![](https://img.shields.io/github/stars/miawinter98/Wave?label=github%20stars&color=yellow&logo=github)
 
+![](https://img.shields.io/docker/pulls/miawinter/wave?color=informational&logo=docker)
+![](https://img.shields.io/docker/stars/miawinter/wave?color=yellow&logo=docker)
+
+
 Under Construction
 
 ## Quickstart
