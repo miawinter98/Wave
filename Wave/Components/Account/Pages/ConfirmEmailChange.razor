@@ -8,61 +8,57 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
+@inject IStringLocalizer<ConfirmEmailChange> Localizer
 
-<PageTitle>Confirm email change</PageTitle>
+<PageTitle>@Localizer["Title"]</PageTitle>
 
-<h1>Confirm email change</h1>
-
-<StatusMessage Message="@message" />
-
+<BoardComponent CenterContent="true">
+    <BoardCardComponent Heading="@Localizer["Title"]">
+        <StatusMessage Message="@Message" />
+    </BoardCardComponent>
+</BoardComponent>
 @code {
-    private string? message;
-
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
-
     [SupplyParameterFromQuery]
     private string? UserId { get; set; }
-
     [SupplyParameterFromQuery]
     private string? Email { get; set; }
-
     [SupplyParameterFromQuery]
     private string? Code { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (UserId is null || Email is null || Code is null)
-        {
-            RedirectManager.RedirectToWithStatus(
-                "Account/Login", "Error: Invalid email change confirmation link.", HttpContext);
+    private string? Message { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        if (UserId is null || Email is null || Code is null) {
+            RedirectManager.RedirectToWithStatus("Account/Login", Localizer["Error_InvalidLink"], HttpContext);
         }
 
         var user = await UserManager.FindByIdAsync(UserId);
-        if (user is null)
-        {
-            message = "Unable to find user with Id '{userId}'";
+
+        if (user is null) {
+            Message = Localizer["Error_UserNotFound"];
             return;
         }
 
-        var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+        string code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
         var result = await UserManager.ChangeEmailAsync(user, Email, code);
-        if (!result.Succeeded)
-        {
-            message = "Error changing email.";
+
+        if (!result.Succeeded) {
+            Message = Localizer["Error_ChangingMail"];
             return;
         }
 
-        // In our UI email and user name are one and the same, so when we update the email
-        // we need to update the user name.
+        // In our UI email and username are one and the same, so when we update the email
+        // we need to update the username.
         var setUserNameResult = await UserManager.SetUserNameAsync(user, Email);
-        if (!setUserNameResult.Succeeded)
-        {
-            message = "Error changing user name.";
+
+        if (!setUserNameResult.Succeeded) {
+            Message = Localizer["Error_ChangingUserName"];
             return;
         }
 
         await SignInManager.RefreshSignInAsync(user);
-        message = "Thank you for confirming your email change.";
+        Message = Localizer["Success"];
     }
 }
