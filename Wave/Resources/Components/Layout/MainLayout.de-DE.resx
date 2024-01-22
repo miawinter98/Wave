@@ -110,4 +110,7 @@
     <data name="Theme_Label" xml:space="preserve">
         <value>Oberfläche</value>
     </data>
+    <data name="Language_Label" xml:space="preserve">
+        <value>Sprache</value>
+    </data>
 </root>

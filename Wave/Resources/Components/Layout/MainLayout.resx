@@ -110,4 +110,7 @@
     <data name="Theme_WaveDark" xml:space="preserve">
         <value>Wave Dark</value>
     </data>
+    <data name="Language_Label" xml:space="preserve">
+        <value>Language</value>
+    </data>
 </root>
