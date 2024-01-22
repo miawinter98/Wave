@@ -1,5 +1,4 @@
 ﻿@page "/manage/users"
-@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Wave.Data
 @using Humanizer
@@ -93,11 +92,16 @@
     }
 
     private async Task Add() {
+	    if (User is null) return;
         var user = await UserManager.FindByNameAsync(UserName);
 
         if (user is null) {
             Toast.ShowError(Localizer["Error_UserNotFound"]);
             return;
+        }
+        if (user.Id == User.Id) {
+	        Toast.ShowError(Localizer["Error_EditSelf"]);
+	        return;
         }
 
         if (!await RoleManager.RoleExistsAsync(CurrentRole.ToString())) {
