@@ -25,12 +25,12 @@
                 <div class="hero bg-secondary text-secondary-content">
                     <div class="hero-content">
                         <div class="flex flex-col space-y-6 my-3">
-                            <h2 class="text-2xl lg:text-4xl leading-8 font-bold">
+                            <h2 class="text-2xl lg:text-4xl font-bold">
                                 @featured.Title<br />
-                                <small class="text-sm">@featured.PublishDate.ToString("g")</small>
                             </h2>
                             <p class="line-clamp-6">
-                                @featured.Body[..Math.Min(400, featured.Body.Length)]
+	                            <small class="text-sm">@featured.PublishDate.ToString("g")</small><br/>
+                                @featured.Body[..Math.Min(1000, featured.Body.Length)]
                             </p>
                             <div class="flex">
                                 <ProfilePill Profile="featured.Author" />
