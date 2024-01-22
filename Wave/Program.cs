@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -111,6 +112,17 @@ if (smtpConfig.Exists()) {
 
 #endregion
 
+
+string[] cultures = ["en-US", "en-GB", "de-DE"];
+builder.Services.Configure<RequestLocalizationOptions>(options => {
+    options.ApplyCurrentCultureToResponseHeaders = true;
+    options.FallBackToParentCultures = true;
+    options.FallBackToParentUICultures = true;
+    options.SetDefaultCulture(cultures[0])
+        .AddSupportedCultures(cultures)
+        .AddSupportedUICultures(cultures);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -130,14 +142,7 @@ app.MapAdditionalIdentityEndpoints();
 
 app.MapControllers();
 
-string[] cultures = ["en-US", "en-GB", "de-DE"];
-app.UseRequestLocalization(new RequestLocalizationOptions {
-        ApplyCurrentCultureToResponseHeaders = true,
-        FallBackToParentCultures = true, FallBackToParentUICultures = true
-    }
-    .SetDefaultCulture(cultures[0])
-    .AddSupportedCultures(cultures)
-    .AddSupportedUICultures(cultures));
+app.UseRequestLocalization();
 
 {
     using var scope = app.Services.CreateScope();
