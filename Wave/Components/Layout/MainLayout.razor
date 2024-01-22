@@ -1,5 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
+@inject IStringLocalizer<MainLayout> Localizer
+
 <div class="drawer md:drawer-open drawer-end">
 	<input id="main-drawer" type="checkbox" class="drawer-toggle" />
 	<div class="drawer-content">
@@ -17,11 +19,21 @@
 			<main class="flex-1 container mx-auto px-12 py-8">
 				@Body
 			</main>
-			<footer class="footer footer-center p-4 bg-base-300 text-base-content">
-				<span class="block">
+			<footer class="flex flex-col md:flex-row items-center justify-center p-4 gap-y-3 bg-base-300 text-base-content">
+				<span class="flex-1 text-center md:text-left">
 					Powered by 
 					<a class="link link-primary" target="_blank" href="https://github.com/miawinter98/Wave">Wave</a>
 				</span>
+				<div class="join w-full md:max-w-64">
+					<button type="button" class="btn btn-secondary btn-sm no-animation join-item">
+						@Localizer["Theme_Label"]
+					</button>
+					<select data-choose-theme class="select select-bordered select-secondary select-sm join-item flex-1">
+						<option value="">@Localizer["Theme_Default"]</option>
+						<option value="wave-light">@Localizer["Theme_WaveLight"]</option>
+						<option value="wave-dark">@Localizer["Theme_WaveDark"]</option>
+					</select>
+				</div>
 			</footer>
 		</div>
 	</div>
@@ -34,3 +46,5 @@
 	</div>
 </div>
 
+<!-- Scripts -->
+<script src="/lib/theme-change/index.min.js"></script>
