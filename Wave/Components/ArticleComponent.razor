@@ -12,7 +12,7 @@
               title="@Article.PublishDate.ToString("g")">
             @Article.PublishDate.Humanize()
         </time>
-        @if (Article.LastModified is not null) {
+        @if (Article.LastModified is not null && Article.LastModified > Article.PublishDate) {
             <time datetime="@Article.LastModified.Value.ToString("u")"
                   title="@Article.LastModified.Value.ToString("g")">
                 &ensp;(@Localizer["ModifiedOn"] @Article.LastModified.Humanize())
