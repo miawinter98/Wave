@@ -1,0 +1,23 @@
+﻿@using Wave.Data
+@using System.Net
+@using System.Web
+
+<a href="@Link" @attributes="AdditionalAttributes">
+	@ChildContent
+</a>
+
+@code {
+	[Parameter]
+	public required Article Article { get; set; }
+	[Parameter]
+	public RenderFragment? ChildContent { get; set; }
+
+	private string TitleEncoded => Uri.EscapeDataString(Article.Title.ToLowerInvariant()).Replace("-", "+").Replace("%20", "-");
+	private string Link => 
+		Article.PublishDate.Year >= 9999 
+			? $"/article/{Article.Id}" 
+			: $"/{Article.PublishDate.Year}/{Article.PublishDate.Month:D2}/{Article.PublishDate.Day:D2}/{TitleEncoded}";
+
+	[Parameter(CaptureUnmatchedValues = true)]
+	public Dictionary<string, object>? AdditionalAttributes { get; set; }
+}

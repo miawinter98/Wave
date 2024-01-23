@@ -20,26 +20,26 @@
     </div>
 } else {
     @if (Articles.FirstOrDefault() is {} featured) {
-        <article class="mb-6">
-            <a href="/article/@featured.Id">
-                <div class="hero bg-secondary text-secondary-content">
-                    <div class="hero-content">
-                        <div class="flex flex-col space-y-6 my-3">
-                            <h2 class="text-2xl lg:text-4xl font-bold">
-                                @featured.Title<br />
-                            </h2>
-                            <p class="line-clamp-6">
-	                            <small class="text-sm">@featured.PublishDate.ToString("g")</small><br/>
-                                @featured.Body[..Math.Min(1000, featured.Body.Length)]
-                            </p>
-                            <div class="flex">
-                                <ProfilePill Profile="featured.Author" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </article>
+	    <article class="mb-6">
+		    <ArticleLink Article="featured">
+			    <div class="hero bg-secondary text-secondary-content">
+				    <div class="hero-content">
+					    <div class="flex flex-col space-y-6 my-3">
+						    <h2 class="text-2xl lg:text-4xl font-bold">
+							    @featured.Title<br />
+						    </h2>
+						    <p class="line-clamp-6">
+							    <small class="text-sm">@featured.PublishDate.ToString("g")</small><br/>
+							    @featured.Body[..Math.Min(1000, featured.Body.Length)]
+						    </p>
+						    <div class="flex">
+							    <ProfilePill Profile="featured.Author" />
+						    </div>
+					    </div>
+				    </div>
+				</div>
+            </ArticleLink>
+	    </article>
     } else {
         <h2 class="text-2xl lg:text-4xl mb-6">@Localizer["NoArticles_Title"]</h2>
         <p>@Localizer["NoArticles_Message"]</p>

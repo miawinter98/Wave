@@ -1,11 +1,14 @@
 ﻿@page "/article/{id:guid}"
+@page "/{year:int:min(1)}/{month:int:range(1,12)}/{day:int:range(1,31)}/{titleEncoded}"
 @using Microsoft.EntityFrameworkCore
 @using Wave.Data
 @using System.Security.Claims
 @using System.Diagnostics.CodeAnalysis
+@using System.Net
+@using System.Web
 @using Microsoft.Extensions.Options
 
-@inject IDbContextFactory<ApplicationDbContext> ContextFactory;
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject NavigationManager Navigation
 @inject IOptions<Customization> Customizations
 @inject IStringLocalizer<ArticleView> Localizer
@@ -71,9 +74,27 @@
 	[CascadingParameter(Name = "TitlePrefix")]
 	private string TitlePrefix { get; set; } = default!;
 
+	#region Route Parameters
+    
+	[Parameter]
+    public Guid? Id { get; set; }
+	[Parameter]
+    public int? Year { get; set; }
+	[Parameter]
+    public int? Month { get; set; }
+	[Parameter]
+    public int? Day { get; set; }
     [Parameter]
-    public Guid Id { get; set; }
-    private Article? Article { get; set; } = default!;
+    public string? TitleEncoded { get; set; }
+    
+    private DateTimeOffset? Date => 
+	    Year is {} y && Month is {} m && Day is {} d 
+		    ? new DateTimeOffset(new DateTime(y, m, d)) : 
+		    null;
+    private string? Title => TitleEncoded is null ? null : Uri.UnescapeDataString(TitleEncoded.Replace("-", "%20").Replace("+", "-"));
+
+	#endregion
+    private Article? Article { get; set; }
 
     private Article GetArticlePublic() {
         if (Article is null) throw new ApplicationException("Article not found.");
@@ -111,13 +132,21 @@
     }
 
     protected override void OnInitialized() {
-        // We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
-        // running into a null pointer on the Article property and panicking
-        using var context = ContextFactory.CreateDbContext();
-        Article = context.Set<Article>()
-            .Include(a => a.Author)
-            .Include(a => a.Reviewer)
-            .FirstOrDefault(a => a.Id == Id);
+	    // We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
+	    // running into a null pointer on the Article property and panicking
+	    if (Id is not null) {
+		    using var context = ContextFactory.CreateDbContext();
+		    Article = context.Set<Article>()
+			    .Include(a => a.Author)
+			    .Include(a => a.Reviewer)
+			    .FirstOrDefault(a => a.Id == Id);
+        } else if (Date is { } date && Title is { } title) {
+            using var context = ContextFactory.CreateDbContext();
+            Article = context.Set<Article>()
+	            .Include(a => a.Author)
+	            .Include(a => a.Reviewer)
+                .FirstOrDefault(a => a.PublishDate.Date == date.Date && a.Title.ToLower() == title);
+        }
     }
 
     private async Task SubmitForReview() {
