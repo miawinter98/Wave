@@ -1,10 +1,13 @@
 ﻿@using System.Globalization
 @using System.Net
 @using Microsoft.Extensions.Options
+@using Wave.Data
+@using Wave.Utilities
 @inherits LayoutComponentBase
 
 @inject NavigationManager Navigation
 @inject IOptions<RequestLocalizationOptions> LocalizationOptions
+@inject IOptions<Customization> Customizations
 @inject IStringLocalizer<MainLayout> Localizer
 
 <div class="drawer md:drawer-open drawer-end">
@@ -26,8 +29,12 @@
 			</main>
 			<footer class="flex flex-col md:flex-row items-center justify-center p-4 gap-y-3 gap-x-4 bg-base-300 text-base-content">
 				<span class="flex-1 text-center md:text-left">
-					Powered by 
-					<a class="link link-primary" target="_blank" href="https://github.com/miawinter98/Wave">Wave</a>
+					@if (Customizations.Value.Footer is { } footer && !string.IsNullOrWhiteSpace(footer)) {
+						<span class="prose prose-neutral">@MarkdownUtilities.ParseToMarkup(footer)</span>
+					} else {
+						<text>Powered by</text>
+						<a class="link link-primary" target="_blank" href="https://github.com/miawinter98/Wave">Wave</a>
+					}
 				</span>
 				<div class="join w-56" title="@Localizer["Language_Label"]">
 					<button type="button" class="btn btn-sm btn-neutral btn-square no-animation join-item">

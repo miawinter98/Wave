@@ -1,4 +1,5 @@
 ﻿using Markdig;
+using Microsoft.AspNetCore.Components;
 using Wave.Data;
 
 namespace Wave.Utilities;
@@ -11,5 +12,9 @@ public static class MarkdownUtilities {
             .DisableHtml()
 		.Build();
 		return Markdown.ToHtml(markdown, pipeline);
+    }
+
+    public static MarkupString ParseToMarkup(string markdown) {
+        return new MarkupString(Parse(markdown));
     }
 }
