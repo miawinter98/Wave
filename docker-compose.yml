@@ -13,6 +13,7 @@ services:
     links:
         - database:db
     environment:
+      - "TZ=Europe/Berlin"
       - "WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development"
       - "WAVE_ConnectionStrings__Redis=redis,password=development"
     volumes:

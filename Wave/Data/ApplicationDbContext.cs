@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Wave.Data;
 
@@ -8,6 +9,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnModelCreating(ModelBuilder builder) {
         base.OnModelCreating(builder);
+
+        var dateTimeOffsetUtcConverter = new ValueConverter<DateTimeOffset, DateTimeOffset>(
+            model => model.ToUniversalTime(),
+            utc => utc.ToLocalTime()
+            );
 
         builder.Entity<ApplicationUser>(user => {
 	        user.Property(u => u.FullName).HasMaxLength(64);
@@ -36,9 +42,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .IsRequired(false).OnDelete(DeleteBehavior.SetNull);
 
             article.Property(a => a.CreationDate)
-                .IsRequired().HasDefaultValueSql("now()");
+                .IsRequired().HasDefaultValueSql("now()")
+                .HasConversion(dateTimeOffsetUtcConverter);
+            article.Property(a => a.PublishDate)
+                .HasConversion(dateTimeOffsetUtcConverter);
             article.Property(a => a.LastModified)
-                .IsRequired().HasDefaultValueSql("now()");
+                .IsRequired().HasDefaultValueSql("now()")
+                .HasConversion(dateTimeOffsetUtcConverter);
 
             article.HasQueryFilter(a => !a.IsDeleted);
         });
