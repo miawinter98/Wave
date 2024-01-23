@@ -1,6 +1,14 @@
-﻿<picture>
-	<source type="image/jxl" srcset="img/logo.jxl" />
-	<source type="image/webp" srcset="img/logo.webp" />
-	<source type="image/svg+xml" scrset="img/logo.svg" />
-	<img class="max-h-full object-contain object-left" src="img/logo.png" alt="Wave" />
-</picture>
+﻿@using Wave.Data
+@using Microsoft.Extensions.Options
+@inject IOptions<Customization> Customizations
+
+@if (Customizations.Value.LogoLink is { } logo && !string.IsNullOrWhiteSpace(logo)) {
+	<img class="max-h-full object-contain object-left" src="@logo" alt="" />
+} else {
+	<picture>
+		<source type="image/jxl" srcset="img/logo.jxl" />
+		<source type="image/webp" srcset="img/logo.webp" />
+		<source type="image/svg+xml" scrset="img/logo.svg" />
+		<img class="max-h-full object-contain object-left" src="img/logo.png" alt="Wave" />
+	</picture>
+}
