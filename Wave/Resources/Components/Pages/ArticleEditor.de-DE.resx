@@ -185,4 +185,10 @@
     <data name="Tools_CodeBlock_Tooltip" xml:space="preserve">
         <value>Programmierblock einfügen</value>
     </data>
+  <data name="Tools_Underline_Tooltip" xml:space="preserve">
+    <value>Text unterstreichen</value>
+  </data>
+  <data name="Tools_Mark_Tooltip" xml:space="preserve">
+    <value>Den selektierten Text markieren</value>
+  </data>
 </root>

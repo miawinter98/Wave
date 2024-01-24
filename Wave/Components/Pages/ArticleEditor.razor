@@ -75,23 +75,48 @@
                                 </ToolbarButton>
 			                </ToolbarSection>
                             <ToolbarSection>
-	                            <ToolbarButton onclick="window.insertBeforeAndAfterSelection('**');" 
-	                                           title="@Localizer["Tools_Bold_Tooltip"]">
-	                                <strong>B</strong>
-	                            </ToolbarButton>
-	                            <ToolbarButton onclick="window.insertBeforeAndAfterSelection('*')" 
-	                                           title="@Localizer["Tools_Italic_Tooltip"]">
-	                                <em>I</em>
+                                <ToolbarButton onclick="window.insertBeforeAndAfterSelection('**');" 
+                                               title="@Localizer["Tools_Bold_Tooltip"]">
+                                    <strong>B</strong>
                                 </ToolbarButton>
-	                            <ToolbarButton onclick="window.insertBeforeAndAfterSelection('~~')" 
-	                                           title="@Localizer["Tools_StrikeThrough_Tooltip"]">
+                                <ToolbarButton onclick="window.insertBeforeAndAfterSelection('*')" 
+                                               title="@Localizer["Tools_Italic_Tooltip"]">
+                                    <em>I</em>
+                                </ToolbarButton>
+                                <ToolbarButton onclick="window.insertBeforeAndAfterSelection('++')" 
+                                               title="@Localizer["Tools_Underline_Tooltip"]">
+                                    <u>U</u>
+                                </ToolbarButton>
+                                <ToolbarButton onclick="window.insertBeforeAndAfterSelection('~~')" 
+                                               title="@Localizer["Tools_StrikeThrough_Tooltip"]">
                                     <del>@Localizer["Tools_StrikeThrough_Label"]</del>
                                 </ToolbarButton>
-	                            <ToolbarButton onclick="window.insertBeforeSelection('> ', true)"
-	                                           title="@Localizer["Tools_Cite_Tooltip"]">
+                                <ToolbarButton onclick="window.insertBeforeAndAfterSelection('==')" 
+                                               title="@Localizer["Tools_Mark_Tooltip"]">
+                                    <mark>@Localizer["Tools_Mark_Label"]</mark>
+                                </ToolbarButton>
+                                <ToolbarButton onclick="window.insertBeforeSelection('> ', true)"
+                                               title="@Localizer["Tools_Cite_Tooltip"]">
                                     | <em>@Localizer["Tools_Cite_Label"]</em>
                                 </ToolbarButton>
-			                </ToolbarSection>
+                            </ToolbarSection>
+                            <ToolbarSection>
+                                <ToolbarButton onclick="window.insertBeforeSelection('1. ', true)">
+                                    1.
+                                </ToolbarButton>
+                                <ToolbarButton onclick="window.insertBeforeSelection('a. ', true)">
+                                    a.
+                                </ToolbarButton>
+                                <ToolbarButton onclick="window.insertBeforeSelection('A. ', true)">
+                                    A.
+                                </ToolbarButton>
+                                <ToolbarButton onclick="window.insertBeforeSelection('i. ', true)">
+                                    i.
+                                </ToolbarButton>
+                                <ToolbarButton onclick="window.insertBeforeSelection('I. ', true)">
+                                    I.
+                                </ToolbarButton>
+                            </ToolbarSection>
 			                <ToolbarSection>
 				                <ToolbarButton onclick="window.insertBeforeAndAfterSelection('`')"
 				                               title="@Localizer["Tools_CodeLine_Tooltip"]">

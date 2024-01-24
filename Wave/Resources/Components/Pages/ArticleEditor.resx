@@ -188,4 +188,13 @@
     <data name="Tools_CodeBlock_Tooltip" xml:space="preserve">
         <value>Insert program code block</value>
     </data>
+  <data name="Tools_Underline_Tooltip" xml:space="preserve">
+    <value>Underline text</value>
+  </data>
+  <data name="Tools_Mark_Label" xml:space="preserve">
+    <value>txt</value>
+  </data>
+  <data name="Tools_Mark_Tooltip" xml:space="preserve">
+    <value>Mark the selected text</value>
+  </data>
 </root>
