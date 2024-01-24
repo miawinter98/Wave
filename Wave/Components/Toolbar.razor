@@ -1,0 +1,10 @@
+﻿<div class="flex flex-wrap gap-1 p-2 bg-base-200" @attributes="AdditionalAttributes">
+	@ChildContent
+</div>
+
+@code {
+	[Parameter]
+	public required RenderFragment ChildContent { get; set; }
+	[Parameter(CaptureUnmatchedValues = true)]
+	public IDictionary<string, object>? AdditionalAttributes { get; set; }
+}

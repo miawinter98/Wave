@@ -9,6 +9,7 @@ public static class MarkdownUtilities {
         var pipeline = new MarkdownPipelineBuilder()
             .UsePipeTables()
             .UseEmphasisExtras()
+            .UseListExtras()
             .DisableHtml()
 		.Build();
 		return Markdown.ToHtml(markdown, pipeline);

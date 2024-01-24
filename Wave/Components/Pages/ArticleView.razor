@@ -39,7 +39,7 @@
             <Authorized>
                 <ArticleComponent Article="@GetArticleProtected(context.User)" />
                 <div class="flex gap-2 mt-3 flex-wrap">
-                    <a class="btn btn-info w-full sm:btn-wide" href="article/@Article.Id/edit">@Localizer["Edit"]</a>
+                    <a class="btn btn-info w-full sm:btn-wide" href="article/@Article.Id/edit" data-enhance-nav="false">@Localizer["Edit"]</a>
                     @if (Article.Status is ArticleStatus.Draft) {
                         <form @formname="submit-for-review" method="post" @onsubmit="SubmitForReview" class="max-sm:w-full">
                             <AntiforgeryToken />

@@ -12,7 +12,7 @@
         <li><NavLink href="" Match="NavLinkMatch.All">@Localizer["Home_Label"]</NavLink></li>
 		<AuthorizeView Policy="ArticleEditPermissions">
 			<Authorized>
-                <li><NavLink href="article/new">@Localizer["ArticleNew_Label"]</NavLink></li>
+                <li><NavLink href="article/new" data-enhance-nav="false">@Localizer["ArticleNew_Label"]</NavLink></li>
                 <li><NavLink href="drafts">@Localizer["Drafts_Label"]</NavLink></li>
 			</Authorized>
         </AuthorizeView>

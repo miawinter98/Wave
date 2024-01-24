@@ -140,4 +140,52 @@
   <data name="ViewArticle_Label" xml:space="preserve">
     <value>Open</value>
   </data>
+    <data name="Tools_H1_Tooltip" xml:space="preserve">
+        <value>First level heading</value>
+    </data>
+    <data name="Tools_H2_Tooltip" xml:space="preserve">
+        <value>Second level heading</value>
+    </data>
+    <data name="Tools_H3_Tooltip" xml:space="preserve">
+        <value>Third level heading</value>
+    </data>
+    <data name="Tools_H4_Tooltip" xml:space="preserve">
+        <value>Fourth level heading</value>
+    </data>
+    <data name="Tools_H1_Label" xml:space="preserve">
+        <value>H1</value>
+    </data>
+    <data name="Tools_H2_Label" xml:space="preserve">
+        <value>H2</value>
+    </data>
+    <data name="Tools_H3_Label" xml:space="preserve">
+        <value>H3</value>
+    </data>
+    <data name="Tools_H4_Label" xml:space="preserve">
+        <value>H4</value>
+    </data>
+    <data name="Tools_Bold_Tooltip" xml:space="preserve">
+        <value>Make text bold</value>
+    </data>
+    <data name="Tools_Italic_Tooltip" xml:space="preserve">
+        <value>Make text italic</value>
+    </data>
+    <data name="Tools_StrikeThrough_Tooltip" xml:space="preserve">
+        <value>Strike through text</value>
+    </data>
+    <data name="Tools_Cite_Tooltip" xml:space="preserve">
+        <value>Make text a citation</value>
+    </data>
+    <data name="Tools_StrikeThrough_Label" xml:space="preserve">
+        <value>del</value>
+    </data>
+    <data name="Tools_Cite_Label" xml:space="preserve">
+        <value>Cite</value>
+    </data>
+    <data name="Tools_CodeLine_Tooltip" xml:space="preserve">
+        <value>Mark selected text as programming code</value>
+    </data>
+    <data name="Tools_CodeBlock_Tooltip" xml:space="preserve">
+        <value>Insert program code block</value>
+    </data>
 </root>

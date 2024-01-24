@@ -1,0 +1,10 @@
+﻿<div class="join join-horizontal" @attributes="AdditionalAttributes">
+	@ChildContent
+</div>
+
+@code {
+	[Parameter]
+	public required RenderFragment ChildContent { get; set; }
+	[Parameter(CaptureUnmatchedValues = true)]
+	public IDictionary<string, object>? AdditionalAttributes { get; set; }
+}

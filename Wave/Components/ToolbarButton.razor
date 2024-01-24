@@ -1,0 +1,11 @@
+﻿<button type="button" class="btn btn-accent btn-sm outline-none font-normal join-item" 
+		@attributes="AdditionalAttributes">
+	@ChildContent
+</button>
+
+@code {
+	[Parameter]
+	public required RenderFragment ChildContent { get; set; }
+	[Parameter(CaptureUnmatchedValues = true)]
+	public IDictionary<string, object>? AdditionalAttributes { get; set; }
+}
