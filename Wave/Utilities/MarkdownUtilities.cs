@@ -10,6 +10,8 @@ public static class MarkdownUtilities {
             .UsePipeTables()
             .UseEmphasisExtras()
             .UseListExtras()
+            .UseSoftlineBreakAsHardlineBreak()
+            .UseSmartyPants()
             .DisableHtml()
 		.Build();
 		return Markdown.ToHtml(markdown, pipeline);
