@@ -4,8 +4,6 @@
 @using Wave.Data
 @using System.Security.Claims
 @using System.Diagnostics.CodeAnalysis
-@using System.Net
-@using System.Web
 @using Microsoft.Extensions.Options
 
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
@@ -96,6 +94,9 @@
 	#endregion
     private Article? Article { get; set; }
 
+    [CascadingParameter] 
+    public HttpContext HttpContext { get; set; } = default!;
+
     private Article GetArticlePublic() {
         if (Article is null) throw new ApplicationException("Article not found.");
         if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
@@ -160,6 +161,10 @@
     private async Task SubmitForPublish() {
         await using var context = await ContextFactory.CreateDbContextAsync();
         Article!.Status = ArticleStatus.Published;
+        string userId = HttpContext.User.FindFirst("Id")!.Value;
+        if (Article.Author.Id != userId) {
+	        Article.Reviewer = await context.Users.FindAsync(userId);
+        }
         context.Update(Article);
         await context.SaveChangesAsync();
         Navigation.NavigateTo("/");
