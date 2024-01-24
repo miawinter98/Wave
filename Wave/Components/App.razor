@@ -52,6 +52,10 @@
             CookieRequestCultureProvider.MakeCookieValue(
                 new RequestCulture(
                     CultureInfo.CurrentCulture,
-                    CultureInfo.CurrentUICulture)));
+                    CultureInfo.CurrentUICulture)), new CookieOptions {
+	            Expires = DateTimeOffset.UtcNow.AddYears(1), 
+				IsEssential = true, 
+				SameSite = SameSiteMode.Strict
+            });
     }
 }
