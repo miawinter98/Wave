@@ -1,4 +1,4 @@
-﻿<div class="flex flex-wrap gap-1 p-2 bg-base-200" @attributes="AdditionalAttributes">
+﻿<div class="flex flex-wrap gap-1 p-2 bg-base-200 @(!Sticky ? string.Empty : "sticky top-0")" @attributes="AdditionalAttributes">
 	@ChildContent
 </div>
 
@@ -7,4 +7,6 @@
 	public required RenderFragment ChildContent { get; set; }
 	[Parameter(CaptureUnmatchedValues = true)]
 	public IDictionary<string, object>? AdditionalAttributes { get; set; }
+	[Parameter]
+    public bool Sticky { get; set; } = true;
 }
