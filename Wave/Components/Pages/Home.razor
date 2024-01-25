@@ -45,11 +45,11 @@
         <p>@Localizer["NoArticles_Message"]</p>
     }
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-4 mb-6">
-        @foreach (var article in Articles.Skip(1)) {
-            <ArticleTile Article="article" />
-        }
-    </div>
+    <ArticleTileArray>
+	    @foreach (var article in Articles.Skip(1)) {
+		    <ArticleTile Article="article" />
+	    }
+    </ArticleTileArray>
 }
 
 @if (HasMore) {

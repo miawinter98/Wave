@@ -1,20 +1,19 @@
 ﻿@page "/future"
 @using Wave.Data
 @using Microsoft.EntityFrameworkCore
-@using Wave.Data.Migrations.postgres
 
 @attribute [Authorize(Policy = "ArticleDeletePermissions")]
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IStringLocalizer<Future> Localizer
 
-<div class="flex gap-x-8 gap-y-4">
+<ArticleTileArray>
     @foreach (var article in Articles) {
         <ArticleTile Article="article" />
     } 
     @if(Articles.Count < 1) {
         <p>@Localizer["NoArticles"]</p>
     }
-</div>
+</ArticleTileArray>
 
 @code {
     private List<Article> Articles { get; } = [];

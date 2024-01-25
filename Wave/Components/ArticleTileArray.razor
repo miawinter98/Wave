@@ -1,0 +1,10 @@
+﻿<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-4 mb-6" @attributes="AdditionalAttributes">
+	@ChildContent
+</div>
+
+@code {
+	[Parameter]
+	public required RenderFragment ChildContent { get; set; }
+	[Parameter(CaptureUnmatchedValues = true)]
+	public IDictionary<string, object>? AdditionalAttributes { get; set; }
+}

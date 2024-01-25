@@ -8,14 +8,14 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject IStringLocalizer<Drafts> Localizer
 
-<div class="flex gap-x-8 gap-y-4">
+<ArticleTileArray>
 	@foreach (var article in Articles) {
 		<ArticleTile Article="article" />
 	}
 	@if (Articles.Count < 1) {
 		<p>@Localizer["NoArticles"]</p>
 	}
-</div>
+</ArticleTileArray>
 
 @code {
 	[CascadingParameter]
