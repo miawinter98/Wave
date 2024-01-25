@@ -5,8 +5,14 @@ namespace Wave.Controllers;
 [ApiController]
 [Route("/theme")]
 public class ThemeController : ControllerBase {
+    [HttpGet("")]
+    public IActionResult SetTheme(string returnUrl = "") {
+        Response.Cookies.Delete(".Wave.Theme");
+        return LocalRedirect(string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl);
+    }
+    
     [HttpGet("{theme}")]
-    public IActionResult SetLanguage(string? theme, string returnUrl = "") {
+    public IActionResult SetTheme(string? theme, string returnUrl = "") {
         if (theme is null) {
             Response.Cookies.Delete(".Wave.Theme");
         } else {
