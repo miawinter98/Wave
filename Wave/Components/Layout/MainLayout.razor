@@ -61,11 +61,10 @@
 					</button>
 					<select id="theme-select" class="select select-bordered select-sm md:text-center join-item min-w-0 flex-1"
 					        onchange="window.location = `/theme/${this.value}?returnUrl=@WebUtility.UrlEncode("/" + Navigation.ToBaseRelativePath(Navigation.Uri))`">
-						<option value="">@Localizer["Theme_Default"]</option>
-						<option value="wave-light">@Localizer["Theme_WaveLight"]</option>
-						<option value="wave-dark">@Localizer["Theme_WaveDark"]</option>
+						<option selected="@(UserTheme is null)" value="">@Localizer["Theme_Default"]</option>
+						<option selected="@(UserTheme is "wave-light")" value="wave-light">@Localizer["Theme_WaveLight"]</option>
+						<option selected="@(UserTheme is "wave-dark")" value="wave-dark">@Localizer["Theme_WaveDark"]</option>
 					</select>
-					<script>document.getElementById("theme-select").value = document.documentElement.dataset.theme</script>
 				</div>
 			</footer>
 		</div>
@@ -78,3 +77,8 @@
 		</div>
 	</div>
 </div>
+
+@code {
+	[CascadingParameter(Name = "UserTheme")]
+	private string? UserTheme { get; set; }
+}
