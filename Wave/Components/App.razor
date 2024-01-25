@@ -1,7 +1,7 @@
 ﻿@using System.Globalization
 @using Microsoft.AspNetCore.Localization
 <!DOCTYPE html>
-<html lang="@CultureInfo.CurrentUICulture.ToString()">
+<html lang="@CultureInfo.CurrentUICulture.ToString()" data-theme="@UserTheme">
 
 <head>
     <meta charset="utf-8" />
@@ -46,6 +46,8 @@
     [CascadingParameter]
     public HttpContext? HttpContext { get; set; }
 
+	private string? UserTheme { get; set; }
+
     protected override void OnInitialized() {
         HttpContext?.Response.Cookies.Append(
             CookieRequestCultureProvider.DefaultCookieName,
@@ -57,5 +59,10 @@
 				IsEssential = true, 
 				SameSite = SameSiteMode.Strict
             });
+
+        if (HttpContext?.Request.Cookies.ContainsKey(".Wave.Theme") is true) {
+	        HttpContext.Request.Cookies.TryGetValue(".Wave.Theme", out string? theme);
+	        UserTheme = theme;
+        }
     }
 }

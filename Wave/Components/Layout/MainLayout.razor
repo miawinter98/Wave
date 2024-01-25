@@ -59,11 +59,13 @@
 							<path d="M10.719 21.75h9.156c1.036 0 1.875-.84 1.875-1.875v-5.25c0-1.036-.84-1.875-1.875-1.875h-.14l-8.742 8.743c-.09.089-.18.175-.274.257ZM12.738 17.625l6.474-6.474a1.875 1.875 0 0 0 0-2.651L15.5 4.787a1.875 1.875 0 0 0-2.651 0l-.1.099V17.25c0 .126-.003.251-.01.375Z" />
 						</svg>
 					</button>
-					<select data-choose-theme class="select select-bordered select-sm md:text-center join-item min-w-0 flex-1">
+					<select id="theme-select" class="select select-bordered select-sm md:text-center join-item min-w-0 flex-1"
+					        onchange="window.location = `/theme/${this.value}?returnUrl=@WebUtility.UrlEncode("/" + Navigation.ToBaseRelativePath(Navigation.Uri))`">
 						<option value="">@Localizer["Theme_Default"]</option>
 						<option value="wave-light">@Localizer["Theme_WaveLight"]</option>
 						<option value="wave-dark">@Localizer["Theme_WaveDark"]</option>
 					</select>
+					<script>document.getElementById("theme-select").value = document.documentElement.dataset.theme</script>
 				</div>
 			</footer>
 		</div>
@@ -76,6 +78,3 @@
 		</div>
 	</div>
 </div>
-
-<!-- Scripts -->
-<script src="/lib/theme-change/index.min.js"></script>
