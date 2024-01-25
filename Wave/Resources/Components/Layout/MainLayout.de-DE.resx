@@ -113,4 +113,10 @@
     <data name="Language_Label" xml:space="preserve">
         <value>Sprache</value>
     </data>
+    <data name="Theme_ModernDark" xml:space="preserve">
+        <value>Modern Dunkel</value>
+    </data>
+    <data name="Theme_ModernLight" xml:space="preserve">
+        <value>Moderl Hell</value>
+    </data>
 </root>

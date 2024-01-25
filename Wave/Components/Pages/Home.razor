@@ -22,10 +22,10 @@
     @if (Articles.FirstOrDefault() is {} featured) {
 	    <article class="mb-6">
 		    <ArticleLink Article="featured">
-			    <div class="hero bg-secondary text-secondary-content">
+                <div class="hero bg-secondary text-secondary-content border-l-8 border-current shadow rounded-box">
 				    <div class="hero-content">
 					    <div class="flex flex-col space-y-6 my-3">
-						    <h2 class="text-2xl lg:text-4xl font-bold">
+						    <h2 class="text-2xl lg:text-4xl">
 							    @featured.Title<br />
 						    </h2>
 						    <p class="line-clamp-6">
