@@ -1,7 +1,10 @@
 ﻿@using System.Globalization
 @using Microsoft.AspNetCore.Localization
+@using Microsoft.Extensions.Options
+@using Wave.Data
+@inject IOptions<Customization> Customizations
 <!DOCTYPE html>
-<html lang="@CultureInfo.CurrentUICulture.ToString()" data-theme="@UserTheme">
+<html lang="@CultureInfo.CurrentUICulture.ToString()" data-theme="@(UserTheme ?? Customizations.Value.DefaultTheme)">
 
 <head>
     <meta charset="utf-8" />
