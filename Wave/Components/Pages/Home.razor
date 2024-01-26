@@ -29,7 +29,7 @@
 						    <h2 class="text-2xl lg:text-4xl">
 							    @featured.Title
 							    <p class="flex flex-wrap gap-2">
-								    @foreach (var category in featured.Categories) {
+                                    @foreach (var category in featured.Categories.OrderBy(c => c.Color)) {
 									    <span class="badge badge-@CategoryUtilities.GetCssClassPostfixForColor(category.Color)">
 										    @category.Name
 									    </span>
