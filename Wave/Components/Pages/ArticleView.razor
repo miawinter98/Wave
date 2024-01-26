@@ -27,7 +27,7 @@
         <meta property="og:article:author" content="@Article.Author.Name" />
         <meta property="og:article:published_time" content="@Article.PublishDate.ToString("u")" />
         @if (Article.LastModified.HasValue) {
-            <meta property="og:article:modified_time " content="@Article.LastModified.Value.ToString("u")" />
+            <meta property="og:article:modified_time" content="@Article.LastModified.Value.ToString("u")" />
         }
         <meta property="og:site_name" content="@Customizations.Value.AppName" />
     </HeadContent>
