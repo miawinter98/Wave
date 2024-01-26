@@ -8,7 +8,7 @@ public enum ArticleStatus {
     Published = 2
 }
 
-// TODO:: Add category / tags for MVP
+// TODO:: Add tags for MVP ?
 // TODO:: Archive System (Notice / Redirect to new content?) (Deprecation date?)
 // TODO:: Reference used files?
 

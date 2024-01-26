@@ -51,6 +51,25 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .HasConversion(dateTimeOffsetUtcConverter);
 
             article.HasQueryFilter(a => !a.IsDeleted);
+            article.ToTable("Articles");
+        });
+
+        builder.Entity<Category>(category => {
+            category.HasKey(c => c.Id);
+            category.Property(c => c.Name).IsRequired().HasMaxLength(128);
+            category.Property(c => c.Color).IsRequired().HasDefaultValue(CategoryColors.Default);
+
+            category.HasMany<Article>().WithMany()
+                .UsingEntity<ArticleCategory>(
+                    ac => ac.HasOne(a => a.Article).WithMany().OnDelete(DeleteBehavior.NoAction), 
+                    ac => ac.HasOne(a => a.Category).WithMany().OnDelete(DeleteBehavior.NoAction), 
+                    articleCategory => {
+                        articleCategory.HasKey(ac => ac.Id);
+                        articleCategory.ToTable("ArticleCategories");
+                        articleCategory.HasQueryFilter(ac => !ac.Article.IsDeleted);
+                    });
+            
+            category.ToTable("Categories");
         });
     }
 }
