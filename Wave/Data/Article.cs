@@ -29,4 +29,6 @@ public class Article : ISoftDelete {
     public DateTimeOffset CreationDate { get; set; } = DateTimeOffset.Now;
     public DateTimeOffset PublishDate { get; set; } = DateTimeOffset.MaxValue;
     public DateTimeOffset? LastModified { get; set; }
+
+    public IList<Category> Categories { get; } = [];
 }

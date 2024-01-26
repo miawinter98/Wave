@@ -59,7 +59,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             category.Property(c => c.Name).IsRequired().HasMaxLength(128);
             category.Property(c => c.Color).IsRequired().HasDefaultValue(CategoryColors.Default);
 
-            category.HasMany<Article>().WithMany()
+            category.HasMany<Article>().WithMany(a => a.Categories)
                 .UsingEntity<ArticleCategory>(
                     ac => ac.HasOne(a => a.Article).WithMany().OnDelete(DeleteBehavior.NoAction), 
                     ac => ac.HasOne(a => a.Category).WithMany().OnDelete(DeleteBehavior.NoAction), 

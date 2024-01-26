@@ -140,12 +140,14 @@
 		    Article = context.Set<Article>()
 			    .Include(a => a.Author)
 			    .Include(a => a.Reviewer)
+			    .Include(a => a.Categories)
 			    .FirstOrDefault(a => a.Id == Id);
         } else if (Date is { } date && Title is { } title) {
             using var context = ContextFactory.CreateDbContext();
             Article = context.Set<Article>()
 	            .Include(a => a.Author)
 	            .Include(a => a.Reviewer)
+	            .Include(a => a.Categories)
                 .FirstOrDefault(a => a.PublishDate.Date == date.Date && a.Title.ToLower() == title);
         }
     }
