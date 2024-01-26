@@ -125,4 +125,7 @@
   <data name="Future_Label" xml:space="preserve">
     <value>Publishing</value>
   </data>
+    <data name="ManageCategories_Label" xml:space="preserve">
+        <value>Manage Categories</value>
+    </data>
 </root>

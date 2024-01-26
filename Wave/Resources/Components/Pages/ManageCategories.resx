@@ -98,34 +98,37 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
-    <data name="Drafts_Label" xml:space="preserve">
-        <value>Entwürfe</value>
+    <data name="Title" xml:space="preserve">
+        <value>Manage Categories</value>
     </data>
-    <data name="ArticleNew_Label" xml:space="preserve">
-        <value>Neuer Artikel</value>
+    <data name="Category_Label" xml:space="preserve">
+        <value>Add Category</value>
     </data>
-    <data name="Home_Label" xml:space="preserve">
-        <value>Startseite</value>
+    <data name="Category_Name_Placeholder" xml:space="preserve">
+        <value>Cooking</value>
     </data>
-    <data name="Login_Label" xml:space="preserve">
-        <value>Anmelden</value>
+    <data name="Category_Submit" xml:space="preserve">
+        <value>Add</value>
     </data>
-    <data name="Logout_Label" xml:space="preserve">
-        <value>Abmelden</value>
+    <data name="Category_Color_Default" xml:space="preserve">
+        <value>Default</value>
     </data>
-    <data name="ManageUsers_Label" xml:space="preserve">
-        <value>Benutzer Verwalten</value>
+    <data name="Category_Color_Dangerous" xml:space="preserve">
+        <value>Dangerous</value>
     </data>
-    <data name="Review_Label" xml:space="preserve">
-        <value>In Rezension</value>
+    <data name="Category_Color_Important" xml:space="preserve">
+        <value>Imporant</value>
     </data>
-    <data name="SignUp_Label" xml:space="preserve">
-        <value>Registrieren</value>
+    <data name="Category_Color_Informative" xml:space="preserve">
+        <value>Informative</value>
     </data>
-  <data name="Future_Label" xml:space="preserve">
-    <value>In Veröffentlichung</value>
-  </data>
-    <data name="ManageCategories_Label" xml:space="preserve">
-        <value>Kategorien Verwalten</value>
+    <data name="Category_Color_Secondary" xml:space="preserve">
+        <value>Secondary</value>
+    </data>
+    <data name="Category_Color_Extra" xml:space="preserve">
+        <value>Extra</value>
+    </data>
+    <data name="Category_Color_Primary" xml:space="preserve">
+        <value>Primary</value>
     </data>
 </root>

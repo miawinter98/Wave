@@ -1,0 +1,86 @@
+﻿@page "/manage/categories"
+@using Microsoft.EntityFrameworkCore
+@using Wave.Data
+@using System.ComponentModel.DataAnnotations
+@using Wave.Utilities
+
+@attribute [Authorize(Policy = "CategoryManagePermissions")]
+
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IStringLocalizer<ManageCategories> Localizer
+
+<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+
+<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
+
+<!-- DaisyUI doesn't seem to respect tailwinds safelist, so we add these classes to trick it 
+	into generating the corresponding css classes
+<div class="text-primary text-error text-warning text-info text-secondary text-accent"></div>
+<div class="text-primary-content text-error-content text-warning-content text-info-content text-secondary-content text-accent-content"></div>
+<div class="bg-primary bg-error bg-warning bg-info bg-secondary bg-accent"></div>
+-->
+
+<section class="w-full">
+	<EditForm method="post" class="w-full" FormName="add-category"
+	          Model="Model" OnValidSubmit="AddCategory_OnValidSubmit">
+		<InputLabelComponent LabelText="@Localizer["Category_Label"]" For="() => Model.Name">
+			<div class="join join-vertical md:join-horizontal">
+				<InputText @bind-Value="Model.Name" required aria-required class="input input-bordered md:flex-1 md:max-w-xs join-item"
+						   autocomplete="off" placeholder="@Localizer["Category_Name_Placeholder"]" />
+				
+				<InputSelect @bind-Value="Model.Color" required aria-required class="select select-bordered join-item">
+					@foreach (var color in Enum.GetValues<CategoryColors>()) {
+						string postfix = CategoryUtilities.GetCssClassPostfixForColor(color);
+						<option value="@color" class="text-@postfix-content bg-@postfix">
+							@Localizer["Category_Color_" + color]
+						</option>
+					}
+				</InputSelect>
+
+				<button type="submit" class="btn btn-primary join-item">@Localizer["Category_Submit"]</button>
+			</div>
+		</InputLabelComponent>
+	</EditForm>
+</section>
+
+<ul class="flex flex-col gap-2 max-w-xs">
+	@foreach (var category in Categories) {
+		string postfix = CategoryUtilities.GetCssClassPostfixForColor(category.Color);
+		<li class="bg-@postfix text-@postfix-content p-2 border-2 border-current">@category.Name</li>
+	}
+</ul>
+
+@code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+
+	[SupplyParameterFromForm]
+	private InputModel Model { get; set; } = new();
+	private List<Category> Categories { get; set; } = new();
+
+	protected override async Task OnInitializedAsync() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+		Categories = await context.Set<Category>().OrderBy(c => c.Color).ToListAsync();
+	}
+
+	private async Task AddCategory_OnValidSubmit() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+
+		var category = new Category {
+			Name = Model.Name.Trim(),
+			Color = Model.Color
+		};
+
+		await context.AddAsync(category);
+		await context.SaveChangesAsync();
+		Categories.Add(category);
+		Model = new();
+	}
+
+	private sealed class InputModel {
+		[Required(AllowEmptyStrings = false), MaxLength(128)]
+		public string Name { get; set; } = string.Empty;
+		[Required]
+		public CategoryColors Color { get; set; } = CategoryColors.Default;
+	}
+}

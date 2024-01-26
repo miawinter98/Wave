@@ -26,10 +26,15 @@
                 <li><NavLink href="future">@Localizer["Future_Label"]</NavLink></li>
             </Authorized>
         </AuthorizeView>
+        <AuthorizeView Policy="CategoryManagePermissions">
+	        <Authorized>
+                <li><NavLink href="manage/categories">@Localizer["ManageCategories_Label"]</NavLink></li>
+	        </Authorized>
+        </AuthorizeView>
         <AuthorizeView Policy="RoleAssignPermissions">
-            <Authorized>
-                <li><NavLink href="manage/users">@Localizer["ManageUsers_Label"]</NavLink></li>
-            </Authorized>
+	        <Authorized>
+		        <li><NavLink href="manage/users">@Localizer["ManageUsers_Label"]</NavLink></li>
+	        </Authorized>
         </AuthorizeView>
 	</ul>
 </nav>
