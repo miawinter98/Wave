@@ -2,6 +2,7 @@
 @using Microsoft.Extensions.Localization
 @using Microsoft.EntityFrameworkCore
 @using Wave.Data
+@using Wave.Utilities
 
 @rendermode InteractiveServer
 @attribute [StreamRendering]
@@ -26,7 +27,14 @@
 				    <div class="hero-content">
 					    <div class="flex flex-col space-y-6 my-3">
 						    <h2 class="text-2xl lg:text-4xl">
-							    @featured.Title<br />
+							    @featured.Title
+							    <p class="flex flex-wrap gap-2">
+								    @foreach (var category in featured.Categories) {
+									    <span class="badge badge-@CategoryUtilities.GetCssClassPostfixForColor(category.Color)">
+										    @category.Name
+									    </span>
+								    }
+							    </p>
 						    </h2>
 						    <p class="line-clamp-6">
 							    <small class="text-sm">@featured.PublishDate.ToString("g")</small><br/>
@@ -73,7 +81,7 @@
 
                 var now = DateTimeOffset.UtcNow;
                 var query = context.Set<Article>()
-                    .Include(a => a.Author)
+                    .Include(a => a.Author).Include(a => a.Categories)
                     .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
                     .OrderByDescending(a => a.PublishDate);
                 var articles = await query.Take(11).ToListAsync();
@@ -93,7 +101,7 @@
 
             var now = DateTimeOffset.UtcNow;
             var query = context.Set<Article>()
-                .Include(a => a.Author)
+                .Include(a => a.Author).Include(a => a.Categories)
                 .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
                 .OrderByDescending(a => a.PublishDate)
                 .Skip(Articles.Count);
