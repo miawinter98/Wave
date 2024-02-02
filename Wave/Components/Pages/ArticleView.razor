@@ -19,17 +19,17 @@
         <meta name="description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.Body[..Math.Min(80, Article.Body.Length)] + "... ")">
         
         <!-- Open Graph -->
-        <meta property="og:title" content="@Article.Title" />
-        <meta property="og:description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.Body[..Math.Min(80, Article.Body.Length)] + "... ")" />
-        <meta property="og:url" content="@Navigation.ToAbsoluteUri("/article/" + Article.Id)" />
-        <meta property="og:image" content="@Navigation.ToAbsoluteUri("/api/user/pfp/" + Article.Author.Id)" />
-        <meta property="og:type" content="article" />
-        <meta property="og:article:author" content="@Article.Author.Name" />
-        <meta property="og:article:published_time" content="@Article.PublishDate.ToString("u")" />
+        <meta property="og:title" content="@Article.Title">
+        <meta property="og:description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.Body[..Math.Min(80, Article.Body.Length)] + "... ")">
+        <meta property="og:url" content="@Navigation.ToAbsoluteUri("/article/" + Article.Id)">
+        <meta property="og:image" content="@Navigation.ToAbsoluteUri("/api/user/pfp/" + Article.Author.Id)">
+        <meta property="og:type" content="article">
+        <meta property="og:article:author" content="@Article.Author.Name">
+        <meta property="og:article:published_time" content="@Article.PublishDate.ToString("u")">
         @if (Article.LastModified.HasValue) {
-            <meta property="og:article:modified_time" content="@Article.LastModified.Value.ToString("u")" />
+            <meta property="og:article:modified_time" content="@Article.LastModified.Value.ToString("u")">
         }
-        <meta property="og:site_name" content="@Customizations.Value.AppName" />
+        <meta property="og:site_name" content="@Customizations.Value.AppName">
     </HeadContent>
 }
 
