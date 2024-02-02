@@ -7,6 +7,7 @@ namespace Wave.Controllers;
 [Route("/language")]
 public class LanguageController : ControllerBase {
     [HttpGet("{culture}")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public IActionResult SetLanguage(string culture, string returnUrl = "") {
         Response.Cookies.Append(
             CookieRequestCultureProvider.DefaultCookieName,

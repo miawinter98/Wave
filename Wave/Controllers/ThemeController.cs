@@ -6,12 +6,14 @@ namespace Wave.Controllers;
 [Route("/theme")]
 public class ThemeController : ControllerBase {
     [HttpGet("")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public IActionResult SetTheme(string returnUrl = "") {
         Response.Cookies.Delete(".Wave.Theme");
         return LocalRedirect(string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl);
     }
     
     [HttpGet("{theme}")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public IActionResult SetTheme(string? theme, string returnUrl = "") {
         if (theme is null) {
             Response.Cookies.Delete(".Wave.Theme");
