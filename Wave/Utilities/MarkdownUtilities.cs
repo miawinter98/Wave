@@ -1,4 +1,5 @@
 ﻿using Markdig;
+using Markdig.Extensions.MediaLinks;
 using Microsoft.AspNetCore.Components;
 using Wave.Data;
 
@@ -12,6 +13,11 @@ public static class MarkdownUtilities {
             .UseListExtras()
             .UseSoftlineBreakAsHardlineBreak()
             .UseSmartyPants()
+            .UseAutoLinks()
+            .UseMediaLinks(new MediaOptions {
+                AddControlsProperty = true,
+                Class = "max-w-full"
+            })
             .DisableHtml()
 		.Build();
 		return Markdown.ToHtml(markdown, pipeline);
