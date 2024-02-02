@@ -109,6 +109,11 @@
     private Article GetArticleProtected(ClaimsPrincipal principal) {
         if (Article is null) throw new ApplicationException("Article not found.");
 
+        // The Article is publicly available
+        if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
+            return Article;
+        }
+
         // Admins always get access
         if (principal.IsInRole("Admin")) {
             return Article;
