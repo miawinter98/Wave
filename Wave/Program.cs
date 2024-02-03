@@ -101,6 +101,7 @@ builder.Services.AddLocalization(options => {
     options.ResourcesPath = "Resources";
 });
 builder.Services.AddScoped<ImageService>();
+builder.Services.AddHttpClient();
 
 builder.Services.Configure<Customization>(builder.Configuration.GetSection(nameof(Customization)));
 builder.Services.AddCascadingValue("TitlePrefix", 
