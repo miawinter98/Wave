@@ -1,0 +1,13 @@
+﻿@using Wave.Data
+
+<a href="@Link.UrlString" rel="me" target="_blank" @attributes="AdditionalAttributes">
+	<img src="@("https://" + Link.Url.Host + "/favicon.png")" alt="" width="16" height="16" data-errors="0" />
+	@(Link.Url.Host.LastIndexOf('.') > -1 ? Link.Url.Host[..Link.Url.Host.LastIndexOf('.')] : Link.Url.Host)
+</a>
+
+@code {
+	[Parameter]
+	public required UserLink Link { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+}

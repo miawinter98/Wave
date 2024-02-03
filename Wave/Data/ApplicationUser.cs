@@ -16,4 +16,7 @@ public class ApplicationUser : IdentityUser {
     public string BiographyHtml { get; set; } = string.Empty;
 
     public string Name => FullName ?? UserName ?? "Anon";
+
+    public IList<Article> Articles { get; set; } = [];
+    public IList<UserLink> Links { get; set; } = [];
 }

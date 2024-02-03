@@ -55,6 +55,11 @@
                 <p>
                     @Article.Author.AboutTheAuthor
                 </p>
+                <div class="card-actions flex gap-2 flex-wrap">
+                    @foreach (var link in Article.Author.Links) {
+                        <UserLinkComponent Link="link" class="badge hover:badge-outline flex gap-2 p-4" />
+                    }
+                </div>
             </div>
         </div>
     </section>

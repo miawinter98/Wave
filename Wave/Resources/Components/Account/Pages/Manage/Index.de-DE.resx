@@ -150,4 +150,19 @@ Ich koche seit dem jungen Alter von 7...</value>
     <data name="Submit" xml:space="preserve">
         <value>Speichern</value>
     </data>
+  <data name="Links_Delete_Label" xml:space="preserve">
+    <value>Link löschen</value>
+  </data>
+  <data name="Links" xml:space="preserve">
+    <value>Benutzerdefinierte Links</value>
+  </data>
+  <data name="Links_Url_Label" xml:space="preserve">
+    <value>Neuer Link</value>
+  </data>
+  <data name="Links_Url_Placeholder" xml:space="preserve">
+    <value>https://example.de/user/anna-muster</value>
+  </data>
+  <data name="Links_Submit" xml:space="preserve">
+    <value>Hinzufügen</value>
+  </data>
 </root>

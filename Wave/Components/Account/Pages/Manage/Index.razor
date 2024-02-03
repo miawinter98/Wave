@@ -25,6 +25,11 @@
             <ProfileFormPartial User="@User" />
         }
     </BoardCardComponent>
+    <BoardCardComponent Heading="@Localizer["Links"]">
+        @if (User is not null) {
+            <LinksPartial User="@User" />
+        }
+    </BoardCardComponent>
     <BoardCardComponent Heading="@Localizer["AboutMe"]">
         @if (User is not null) {
             <AboutMeFormPartial User="@User" />

@@ -7,6 +7,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Wave.Data.Migrations.postgres;
 
 // Add-Migration InitialCreate -OutputDir Data/Migrations/postgres -Project Wave -StartupProject Wave -Context ApplicationDbContext -Args "ConnectionStrings:DefaultConnection=Host=localhost;Port=5432;AllowAnonymousConnections=true"
+
+// Remove-Migration -force -Project Wave -StartupProject Wave -Context ApplicationDbContext -Args "ConnectionStrings:DefaultConnection=Host=localhost;Port=5432;AllowAnonymousConnections=true"
+
 /// <inheritdoc />
 public partial class InitialCreate : Migration {
     /// <inheritdoc />
