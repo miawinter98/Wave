@@ -33,9 +33,11 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 	}
 	
 	private async Task<SyndicationFeed> CreateFeedAll(string? routeName) {
+		var now = DateTimeOffset.UtcNow;
 		var query = Context.Set<Article>()
-			.Include(a => a.Author).
-			Include(a => a.Categories)
+			.Include(a => a.Author)
+			.Include(a => a.Categories)
+			.Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
 			.OrderByDescending(a => a.PublishDate)
 			.Take(15);
 		
@@ -47,8 +49,8 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 
 	private SyndicationFeed CreateFeedAsync(IEnumerable<Article> articles, DateTimeOffset date, string? routeName) {
 		string appName = Customizations.Value.AppName;
-		var host = new Uri($"{Request.Scheme}://{Request.Host}{Request.PathBase}", UriKind.Absolute);
-		var link = new Uri(Url.RouteUrl(routeName, null, Request.Scheme, host.Host) ?? host.AbsoluteUri);
+		var host = new Uri($"https://{Request.Host}{Request.PathBase}", UriKind.Absolute);
+		var link = new Uri(Url.RouteUrl(routeName, null, "https", host.Host) ?? host.AbsoluteUri);
 
 		return new SyndicationFeed(appName, "Feed on " + appName, link, articles
 			.Select(article => {
