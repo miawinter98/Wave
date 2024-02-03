@@ -4,38 +4,40 @@
 
 @inject IStringLocalizer<Pages.ArticleView> Localizer
 
+<SectionContent SectionName="GlobalHeader">
+	<div class="bg-secondary text-secondary-content border-b-2 border-current py-6 px-12">
+		<h1 class="text-3xl lg:text-5xl font-light">
+			@Article.Title
+		</h1>
+		<p>
+			<small class="text-sm">
+				<time datetime="@Article.PublishDate.ToString("u")"
+				      title="@Article.PublishDate.ToString("g")">
+					@Article.PublishDate.Humanize()
+				</time>
+				@if (Article.LastModified is not null && Article.LastModified > Article.PublishDate) {
+					<time datetime="@Article.LastModified.Value.ToString("u")"
+					      title="@Article.LastModified.Value.ToString("g")">
+						&ensp;(@Localizer["ModifiedOn"] @Article.LastModified.Humanize())
+					</time>
+				}
+				@if (Article.Status < ArticleStatus.Published) {
+					<span class="badge badge-sm badge-outline badge-warning ml-2">
+						@Article.Status.Humanize()
+					</span>
+				}
+			</small>
+		</p>
+		@if (Article.Categories.Count > 0) {
+			<p class="flex flex-wrap gap-2 my-3">
+				@foreach (var category in Article.Categories.OrderBy(c => c.Color)) {
+					<CategoryBadgeComponent Category="category" />
+				}
+			</p>
+		}
+	</div>
+</SectionContent>
 <article class="mb-6">
-    <header class="bg-secondary text-secondary-content border-b-2 border-current mt-[-2rem] mx-[-3rem] py-6 px-12 mb-6">
-        <h1 class="text-3xl lg:text-5xl font-light">
-            @Article.Title
-        </h1>
-        <p>
-	        <small class="text-sm">
-		        <time datetime="@Article.PublishDate.ToString("u")"
-		              title="@Article.PublishDate.ToString("g")">
-			        @Article.PublishDate.Humanize()
-		        </time>
-		        @if (Article.LastModified is not null && Article.LastModified > Article.PublishDate) {
-			        <time datetime="@Article.LastModified.Value.ToString("u")"
-			              title="@Article.LastModified.Value.ToString("g")">
-				        &ensp;(@Localizer["ModifiedOn"] @Article.LastModified.Humanize())
-			        </time>
-		        }
-		        @if (Article.Status < ArticleStatus.Published) {
-			        <span class="badge badge-sm badge-outline badge-warning ml-2">
-				        @Article.Status.Humanize()
-			        </span>
-		        }
-	        </small>
-        </p>
-        @if (Article.Categories.Count > 0) {
-	        <p class="flex flex-wrap gap-2 my-3">
-		        @foreach (var category in Article.Categories.OrderBy(c => c.Color)) {
-			        <CategoryBadgeComponent Category="category" />
-		        }
-	        </p>
-        }
-    </header>
     <div class="prose prose-neutral max-w-none hyphens-auto text-justify">
         @Content
     </div>
