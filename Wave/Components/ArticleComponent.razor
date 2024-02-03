@@ -44,10 +44,10 @@
 @if (!string.IsNullOrWhiteSpace(Article.Author.AboutTheAuthor)) {
     <section class="mb-2">
         <div class="card sm:card-side card-compact bg-secondary text-secondary-content rounded shadow">
-            <figure class="sm:max-w-40">
-                <img src="/api/user/pfp/@Article.Author.Id" alt="" width="800">
+            <figure class="shrink-0">
+                <img class="sm:max-h-56" src="/api/user/pfp/@Article.Author.Id" alt="" width="800">
             </figure>
-            <div class="card-body">
+            <div class="card-body sm:border-l-2 border-current">
                 <h2 class="card-title">About The Author</h2>
                 <h3><strong>@Article.Author.Name</strong></h3>
                 <p>
