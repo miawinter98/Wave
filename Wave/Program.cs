@@ -30,6 +30,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers(options => {
     options.OutputFormatters.Add(new SyndicationFeedFormatter());
 });
+builder.Services.AddOutputCache();
 
 #region Data Protection & Redis
 
@@ -41,6 +42,14 @@ if (builder.Configuration.GetConnectionString("Redis") is { } redisUri) {
             EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
             ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
         });
+	builder.Services.AddStackExchangeRedisCache(options => {
+		options.Configuration = redisUri;
+		options.InstanceName = "WaveDistributedCache";
+	});
+	builder.Services.AddStackExchangeRedisOutputCache(options => {
+		options.Configuration = redisUri;
+		options.InstanceName = "WaveOutputCache";
+	});
 } else {
     builder.Services.AddDataProtection()
         .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration() {
@@ -138,6 +147,7 @@ if (app.Environment.IsDevelopment()) {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
 
+
 app.UseStaticFiles(new StaticFileOptions {
     ContentTypeProvider = new FileExtensionContentTypeProvider {
 	    Mappings = {
@@ -153,6 +163,7 @@ app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapAdditionalIdentityEndpoints();
 
 app.MapControllers();
+app.UseOutputCache();
 
 app.UseRequestLocalization();
 
