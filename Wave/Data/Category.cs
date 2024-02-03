@@ -19,4 +19,6 @@ public class Category {
     [MaxLength(128)]
     public required string Name { get; set; }
     public CategoryColors Color { get; set; } = CategoryColors.Default;
+
+	public IList<Article> Articles { get; set; } = [];
 }

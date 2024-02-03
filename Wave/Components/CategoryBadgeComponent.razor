@@ -1,9 +1,11 @@
 ﻿@using Wave.Utilities
 @using Wave.Data
+@using System.Net
 
-<span class="badge badge-@CategoryUtilities.GetCssClassPostfixForColor(Category.Color)" @attributes="AdditionalAttributes">
+<!-- badge badge-info badge-warning badge-error badge-primary badge-secondary badge-neutral badge-accent -->
+<a href="/category/@WebUtility.UrlEncode(Category.Name)" class="badge badge-@CategoryUtilities.GetCssClassPostfixForColor(Category.Color)" @attributes="AdditionalAttributes">
 	@Category.Name
-</span>
+</a>
 
 @code {
 	[Parameter]

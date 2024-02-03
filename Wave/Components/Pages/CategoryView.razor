@@ -1,0 +1,64 @@
+﻿@page "/Category/{CategoryName}"
+@using Microsoft.EntityFrameworkCore
+@using Wave.Data
+@using System.Net
+
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IStringLocalizer<CategoryView> Localizer
+
+<PageTitle>@(TitlePrefix + Localizer["Title"] + " | " + (Category?.Name ?? "Not Found"))</PageTitle>
+
+@if (Category is null) {
+	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["NotFound_Title"]</h1>
+	<p class="my-3">@Localizer["NotFound_Description"]</p>
+	<a class="btn btn-primary" href="/">@Localizer["NotFound_BackToHome_Label"]</a>
+} else {
+	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"] - @Category.Name</h1>
+	if (Category.Articles.Count < 1) {
+		<p>No Articles</p>
+	}
+	<div class="flex flex-col gap-4">
+		@foreach (var article in Category.Articles) {
+			<article class="card card-side card-compact bg-base-200 text-base-content">
+				<figure class="shrink-0 max-md:!hidden sm:max-w-40">
+					<ArticleLink Article="article">
+						<img src="/api/user/pfp/@article.Author.Id" alt="" width="800">
+					</ArticleLink>
+				</figure>
+				<div class="card-body">
+					<ArticleLink Article="article">
+						<h2 class="card-title">@article.Title</h2>
+						<small>@article.PublishDate.ToString("d")</small>
+						<p class="line-clamp-2">
+							@article.Body
+						</p>
+					</ArticleLink>
+					<div class="card-actions flex flex-wrap gap-2">
+						@foreach (var category in article.Categories.OrderBy(c => c.Color)) {
+							<CategoryBadgeComponent Category="category" />
+						}
+					</div>
+				</div>
+			</article>
+		}
+	</div>
+}
+
+@code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+
+	[Parameter]
+	public string CategoryName { get; set; } = string.Empty;
+	private Category? Category { get; set; }
+
+	protected override async Task OnInitializedAsync() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+		string category = WebUtility.UrlDecode(CategoryName).ToLower();
+		await context.Set<Category>().LoadAsync();
+		Category = await context.Set<Category>()
+			.Include(c => c.Articles).ThenInclude(a => a.Author)
+			.Include(c => c.Articles).ThenInclude(a => a.Categories)
+			.FirstOrDefaultAsync(c => c.Name.ToLower() == category);
+	}
+}

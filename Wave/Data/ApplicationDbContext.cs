@@ -62,7 +62,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			category.Property(c => c.Color).IsRequired().HasSentinel(CategoryColors.Default)
 				.HasDefaultValue(CategoryColors.Default);
 
-			category.HasMany<Article>().WithMany(a => a.Categories)
+			category.HasMany(c => c.Articles).WithMany(a => a.Categories)
 				.UsingEntity<ArticleCategory>(
 					ac => ac.HasOne(a => a.Article).WithMany().OnDelete(DeleteBehavior.NoAction), 
 					ac => ac.HasOne(a => a.Category).WithMany().OnDelete(DeleteBehavior.NoAction), 
