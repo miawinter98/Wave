@@ -1,0 +1,14 @@
+﻿@using Wave.Utilities
+@using Wave.Data
+
+<span class="badge badge-@CategoryUtilities.GetCssClassPostfixForColor(Category.Color)" @attributes="AdditionalAttributes">
+	@Category.Name
+</span>
+
+@code {
+	[Parameter]
+	public required Category Category { get; set; }
+	[Parameter(CaptureUnmatchedValues = true)]
+	public Dictionary<string, object>? AdditionalAttributes { get; set; }
+	
+}

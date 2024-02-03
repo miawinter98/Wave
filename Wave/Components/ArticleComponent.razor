@@ -31,9 +31,7 @@
         @if (Article.Categories.Count > 0) {
 	        <p class="flex flex-wrap gap-2 my-3">
 		        @foreach (var category in Article.Categories.OrderBy(c => c.Color)) {
-			        <span class="badge badge-@CategoryUtilities.GetCssClassPostfixForColor(category.Color)">
-						@category.Name
-					</span>
+			        <CategoryBadgeComponent Category="category" />
 		        }
 	        </p>
         }
