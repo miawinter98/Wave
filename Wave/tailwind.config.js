@@ -3,6 +3,7 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
     content: ["Pages/**/*.cshtml", "Components/**/*.razor"],
+    safelist: ["youtube"],
     theme: {
         extend: {
         },

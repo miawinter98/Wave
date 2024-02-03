@@ -28,3 +28,8 @@
         hyphenate-limit-chars: 5 3;
     }
 }
+@layer components {
+    .youtube {
+        @apply rounded p-2 bg-base-200;
+    }
+}
