@@ -15,6 +15,7 @@ using Wave.Components;
 using Wave.Components.Account;
 using Wave.Data;
 using Wave.Services;
+using Wave.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
@@ -26,7 +27,9 @@ builder.Configuration
     .AddEnvironmentVariables("WAVE_");
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => {
+    options.OutputFormatters.Add(new SyndicationFeedFormatter());
+});
 
 #region Data Protection & Redis
 
