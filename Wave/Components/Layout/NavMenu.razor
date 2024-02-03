@@ -45,7 +45,7 @@
                 <NavLink href="Account/Manage">
                     <span class="line-clamp-2">@context.User.FindFirst("FullName")!.Value</span>
                     <div class="w-8">
-                        <ProfilePictureComponent ProfileId="@context.User.FindFirst("Id")!.Value" />
+                        <ProfilePictureComponent Size="100" ProfileId="@context.User.FindFirst("Id")!.Value" />
                     </div>
                 </NavLink>
             </li>

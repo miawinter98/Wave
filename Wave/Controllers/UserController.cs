@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using ImageMagick;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,8 @@ public class UserController(ImageService imageService, IDbContextFactory<Applica
 	[OutputCache(Duration = 60*5)]
 	[ResponseCache(Duration = 60*5, Location = ResponseCacheLocation.Any)]
 	[Route("pfp/{userId}")]
-	public async Task<IActionResult> Get(string userId) {
+	public async Task<IActionResult> Get(string userId, [FromQuery] int size = 800) {
+		if (size > 800) size = 800;
 		await using var context = await ContextFactory.CreateDbContextAsync();
 		var user = await context.Users.Include(u => u.ProfilePicture).FirstOrDefaultAsync(u => u.Id == userId);
 		if (user is null) return NotFound();
@@ -27,7 +29,16 @@ public class UserController(ImageService imageService, IDbContextFactory<Applica
 
 		string? path = ImageService.GetPath(user.ProfilePicture.ImageId);
 		if (path is null) return NotFound();
-		
+
+		if (size < 800) {
+			var image = new MagickImage(path);
+			image.Resize(new MagickGeometry(size));
+			using var memory = new MemoryStream();
+			await image.WriteAsync(memory);
+
+			return File(memory.GetBuffer(), ImageService.ImageMimeType);
+		}
+
 		return File(System.IO.File.OpenRead(path), ImageService.ImageMimeType);
 	}
 	
