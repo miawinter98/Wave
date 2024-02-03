@@ -1,7 +1,7 @@
 ﻿@using Wave.Data
 
-<a href="@Link.UrlString" rel="me" target="_blank" @attributes="AdditionalAttributes">
-	<img src="@("https://" + Link.Url.Host + "/favicon.png")" alt="" width="16" height="16" data-errors="0" />
+<a href="@Link.UrlString" rel="me" target="_blank" title="@Link.Url.Host" @attributes="AdditionalAttributes">
+	<img src="@("https://" + Link.Url.Host + "/favicon.png")" alt="" width="16" height="16" />
 	@(Link.Url.Host.LastIndexOf('.') > -1 ? Link.Url.Host[..Link.Url.Host.LastIndexOf('.')] : Link.Url.Host)
 </a>
 
