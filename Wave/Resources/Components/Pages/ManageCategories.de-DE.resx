@@ -131,4 +131,10 @@
     <data name="Category_Color_Secondary" xml:space="preserve">
         <value>Sekundär</value>
     </data>
+  <data name="Category_Success" xml:space="preserve">
+    <value>Kategorie hinzugefügt.</value>
+  </data>
+  <data name="Category_Error" xml:space="preserve">
+    <value>Fehler beim hinzufügen der Kategorie. Kategorien müssen einzigartis sein, ungeachtet Groß-/Kleinschreibung oder Akzenten.</value>
+  </data>
 </root>

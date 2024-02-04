@@ -20,6 +20,12 @@
 <div class="bg-primary bg-error bg-warning bg-info bg-secondary bg-accent"></div>
 -->
 
+@if (!string.IsNullOrWhiteSpace(Message)) {
+	<div class="alert alert-info">
+		<span>@Message</span>
+	</div>
+}
+
 <section class="w-full">
 	<EditForm method="post" class="w-full" FormName="add-category"
 	          Model="Model" OnValidSubmit="AddCategory_OnValidSubmit">
@@ -58,23 +64,30 @@
 	private InputModel Model { get; set; } = new();
 	private List<Category> Categories { get; set; } = new();
 
+	private string Message { get; set; } = string.Empty;
+
 	protected override async Task OnInitializedAsync() {
 		await using var context = await ContextFactory.CreateDbContextAsync();
 		Categories = await context.Set<Category>().OrderBy(c => c.Color).ToListAsync();
 	}
 
 	private async Task AddCategory_OnValidSubmit() {
-		await using var context = await ContextFactory.CreateDbContextAsync();
+		try {
+			await using var context = await ContextFactory.CreateDbContextAsync();
 
-		var category = new Category {
-			Name = Model.Name.Trim(),
-			Color = Model.Color
-		};
+			var category = new Category {
+				Name = Model.Name.Trim(),
+				Color = Model.Color
+			};
 
-		await context.AddAsync(category);
-		await context.SaveChangesAsync();
-		Categories.Add(category);
-		Model = new();
+			await context.AddAsync(category);
+			await context.SaveChangesAsync();
+			Categories.Add(category);
+			Model = new();
+			Message = Localizer["Category_Success"];
+		} catch {
+			Message = Localizer["Category_Error"];
+		}
 	}
 
 	private sealed class InputModel {
