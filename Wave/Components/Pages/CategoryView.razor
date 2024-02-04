@@ -54,11 +54,11 @@
 
 	protected override async Task OnInitializedAsync() {
 		await using var context = await ContextFactory.CreateDbContextAsync();
-		string category = WebUtility.UrlDecode(CategoryName).ToLower();
+		string category = WebUtility.UrlDecode(CategoryName);
 		await context.Set<Category>().LoadAsync();
 		Category = await context.Set<Category>()
 			.Include(c => c.Articles).ThenInclude(a => a.Author)
 			.Include(c => c.Articles).ThenInclude(a => a.Categories)
-			.FirstOrDefaultAsync(c => c.Name.ToLower() == category);
+			.FirstOrDefaultAsync(c => c.Name == category);
 	}
 }
