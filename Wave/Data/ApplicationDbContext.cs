@@ -56,9 +56,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			article.ToTable("Articles");
 		});
 
+		builder.HasCollation("default-case-insensitive", "und-u-kf-upper-ks-level1", "icu", false);
 		builder.Entity<Category>(category => {
 			category.HasKey(c => c.Id);
-			category.Property(c => c.Name).IsRequired().HasMaxLength(128);
+			category.Property(c => c.Name).IsRequired().HasMaxLength(128).UseCollation("default-case-insensitive");
+			category.HasIndex(c => c.Name).IsUnique();
 			category.Property(c => c.Color).IsRequired().HasSentinel(CategoryColors.Default)
 				.HasDefaultValue(CategoryColors.Default);
 
