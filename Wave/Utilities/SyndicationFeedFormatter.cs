@@ -13,6 +13,7 @@ public class SyndicationFeedFormatter : TextOutputFormatter {
 		SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/atom+xml"));
 		
 		SupportedEncodings.Add(Encoding.UTF8);
+		SupportedEncodings.Add(Encoding.Unicode);
 	}
 
 	protected override bool CanWriteType(Type? type)
@@ -23,10 +24,10 @@ public class SyndicationFeedFormatter : TextOutputFormatter {
 		httpContext.Response.Headers.ContentDisposition = "inline";
 
 		var feed = context.Object as SyndicationFeed;
-		
-		await using var stringWriter = new StringWriter();
-		await using var rssWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings {
-			Async = true
+
+		await using var stream = new MemoryStream();
+		await using var rssWriter = XmlWriter.Create(stream, new XmlWriterSettings {
+			Async = true, Encoding = selectedEncoding
 		});
 		System.ServiceModel.Syndication.SyndicationFeedFormatter formatter;
 		if (context.ContentType.Value?.StartsWith("application/rss+xml") is true) {
@@ -41,6 +42,6 @@ public class SyndicationFeedFormatter : TextOutputFormatter {
 		formatter.WriteTo(rssWriter);
 		rssWriter.Close();
 
-		await httpContext.Response.WriteAsync(stringWriter.ToString(), selectedEncoding);
+		await httpContext.Response.BodyWriter.WriteAsync(stream.ToArray());
 	}
 }
