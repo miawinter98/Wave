@@ -12,7 +12,6 @@ using Wave.Data.Migrations.postgres;
 
 namespace Wave.Controllers;
 
-
 [ApiController]
 [Route("/[controller]")]
 public class RssController(IOptions<Customization> customizations, ApplicationDbContext context) : ControllerBase {
@@ -22,37 +21,46 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 	[HttpGet("rss.xml", Name = "RssFeed")]
 	[Produces("application/rss+xml")]
 	[ResponseCache(Duration = 60*15, Location = ResponseCacheLocation.Any)]
-	public async Task<IActionResult> GetRssFeedAsync() {
-		return Ok(await CreateFeedAll("RssFeed"));
+	public async Task<IActionResult> GetRssFeedAsync(string? category = null) {
+		var feed = await CreateFeedAll("RssFeed", category);
+		if (feed is null) return NotFound();
+		return Ok(feed);
 	}
 	[HttpGet("atom.xml", Name = "AtomFeed")]
 	[Produces("application/atom+xml")]
 	[ResponseCache(Duration = 60*15, Location = ResponseCacheLocation.Any)]
-	public async Task<IActionResult> GetAtomFeedAsync() {
-		return Ok(await CreateFeedAll("AtomFeed"));
+	public async Task<IActionResult> GetAtomFeedAsync(string? category = null) {
+		var feed = await CreateFeedAll("AtomFeed", category);
+		if (feed is null) return NotFound();
+		return Ok(feed);
 	}
 	
-	private async Task<SyndicationFeed> CreateFeedAll(string? routeName) {
+	private async Task<SyndicationFeed?> CreateFeedAll(string? routeName, string? category) {
 		var now = DateTimeOffset.UtcNow;
-		var query = Context.Set<Article>()
+		IQueryable<Article> query = Context.Set<Article>()
 			.Include(a => a.Author)
 			.Include(a => a.Categories)
 			.Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
-			.OrderByDescending(a => a.PublishDate)
-			.Take(15);
-		
+			.OrderByDescending(a => a.PublishDate);
+
+		if (!string.IsNullOrWhiteSpace(category)) {
+			query = query.Where(a => a.Categories.Any(c => c.Name == category));
+		}
+
+		query = query.Take(15);
 		var articles = await query.ToListAsync();
+		if (articles.Count < 1) return null;
 		var date = query.Max(a => a.PublishDate);
 
-		return CreateFeedAsync(articles, date, routeName);
+		return CreateFeedAsync(articles, date, routeName, category);
 	}
 
-	private SyndicationFeed CreateFeedAsync(IEnumerable<Article> articles, DateTimeOffset date, string? routeName) {
+	private SyndicationFeed CreateFeedAsync(IEnumerable<Article> articles, DateTimeOffset date, string? routeName, string? category) {
 		string appName = Customizations.Value.AppName;
 		var host = new Uri($"https://{Request.Host}{Request.PathBase}", UriKind.Absolute);
 		var link = new Uri(Url.RouteUrl(routeName, null, "https", host.Host) ?? host.AbsoluteUri);
 
-		return new SyndicationFeed(appName, "Feed on " + appName, link, articles
+		var feed = new SyndicationFeed(appName, "Feed on " + appName, link, articles
 			.Select(article => {
 				var item = new SyndicationItem(
 					article.Title,
@@ -81,5 +89,8 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 					new SyndicationLink(link) { RelationshipType = "self" }
 				}
 		};
+		if (category != null) feed.Categories.Add(new SyndicationCategory(category));
+
+		return feed;
 	}
 }
