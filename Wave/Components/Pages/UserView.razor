@@ -1,0 +1,81 @@
+﻿@page "/profile/{id:guid}"
+@using Wave.Data
+@using Microsoft.EntityFrameworkCore
+
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IStringLocalizer<UserView> Localizer
+
+<PageTitle>@(TitlePrefix + @Localizer["Title"] + " | " + (User?.FullName ?? Localizer["NotFound_Title"]))</PageTitle>
+
+@if (User is null) {
+	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["NotFound_Title"]</h1>
+	<p class="my-3">@Localizer["NotFound_Description"]</p>
+	<a class="btn btn-primary" href="/">@Localizer["NotFound_BackToHome_Label"]</a>
+} else {
+	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
+
+	<section class="flex flex-col md:flex-row gap-x-8">
+		<div class="shrink-0 md:w-40 lg:w-56">
+			<ProfilePictureComponent ProfileId="@User.Id" Size="400" />
+		</div>
+		<div>
+			<h2 class="text-2xl lg:text-4xl mb-3">@User.FullName</h2>
+			<p class="my-3">@User.AboutTheAuthor</p>
+			<div class="flex gap-2 flex-wrap">
+				@foreach (var link in User.Links) {
+					<UserLinkComponent Link="link" class="badge hover:badge-outline flex gap-2 p-4" />
+				}
+			</div>
+		</div>
+	</section>
+	
+	<hr class="my-3" />
+
+	<section>
+		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Biography"]</h2>
+		<div class="prose prose-sm lg:prose-base prose-neutral max-w-none">
+			@((MarkupString) User.BiographyHtml)
+		</div>
+	</section>
+
+	<hr class="my-3" />
+
+	<section>
+		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Articles"]</h2>
+		<ArticleTileArray>
+			@foreach (var article in User.Articles) {
+				<ArticleTile Article="article" />
+			}
+		</ArticleTileArray>
+	</section>
+}
+
+@code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+
+	[Parameter]
+	public Guid? Id { get; set; }
+
+	private ApplicationUser? User { get; set; }
+	private List<Article> Articles { get; set; } = [];
+
+	protected override async Task OnInitializedAsync() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+
+		// Find user
+		if (Id is not null) {
+			User = await context.Users.Include(u => u.Articles)
+				.ThenInclude(a => a.Categories)
+				.FirstOrDefaultAsync(u => u.Id == Id.ToString());
+		}
+		
+		// Validate access to user
+		if (User is not null && User.Articles.Count > 0) {
+			
+		} else {
+			User = null;
+		}
+	}
+
+}

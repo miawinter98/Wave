@@ -1,17 +1,19 @@
 ﻿@using Wave.Data
 
-<div class="rounded bg-base-200 text-base-content flex content-center w-full sm:w-56">
-    <div class="w-16 h-16">
-        <ProfilePictureComponent Size="200" ProfileId="@Profile.Id" />
-    </div>
+<a href="/profile/@Profile.Id">
+	<div class="rounded bg-base-200 text-base-content flex content-center w-full sm:w-56">
+	    <div class="w-16 h-16">
+	        <ProfilePictureComponent Size="200" ProfileId="@Profile.Id" />
+	    </div>
 
-    <div class="flex flex-col p-2">
-	    <span class="truncate">@Profile.Name</span>
-        @if (RoleTag is not null) {
-            <span class="badge badge-sm badge-primary">@RoleTag</span>
-        }
-    </div>
-</div>
+	    <div class="flex flex-col p-2">
+		    <span class="truncate">@Profile.Name</span>
+	        @if (RoleTag is not null) {
+	            <span class="badge badge-sm badge-primary">@RoleTag</span>
+	        }
+	    </div>
+	</div>
+</a>
 
 @code {
     [Parameter]

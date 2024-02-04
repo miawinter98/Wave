@@ -165,4 +165,7 @@ Ich koche seit dem jungen Alter von 7...</value>
   <data name="Links_Submit" xml:space="preserve">
     <value>Hinzufügen</value>
   </data>
+  <data name="Profile_Link_Label" xml:space="preserve">
+    <value>Profil Öffnen</value>
+  </data>
 </root>

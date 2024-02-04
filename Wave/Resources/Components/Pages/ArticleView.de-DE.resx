@@ -128,4 +128,7 @@
   <data name="Meta_Description" xml:space="preserve">
     <value>{1} Weiterlesen auf {0}.</value>
   </data>
+  <data name="AboutTheAuthor_Profile_Label" xml:space="preserve">
+    <value>Profil</value>
+  </data>
 </root>

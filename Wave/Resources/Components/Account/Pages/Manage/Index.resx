@@ -165,4 +165,7 @@ I started cooking at the young age of 7...</value>
   <data name="Links_Submit" xml:space="preserve">
     <value>Add</value>
   </data>
+  <data name="Profile_Link_Label" xml:space="preserve">
+    <value>Go to Profile</value>
+  </data>
 </root>

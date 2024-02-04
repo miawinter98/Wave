@@ -98,37 +98,4 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
-  <data name="ModifiedOn" xml:space="preserve">
-    <value>Modified</value>
-  </data>
-  <data name="Author" xml:space="preserve">
-    <value>Author</value>
-  </data>
-  <data name="Reviewer" xml:space="preserve">
-    <value>Reviewer</value>
-  </data>
-  <data name="NotFound_Title" xml:space="preserve">
-    <value>Article not found</value>
-  </data>
-  <data name="NotFound_Description" xml:space="preserve">
-    <value>We could not find the article you were looking for</value>
-  </data>
-  <data name="NotFound_BackToHome_Label" xml:space="preserve">
-    <value>Back to Startpage</value>
-  </data>
-  <data name="Edit" xml:space="preserve">
-    <value>Edit Article</value>
-  </data>
-  <data name="Review_Submit" xml:space="preserve">
-    <value>Submit for Review</value>
-  </data>
-  <data name="Publish_Submit" xml:space="preserve">
-    <value>Approv for Publishing</value>
-  </data>
-  <data name="Meta_Description" xml:space="preserve">
-    <value>{1} Continue reading on {0}. </value>
-  </data>
-  <data name="AboutTheAuthor_Profile_Label" xml:space="preserve">
-    <value>Profile</value>
-  </data>
 </root>
