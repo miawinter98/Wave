@@ -52,7 +52,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 				.IsRequired().HasDefaultValueSql("now()")
 				.HasConversion(dateTimeOffsetUtcConverter);
 
-			article.HasQueryFilter(a => !a.IsDeleted);
+			article.HasQueryFilter(a => !a.IsDeleted && a.Status >= ArticleStatus.Published && a.PublishDate <= DateTimeOffset.UtcNow);
 			article.ToTable("Articles");
 		});
 

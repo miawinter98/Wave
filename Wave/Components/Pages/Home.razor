@@ -79,10 +79,8 @@
             try {
                 await using var context = await ContextFactory.CreateDbContextAsync();
 
-                var now = DateTimeOffset.UtcNow;
                 var query = context.Set<Article>()
                     .Include(a => a.Author).Include(a => a.Categories)
-                    .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
                     .OrderByDescending(a => a.PublishDate);
                 var articles = await query.Take(11).ToListAsync();
                 HasMore = (await query.CountAsync()) > 11;
@@ -99,10 +97,8 @@
             Busy = HasMore = true;
             await using var context = await ContextFactory.CreateDbContextAsync();
 
-            var now = DateTimeOffset.UtcNow;
             var query = context.Set<Article>()
                 .Include(a => a.Author).Include(a => a.Categories)
-                .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate <= now)
                 .OrderByDescending(a => a.PublishDate)
                 .Skip(Articles.Count);
             var articles = await query.Take(10).ToListAsync();

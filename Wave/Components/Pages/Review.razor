@@ -23,8 +23,9 @@
 
 		Articles.AddRange(await
 			context.Set<Article>()
+				.IgnoreQueryFilters()
 				.Include(a => a.Author)
-				.Where(a => a.Status == ArticleStatus.InReview)
+				.Where(a => !a.IsDeleted && a.Status == ArticleStatus.InReview)
 				.OrderByDescending(a => a.PublishDate)
 				.ToListAsync());
 	}

@@ -143,6 +143,7 @@
 	    if (Id is not null) {
 		    using var context = ContextFactory.CreateDbContext();
 		    Article = context.Set<Article>()
+			    .IgnoreQueryFilters().Where(a => !a.IsDeleted)
 			    .Include(a => a.Author)
 			    .Include(a => a.Reviewer)
 			    .Include(a => a.Categories)
@@ -150,6 +151,7 @@
         } else if (Date is { } date && Title is { } title) {
             using var context = ContextFactory.CreateDbContext();
             Article = context.Set<Article>()
+                .IgnoreQueryFilters().Where(a => !a.IsDeleted)
 	            .Include(a => a.Author)
 	            .Include(a => a.Reviewer)
 	            .Include(a => a.Categories)

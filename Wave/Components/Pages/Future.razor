@@ -24,8 +24,9 @@
         var now = DateTimeOffset.UtcNow;
         Articles.AddRange(await
             context.Set<Article>()
+	            .IgnoreQueryFilters()
                 .Include(a => a.Author)
-                .Where(a => a.Status == ArticleStatus.Published && a.PublishDate > now)
+                .Where(a => !a.IsDeleted && a.Status == ArticleStatus.Published && a.PublishDate > now)
                 .OrderByDescending(a => a.PublishDate)
                 .ToListAsync());
     }

@@ -30,8 +30,9 @@
         bool admin = HttpContext.User.IsInRole("Admin");
 		Articles.AddRange(await
 			context.Set<Article>()
+				.IgnoreQueryFilters()
 				.Include(a => a.Author)
-				.Where(a => a.Status == ArticleStatus.Draft && (admin || a.Author.Id == userId))
+				.Where(a => !a.IsDeleted && a.Status == ArticleStatus.Draft && (admin || a.Author.Id == userId))
 				.OrderByDescending(a => a.PublishDate)
 				.ToListAsync());
 	}

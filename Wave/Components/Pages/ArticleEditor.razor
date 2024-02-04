@@ -233,6 +233,7 @@
         await using var context = await ContextFactory.CreateDbContextAsync();
         if (Id is not null) {
             Article = await context.Set<Article>()
+	            .IgnoreQueryFilters().Where(a => !a.IsDeleted)
                 .Include(a => a.Author)
                 .Include(a => a.Reviewer)
                 .Include(a => a.Categories)
@@ -279,6 +280,7 @@
 	        Article article;
 	        if (Model.Id is not null) {
 		        article = await context.Set<Article>()
+			        .IgnoreQueryFilters().Where(a => !a.IsDeleted)
 			        .Include(a => a.Author)
 			        .Include(a => a.Reviewer)
 			        .Include(a => a.Categories)
