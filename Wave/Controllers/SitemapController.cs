@@ -22,7 +22,8 @@ public class SitemapController(ApplicationDbContext context) : ControllerBase {
 		var host = new Uri($"https://{Request.Host}{Request.PathBase}", UriKind.Absolute);
 		var articles = await Context.Set<Article>().OrderBy(a => a.PublishDate).ToListAsync();
 
-		var document = new XDocument(new XElement("urlset")) {
+		XNamespace nameSpace = "http://www.sitemaps.org/schemas/sitemap/0.9";
+		var document = new XDocument(new XElement(nameSpace + "urlset", new XAttribute("xmlns", nameSpace))) {
 			Declaration = new XDeclaration("1.0", Encoding.UTF8.ToString(), null),
 		};
 
