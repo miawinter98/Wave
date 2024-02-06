@@ -22,21 +22,23 @@ public class SitemapController(ApplicationDbContext context) : ControllerBase {
 		var host = new Uri($"https://{Request.Host}{Request.PathBase}", UriKind.Absolute);
 		var articles = await Context.Set<Article>().OrderBy(a => a.PublishDate).ToListAsync();
 
-		XNamespace nameSpace = "http://www.sitemaps.org/schemas/sitemap/0.9";
-		var document = new XDocument(new XElement(nameSpace + "urlset", new XAttribute("xmlns", nameSpace))) {
+		var document = new XDocument {
 			Declaration = new XDeclaration("1.0", Encoding.UTF8.ToString(), null),
 		};
-
+		
+		XNamespace nameSpace = "http://www.sitemaps.org/schemas/sitemap/0.9";
+		var root = new XElement(nameSpace + "urlset");
 		if (articles.Count > 0) {
-			document.Root.Add(CreateUrlElement(host, articles.Max(a => a.PublishDate).UtcDateTime, priority:1f));
+			root.Add(CreateUrlElement(nameSpace, host, articles.Max(a => a.PublishDate).UtcDateTime, priority:1f));
 
 			foreach (var article in articles) {
-				document.Root.Add(CreateUrlElement(new Uri(host,
+				root.Add(CreateUrlElement(nameSpace, new Uri(host,
 					$"/{article.PublishDate.Year}/{article.PublishDate.Month:D2}/{article.PublishDate.Day:D2}/{Uri.EscapeDataString(article.Title.ToLowerInvariant()).Replace("-", "+").Replace("%20", "-")}"), article.LastModified?.UtcDateTime ?? article.PublishDate.UtcDateTime));
 			}
 		} else {
-			document.Root.Add(CreateUrlElement(host, priority:1f));
+			root.Add(CreateUrlElement(nameSpace, host, priority:1f));
 		}
+		document.Add(root);
 		
 		Response.StatusCode = StatusCodes.Status200OK;
 		Response.ContentType = "application/xml; charset=utf-8";
@@ -48,12 +50,12 @@ public class SitemapController(ApplicationDbContext context) : ControllerBase {
 		await writer.FlushAsync();
 	}
 
-	private static XElement CreateUrlElement(Uri location, DateTime? lastModified = null, ChangeFrequencies changeFrequency = ChangeFrequencies.Unknown, float priority = 0.5f) {
-		var result = new XElement("url", new XElement("loc", location.AbsoluteUri));
+	private static XElement CreateUrlElement(XNamespace nameSpace, Uri location, DateTime? lastModified = null, ChangeFrequencies changeFrequency = ChangeFrequencies.Unknown, float priority = 0.5f) {
+		var result = new XElement(nameSpace + "url", new XElement(nameSpace + "loc", location.AbsoluteUri));
 
-		if (lastModified is not null) result.Add(new XElement("lastmod", lastModified.Value.ToString("yyyy-MM-dd")));
-		if (changeFrequency is not ChangeFrequencies.Unknown) result.Add(new XElement("changefreq", changeFrequency.ToString().ToLower()));
-		if (Math.Abs(priority - 0.5f) > 0.05) result.Add(new XElement("priority", priority.ToString("F1")));
+		if (lastModified is not null) result.Add(new XElement(nameSpace + "lastmod", lastModified.Value.ToString("yyyy-MM-dd")));
+		if (changeFrequency is not ChangeFrequencies.Unknown) result.Add(new XElement(nameSpace + "changefreq", changeFrequency.ToString().ToLower()));
+		if (Math.Abs(priority - 0.5f) > 0.05) result.Add(new XElement(nameSpace + "priority", priority.ToString("F1")));
 
 		return result;
 	}
