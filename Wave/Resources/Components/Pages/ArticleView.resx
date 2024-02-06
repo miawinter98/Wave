@@ -131,4 +131,7 @@
   <data name="AboutTheAuthor_Profile_Label" xml:space="preserve">
     <value>Profile</value>
   </data>
+  <data name="ToggleReader_Label" xml:space="preserve">
+    <value>Toggle narrow reading view</value>
+  </data>
 </root>

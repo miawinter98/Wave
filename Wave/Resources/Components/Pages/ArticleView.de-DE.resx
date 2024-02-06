@@ -131,4 +131,7 @@
   <data name="AboutTheAuthor_Profile_Label" xml:space="preserve">
     <value>Profil</value>
   </data>
+  <data name="ToggleReader_Label" xml:space="preserve">
+    <value>Enge Leseansicht umschalten</value>
+  </data>
 </root>

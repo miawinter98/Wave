@@ -28,15 +28,21 @@
 				}
 			</small>
 		</p>
-		@if (Article.Categories.Count > 0) {
-			<p class="flex flex-wrap gap-2 my-3">
-				@foreach (var category in Article.Categories.OrderBy(c => c.Color)) {
-					<CategoryBadgeComponent Category="category" />
-				}
-			</p>
-		}
+		<div class="flex justify-between items-end my-3">
+			@if (Article.Categories.Count > 0) {
+				<p class="flex flex-wrap gap-2">
+					@foreach (var category in Article.Categories.OrderBy(c => c.Color)) {
+						<CategoryBadgeComponent Category="category" />
+					}
+				</p>
+			} else {
+				<p> </p>
+			}
+			<ReaderToggle Label="@Localizer["ToggleReader_Label"]" />
+		</div>
 	</header>
 </SectionContent>
+
 <article class="mb-6">
     <div class="prose prose-neutral max-w-none hyphens-auto text-justify">
         @Content
