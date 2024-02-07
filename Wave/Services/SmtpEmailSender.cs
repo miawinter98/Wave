@@ -45,7 +45,7 @@ public class SmtpEmailSender(IOptions<SmtpConfiguration> config, ILogger<SmtpEma
 
             using var client = new SmtpClient();
             await client.ConnectAsync(Configuration.Host, Configuration.Port, 
-				Configuration.Ssl ? SecureSocketOptions.StartTls : SecureSocketOptions.None);
+				Configuration.Ssl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.None);
             if (!string.IsNullOrWhiteSpace(Configuration.Username)) {
 				await client.AuthenticateAsync(Configuration.Username, Configuration.Password);
 			}
