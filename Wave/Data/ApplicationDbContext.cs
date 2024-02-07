@@ -76,5 +76,24 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			
 			category.ToTable("Categories");
 		});
+
+		builder.Entity<EmailNewsletter>(newsletter => {
+			newsletter.HasKey(n => n.Id);
+			newsletter.HasOne(n => n.Article).WithOne().HasForeignKey<EmailNewsletter>()
+				.IsRequired().OnDelete(DeleteBehavior.Cascade);
+
+			newsletter.ToTable("Newsletter");
+		});
+		builder.Entity<EmailSubscriber>(subscriber => {
+			subscriber.HasKey(s => s.Id);
+
+			subscriber.Property(s => s.Name).IsRequired(false).HasMaxLength(128);
+			subscriber.Property(s => s.Email).IsRequired().HasMaxLength(256);
+
+			subscriber.HasIndex(s => s.Unsubscribed);
+
+			subscriber.HasQueryFilter(s => !s.Unsubscribed);
+			subscriber.ToTable("NewsletterSubscribers");
+		});
 	}
 }

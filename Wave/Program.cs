@@ -125,6 +125,8 @@ if (smtpConfig.Exists()) {
 	logMessages.Add("No Email provider configured.");
 }
 
+builder.Services.AddHostedService<EmailBackgroundWorker>();
+
 #endregion
 
 
