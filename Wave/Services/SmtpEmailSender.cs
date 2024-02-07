@@ -1,4 +1,5 @@
 ﻿using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
@@ -43,8 +44,11 @@ public class SmtpEmailSender(IOptions<SmtpConfiguration> config, ILogger<SmtpEma
             message.Body = builder.ToMessageBody();
 
             using var client = new SmtpClient();
-            await client.ConnectAsync(Configuration.Host, Configuration.Port);
-            await client.AuthenticateAsync(Configuration.Username, Configuration.Password);
+            await client.ConnectAsync(Configuration.Host, Configuration.Port, 
+				Configuration.Ssl ? SecureSocketOptions.StartTls : SecureSocketOptions.None);
+            if (!string.IsNullOrWhiteSpace(Configuration.Username)) {
+				await client.AuthenticateAsync(Configuration.Username, Configuration.Password);
+			}
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
         } catch (Exception ex) {
