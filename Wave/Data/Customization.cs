@@ -2,6 +2,7 @@
 
 public class Customization {
     public string AppName { get; set; } = "Wave";
+    public string AppDescription { get; set; } = "";
     public string DefaultTheme { get; set; } = "";
     public string LogoLink { get; set; } = "";
     public string Footer { get; set; } = "";

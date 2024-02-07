@@ -1,13 +1,32 @@
 ﻿@page "/"
 @using Microsoft.Extensions.Localization
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Options
 @using Wave.Data
 @using Wave.Utilities
 
 @rendermode InteractiveServer
 @attribute [StreamRendering]
+@inject IOptions<Customization> Customizations
+@inject NavigationManager Navigation
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory;
 @inject IStringLocalizer<Home> Localizer
+
+<HeadContent>
+	<meta property="og:type" content="website">
+	<meta property="og:title" content="@Customizations.Value.AppName">
+	<meta property="og:site_name" content="@Customizations.Value.AppName">
+	<meta property="og:url" content="@Navigation.BaseUri">
+	@if (!string.IsNullOrWhiteSpace(Customizations.Value.LogoLink)) {
+		<meta property="og:image" content="@Customizations.Value.LogoLink">
+	} else {
+		<meta property="og:image" content="@Navigation.ToAbsoluteUri("/img/logo.png")">
+	}
+	@if (!string.IsNullOrWhiteSpace(Customizations.Value.AppDescription)) {
+		<meta property="description" content="@Customizations.Value.AppDescription">
+		<meta property="og:description" content="@Customizations.Value.AppDescription">
+	}
+</HeadContent>
 
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
 
@@ -16,97 +35,97 @@
 <!-- TODO: somehow get status message -->
 
 @if (Busy) {
-    <div class="flex place-content-center h-full text-primary">
-        <span class="loading loading-spinner loading-lg"></span>
-    </div>
+	<div class="flex place-content-center h-full text-primary">
+		<span class="loading loading-spinner loading-lg"></span>
+	</div>
 } else {
-    @if (Articles.FirstOrDefault() is {} featured) {
-	    <article class="mb-6">
-		    <ArticleLink Article="featured">
-                <div class="hero bg-secondary text-secondary-content border-l-8 border-current shadow rounded-box">
-				    <div class="hero-content">
-					    <div class="flex flex-col space-y-6 my-3">
-						    <h2 class="text-2xl lg:text-4xl">
-							    @featured.Title
-							    <p class="flex flex-wrap gap-2">
-                                    @foreach (var category in featured.Categories.OrderBy(c => c.Color)) {
-									    <span class="badge badge-@CategoryUtilities.GetCssClassPostfixForColor(category.Color)">
-										    @category.Name
-									    </span>
-								    }
-							    </p>
-						    </h2>
-						    <p class="line-clamp-6">
-							    <small class="text-sm">@featured.PublishDate.ToString("g")</small><br/>
-							    @featured.Body[..Math.Min(1000, featured.Body.Length)]
-						    </p>
-						    <div class="flex">
-							    <ProfilePill Profile="featured.Author" />
-						    </div>
-					    </div>
-				    </div>
+	@if (Articles.FirstOrDefault() is {} featured) {
+		<article class="mb-6">
+			<ArticleLink Article="featured">
+				<div class="hero bg-secondary text-secondary-content border-l-8 border-current shadow rounded-box">
+					<div class="hero-content">
+						<div class="flex flex-col space-y-6 my-3">
+							<h2 class="text-2xl lg:text-4xl">
+								@featured.Title
+								<p class="flex flex-wrap gap-2">
+									@foreach (var category in featured.Categories.OrderBy(c => c.Color)) {
+										<span class="badge badge-@CategoryUtilities.GetCssClassPostfixForColor(category.Color)">
+											@category.Name
+										</span>
+									}
+								</p>
+							</h2>
+							<p class="line-clamp-6">
+								<small class="text-sm">@featured.PublishDate.ToString("g")</small><br/>
+								@featured.Body[..Math.Min(1000, featured.Body.Length)]
+							</p>
+							<div class="flex">
+								<ProfilePill Profile="featured.Author" />
+							</div>
+						</div>
+					</div>
 				</div>
-            </ArticleLink>
-	    </article>
-    } else {
-        <h2 class="text-2xl lg:text-4xl mb-6">@Localizer["NoArticles_Title"]</h2>
-        <p>@Localizer["NoArticles_Message"]</p>
-    }
+			</ArticleLink>
+		</article>
+	} else {
+		<h2 class="text-2xl lg:text-4xl mb-6">@Localizer["NoArticles_Title"]</h2>
+		<p>@Localizer["NoArticles_Message"]</p>
+	}
 
-    <ArticleTileArray>
-	    @foreach (var article in Articles.Skip(1)) {
-		    <ArticleTile Article="article" />
-	    }
-    </ArticleTileArray>
+	<ArticleTileArray>
+		@foreach (var article in Articles.Skip(1)) {
+			<ArticleTile Article="article" />
+		}
+	</ArticleTileArray>
 }
 
 @if (HasMore) {
-    <div class="flex place-content-center">
-        <button class="btn btn-wide" @onclick="More">@Localizer["More"]</button>
-    </div>
+	<div class="flex place-content-center">
+		<button class="btn btn-wide" @onclick="More">@Localizer["More"]</button>
+	</div>
 }
 
 @code {
-    [CascadingParameter(Name = "TitlePrefix")]
-    private string TitlePrefix { get; set; } = default!;
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
 
-    private List<Article> Articles { get; } = [];
-    private bool HasMore { get; set; }
-    private bool Busy { get; set; } = true;
+	private List<Article> Articles { get; } = [];
+	private bool HasMore { get; set; }
+	private bool Busy { get; set; } = true;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender) {
-        if (firstRender) {
-            try {
-                await using var context = await ContextFactory.CreateDbContextAsync();
+	protected override async Task OnAfterRenderAsync(bool firstRender) {
+		if (firstRender) {
+			try {
+				await using var context = await ContextFactory.CreateDbContextAsync();
 
-                var query = context.Set<Article>()
-                    .Include(a => a.Author).Include(a => a.Categories)
-                    .OrderByDescending(a => a.PublishDate);
-                var articles = await query.Take(11).ToListAsync();
-                HasMore = (await query.CountAsync()) > 11;
-                Articles.AddRange(articles);
-            } finally {
-                Busy = false;
-                await InvokeAsync(StateHasChanged);
-            }
-        }
-    }
+				var query = context.Set<Article>()
+					.Include(a => a.Author).Include(a => a.Categories)
+					.OrderByDescending(a => a.PublishDate);
+				var articles = await query.Take(11).ToListAsync();
+				HasMore = (await query.CountAsync()) > 11;
+				Articles.AddRange(articles);
+			} finally {
+				Busy = false;
+				await InvokeAsync(StateHasChanged);
+			}
+		}
+	}
 
-    private async Task More() {
-        try {
-            Busy = HasMore = true;
-            await using var context = await ContextFactory.CreateDbContextAsync();
+	private async Task More() {
+		try {
+			Busy = HasMore = true;
+			await using var context = await ContextFactory.CreateDbContextAsync();
 
-            var query = context.Set<Article>()
-                .Include(a => a.Author).Include(a => a.Categories)
-                .OrderByDescending(a => a.PublishDate)
-                .Skip(Articles.Count);
-            var articles = await query.Take(10).ToListAsync();
-            Articles.AddRange(articles);
-            HasMore = (await query.CountAsync()) > 10;
-        } finally {
-            Busy = false;
-        }
-    }
+			var query = context.Set<Article>()
+				.Include(a => a.Author).Include(a => a.Categories)
+				.OrderByDescending(a => a.PublishDate)
+				.Skip(Articles.Count);
+			var articles = await query.Take(10).ToListAsync();
+			Articles.AddRange(articles);
+			HasMore = (await query.CountAsync()) > 10;
+		} finally {
+			Busy = false;
+		}
+	}
 
 }
