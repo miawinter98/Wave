@@ -1,7 +1,5 @@
 ﻿using MailKit.Net.Smtp;
 using MailKit.Security;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MimeKit;
@@ -11,15 +9,18 @@ using Wave.Utilities;
 
 namespace Wave.Services;
 
-public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbContextFactory<ApplicationDbContext> contextFactory, IOptions<SmtpConfiguration> config, IOptions<Customization> customizations) : IHostedService, IDisposable {
+public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbContextFactory<ApplicationDbContext> contextFactory, IOptions<SmtpConfiguration> config, IOptions<Customization> customizations, IOptions<Features> features) : IHostedService, IDisposable {
 	private ILogger<EmailBackgroundWorker> Logger { get; } = logger;
 	private IDbContextFactory<ApplicationDbContext> ContextFactory { get; } = contextFactory;
 	private SmtpConfiguration Configuration { get; } = config.Value;
 	private Customization Customizations { get; } = customizations.Value;
+	private Features Features { get; } = features.Value;
 
 	private Timer? Timer { get; set; }
 
 	public Task StartAsync(CancellationToken cancellationToken) {
+		if (!Features.EmailSubscriptions) return Task.CompletedTask;
+
 		Logger.LogInformation("Background email worker starting.");
 
 		// we want this timer to execute every 15 minutes, at fixed times (:00, :15, :30, :45)
@@ -34,6 +35,8 @@ public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbCon
 	}
 
 	public Task StopAsync(CancellationToken cancellationToken) {
+		if (!Features.EmailSubscriptions) return Task.CompletedTask;
+
 		Logger.LogInformation("Background email worker stopping.");
 		Timer?.Change(Timeout.Infinite, 0);
 		return Task.CompletedTask;
@@ -47,7 +50,6 @@ public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbCon
 	private void DoWork(object? _) {
 		try {
 			Logger.LogInformation("Checking Articles...");
-			if (string.IsNullOrWhiteSpace(Configuration.SenderName)) return;
 
 			using var context = ContextFactory.CreateDbContext();
 			var now = DateTimeOffset.UtcNow;

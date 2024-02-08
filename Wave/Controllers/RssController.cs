@@ -1,35 +1,34 @@
-﻿using System.Collections.ObjectModel;
-using System.Linq;
-using System.ServiceModel.Syndication;
-using System.Xml;
+﻿using System.ServiceModel.Syndication;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
 using Wave.Data;
-using Wave.Data.Migrations.postgres;
 
 namespace Wave.Controllers;
 
 [ApiController]
 [Route("/[controller]")]
-public class RssController(IOptions<Customization> customizations, ApplicationDbContext context) : ControllerBase {
+public class RssController(IOptions<Customization> customizations, ApplicationDbContext context, IOptions<Features> features) : ControllerBase {
 	private ApplicationDbContext Context { get; } = context;
 	private IOptions<Customization> Customizations { get; } = customizations;
+	private IOptions<Features> Features { get; } = features;
 
 	[HttpGet("rss.xml", Name = "RssFeed")]
-	[Produces("application/rss+xml")]
+	[Produces("application/rss+xml", "application/json")]
 	[ResponseCache(Duration = 60*15, Location = ResponseCacheLocation.Any)]
 	public async Task<IActionResult> GetRssFeedAsync(string? category = null) {
+		if (!Features.Value.Rss) return Unauthorized("RSS is disabled");
+
 		var feed = await CreateFeedAll("RssFeed", category);
 		if (feed is null) return NotFound();
 		return Ok(feed);
 	}
 	[HttpGet("atom.xml", Name = "AtomFeed")]
-	[Produces("application/atom+xml")]
+	[Produces("application/atom+xml", "application/json")]
 	[ResponseCache(Duration = 60*15, Location = ResponseCacheLocation.Any)]
 	public async Task<IActionResult> GetAtomFeedAsync(string? category = null) {
+		if (!Features.Value.Rss) return Unauthorized("RSS is disabled");
+
 		var feed = await CreateFeedAll("AtomFeed", category);
 		if (feed is null) return NotFound();
 		return Ok(feed);
