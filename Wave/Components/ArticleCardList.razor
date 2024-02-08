@@ -1,0 +1,16 @@
+﻿@using Wave.Data
+
+@if (Articles.Count < 1) {
+	<p>No Articles</p>
+} else {
+	<div class="flex flex-col gap-4">
+		@foreach (var article in Articles) {
+			<ArticleCard Article="article" />
+		}
+	</div>
+}
+
+@code {
+	[Parameter]
+	public required IList<Article> Articles { get; set; } = [];
+}

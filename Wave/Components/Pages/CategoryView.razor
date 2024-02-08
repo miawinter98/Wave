@@ -14,34 +14,8 @@
 	<a class="btn btn-primary" href="/">@Localizer["NotFound_BackToHome_Label"]</a>
 } else {
 	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"] - @Category.Name</h1>
-	if (Category.Articles.Count < 1) {
-		<p>No Articles</p>
-	}
-	<div class="flex flex-col gap-4">
-		@foreach (var article in Category.Articles) {
-			<article class="card card-side card-compact bg-base-200 text-base-content">
-				<figure class="shrink-0 max-md:!hidden sm:max-w-40">
-					<ArticleLink Article="article">
-						<img src="/api/user/pfp/@article.Author.Id" alt="" width="800">
-					</ArticleLink>
-				</figure>
-				<div class="card-body">
-					<ArticleLink Article="article">
-						<h2 class="card-title">@article.Title</h2>
-						<small>@article.PublishDate.ToString("d")</small>
-						<p class="line-clamp-2">
-							@article.Body
-						</p>
-					</ArticleLink>
-					<div class="card-actions flex flex-wrap gap-2">
-						@foreach (var category in article.Categories.OrderBy(c => c.Color)) {
-							<CategoryBadgeComponent Category="category" />
-						}
-					</div>
-				</div>
-			</article>
-		}
-	</div>
+	
+	<ArticleCardList Articles="Category.Articles" />
 }
 
 @code {
