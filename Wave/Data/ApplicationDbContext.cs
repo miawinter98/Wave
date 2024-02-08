@@ -88,7 +88,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			subscriber.HasKey(s => s.Id);
 
 			subscriber.Property(s => s.Name).IsRequired(false).HasMaxLength(128);
-			subscriber.Property(s => s.Email).IsRequired().HasMaxLength(256);
+			subscriber.Property(s => s.Email).IsRequired().HasMaxLength(256).UseCollation("default-case-insensitive");
+			subscriber.HasIndex(s => s.Email).IsUnique();
 
 			subscriber.HasIndex(s => s.Unsubscribed);
 
