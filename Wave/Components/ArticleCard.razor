@@ -10,15 +10,17 @@
 		<ArticleLink Article="Article">
 			<h2 class="card-title">@Article.Title</h2>
 			<small>@Article.PublishDate.ToString("d")</small>
-			<p class="line-clamp-2">
+			<p class="@(Article.Categories.Count > 0 ? "line-clamp-2" : "line-clamp-4")">
 				@Article.Body
 			</p>
 		</ArticleLink>
-		<div class="card-actions flex flex-wrap gap-2">
-			@foreach (var category in Article.Categories.OrderBy(c => c.Color)) {
-				<CategoryBadgeComponent Category="category" />
-			}
-		</div>
+		@if (Article.Categories.Count > 0) {
+			<div class="card-actions flex flex-wrap gap-2">
+				@foreach (var category in Article.Categories.OrderBy(c => c.Color)) {
+					<CategoryBadgeComponent Category="category" />
+				}
+			</div>
+		}
 	</div>
 </article>
 
