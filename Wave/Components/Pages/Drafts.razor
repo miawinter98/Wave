@@ -8,14 +8,8 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject IStringLocalizer<Drafts> Localizer
 
-<ArticleTileArray>
-	@foreach (var article in Articles) {
-		<ArticleTile Article="article" />
-	}
-	@if (Articles.Count < 1) {
-		<p>@Localizer["NoArticles"]</p>
-	}
-</ArticleTileArray>
+<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
+<ArticleCardList Articles="Articles" />
 
 @code {
 	[CascadingParameter]
@@ -32,6 +26,7 @@
 			context.Set<Article>()
 				.IgnoreQueryFilters()
 				.Include(a => a.Author)
+				.Include(a => a.Categories)
 				.Where(a => !a.IsDeleted && a.Status == ArticleStatus.Draft && (admin || a.Author.Id == userId))
 				.OrderByDescending(a => a.PublishDate)
 				.ToListAsync());

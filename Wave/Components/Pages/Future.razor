@@ -6,14 +6,8 @@
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IStringLocalizer<Future> Localizer
 
-<ArticleTileArray>
-    @foreach (var article in Articles) {
-        <ArticleTile Article="article" />
-    } 
-    @if(Articles.Count < 1) {
-        <p>@Localizer["NoArticles"]</p>
-    }
-</ArticleTileArray>
+<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
+<ArticleCardList Articles="Articles" />
 
 @code {
     private List<Article> Articles { get; } = [];
@@ -26,6 +20,7 @@
             context.Set<Article>()
 	            .IgnoreQueryFilters()
                 .Include(a => a.Author)
+	            .Include(a => a.Categories)
                 .Where(a => !a.IsDeleted && a.Status == ArticleStatus.Published && a.PublishDate > now)
                 .OrderByDescending(a => a.PublishDate)
                 .ToListAsync());
