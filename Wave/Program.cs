@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -120,6 +121,7 @@ builder.Services.AddCascadingValue("TitlePrefix",
 var smtpConfig = builder.Configuration.GetSection("Email:Smtp");
 if (smtpConfig.Exists()) {
 	builder.Services.Configure<SmtpConfiguration>(smtpConfig);
+	builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 	builder.Services.AddScoped<IEmailSender<ApplicationUser>, SmtpEmailSender>();
 } else {
 	builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();

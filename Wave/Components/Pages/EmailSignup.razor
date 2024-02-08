@@ -1,0 +1,83 @@
+﻿@page "/Email/Subscribe"
+
+@using Microsoft.Extensions.Options
+@using Wave.Data
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity.UI.Services
+@using Microsoft.EntityFrameworkCore
+
+@inject IOptions<Features> Features
+@inject IStringLocalizer<EmailSignup> Localizer
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IEmailSender EmailSender
+
+<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+
+@if (!string.IsNullOrWhiteSpace(Message)) {
+	<div class="alert alert-success">
+		<span>@Message</span>
+	</div>
+}
+
+<BoardComponent CenterContent="true">
+	<BoardCardComponent Heading="@Localizer["Title"]">
+		<EditForm method="post" FormName="email-signup" Model="Model" OnValidSubmit="OnValidSubmit">
+			<DataAnnotationsValidator />
+
+			<InputLabelComponent LabelText="@Localizer["Name_Label"]" For="() => Model.Name">
+				<InputText @bind-Value="Model.Name" class="input input-bordered w-full" autocomplete="name"
+				           placeholder="@Localizer["Name_Placeholder"]" />
+			</InputLabelComponent>
+			<InputLabelComponent LabelText="@Localizer["Email_Label"]" For="() => Model.Name">
+				<InputText @bind-Value="Model.Email" class="input input-bordered w-full" autocomplete="email" type="email"
+						   required aria-required="true" placeholder="@Localizer["Email_Placeholder"]" />
+			</InputLabelComponent>
+
+			<button type="submit" class="btn btn-primary w-full">@Localizer["Submit"]</button>
+		</EditForm>
+	</BoardCardComponent>
+</BoardComponent>
+
+@code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+	[SupplyParameterFromForm(FormName = "email-signup")]
+	private InputModel Model { get; set; } = new();
+
+	private string Message { get; set; } = string.Empty;
+
+	protected override void OnInitialized() {
+		if (Features.Value.EmailSubscriptions is not true)
+			throw new ApplicationException("Email subscriptions not enabled.");
+	}
+
+	private async Task OnValidSubmit() {
+		if (Features.Value.EmailSubscriptions is not true)
+			throw new ApplicationException("Email subscriptions not enabled.");
+
+		Message = Localizer["Submit_Message"];
+		await using var context = await ContextFactory.CreateDbContextAsync();
+
+		var subscriber = context.Set<EmailSubscriber>().IgnoreQueryFilters().FirstOrDefault(s => s.Email == Model.Email);
+		if (subscriber?.Unsubscribed is false) return;
+
+		subscriber ??= new EmailSubscriber {
+			Email = Model.Email.Trim(),
+			Unsubscribed = true
+		};
+		subscriber.Name = Model.Name;
+		context.Update(subscriber);
+		await context.SaveChangesAsync();
+
+		if (subscriber.Unsubscribed) {
+			await EmailSender.SendEmailAsync(subscriber.Email, Localizer["ConfirmEmailSubject"], Localizer["ConfirmEmailBody"]);
+		}
+	}
+
+	private sealed class InputModel {
+		[MaxLength(128)]
+		public string? Name { get; set; }
+		[EmailAddress, Required(AllowEmptyStrings = false), MaxLength(256)]
+		public string Email { get; set; } = string.Empty;
+	}
+}
