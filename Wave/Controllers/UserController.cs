@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using ImageMagick;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -31,15 +30,7 @@ public class UserController(ImageService imageService, IDbContextFactory<Applica
 		string? path = ImageService.GetPath(user.ProfilePicture.ImageId);
 		if (path is null) return NotFound();
 
-		if (size < 800) {
-			var image = new MagickImage(path);
-			image.Resize(new MagickGeometry(size));
-			using var memory = new MemoryStream();
-			await image.WriteAsync(memory);
-
-			return File(memory.GetBuffer(), ImageService.ImageMimeType);
-		}
-
+		if (size < 800) return File(await ImageService.GetResized(path, size), ImageService.ImageMimeType);
 		return File(System.IO.File.OpenRead(path), ImageService.ImageMimeType);
 	}
 	
