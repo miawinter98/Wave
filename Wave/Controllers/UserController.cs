@@ -1,4 +1,5 @@
-﻿using ImageMagick;
+﻿using System.ComponentModel.DataAnnotations;
+using ImageMagick;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -18,7 +19,7 @@ public class UserController(ImageService imageService, IDbContextFactory<Applica
 	[OutputCache(Duration = 60*5)]
 	[ResponseCache(Duration = 60*5, Location = ResponseCacheLocation.Any)]
 	[Route("pfp/{userId}")]
-	public async Task<IActionResult> Get(string userId, [FromQuery] int size = 800) {
+	public async Task<IActionResult> Get(string userId, [FromQuery, Range(16, 800)] int size = 800) {
 		if (size > 800) size = 800;
 		await using var context = await ContextFactory.CreateDbContextAsync();
 		var user = await context.Users.Include(u => u.ProfilePicture).FirstOrDefaultAsync(u => u.Id == userId);
