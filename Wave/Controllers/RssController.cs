@@ -14,23 +14,25 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 	private IOptions<Features> Features { get; } = features;
 
 	[HttpGet("rss.xml", Name = "RssFeed")]
-	[Produces("application/rss+xml", "application/json")]
+	[Produces("application/rss+xml")]
 	[ResponseCache(Duration = 60*15, Location = ResponseCacheLocation.Any)]
 	public async Task<IActionResult> GetRssFeedAsync(string? category = null) {
-		if (!Features.Value.Rss) return Unauthorized("RSS is disabled");
+		if (!Features.Value.Rss) return new JsonResult("RSS is disabled") {StatusCode = StatusCodes.Status401Unauthorized};
 
 		var feed = await CreateFeedAll("RssFeed", category);
 		if (feed is null) return NotFound();
+		Response.ContentType = "application/atom+xml";
 		return Ok(feed);
 	}
 	[HttpGet("atom.xml", Name = "AtomFeed")]
-	[Produces("application/atom+xml", "application/json")]
+	[Produces("application/atom+xml")]
 	[ResponseCache(Duration = 60*15, Location = ResponseCacheLocation.Any)]
 	public async Task<IActionResult> GetAtomFeedAsync(string? category = null) {
-		if (!Features.Value.Rss) return Unauthorized("RSS is disabled");
+		if (!Features.Value.Rss) return new JsonResult("RSS is disabled") {StatusCode = StatusCodes.Status401Unauthorized};
 
 		var feed = await CreateFeedAll("AtomFeed", category);
 		if (feed is null) return NotFound();
+		Response.ContentType = "application/atom+xml";
 		return Ok(feed);
 	}
 	
