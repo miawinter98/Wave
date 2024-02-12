@@ -9,12 +9,13 @@ using Wave.Utilities;
 
 namespace Wave.Services;
 
-public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbContextFactory<ApplicationDbContext> contextFactory, IOptions<SmtpConfiguration> config, IOptions<Customization> customizations, IOptions<Features> features) : IHostedService, IDisposable {
+public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbContextFactory<ApplicationDbContext> contextFactory, IOptions<SmtpConfiguration> config, IOptions<Customization> customizations, IOptions<Features> features, EmailTemplateService templateService) : IHostedService, IDisposable {
 	private ILogger<EmailBackgroundWorker> Logger { get; } = logger;
 	private IDbContextFactory<ApplicationDbContext> ContextFactory { get; } = contextFactory;
 	private SmtpConfiguration Configuration { get; } = config.Value;
 	private Customization Customizations { get; } = customizations.Value;
 	private Features Features { get; } = features.Value;
+	private EmailTemplateService TemplateService { get; } = templateService;
 
 	private Timer? Timer { get; set; }
 
@@ -84,22 +85,19 @@ public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbCon
 				string articleLink = ArticleUtilities.GenerateArticleLink(
 					newsletter.Article, new Uri(Customizations.AppUrl, UriKind.Absolute));
 				string unsubscribeLink = new Uri(new Uri(Customizations.AppUrl, UriKind.Absolute), "/unsubscribe").AbsoluteUri;
-				string template = $"""
-					<mjml><mj-body><mj-section><mj-column>
-					<mj-text align="center"><a href="{articleLink}">Read in Browser</a></mj-text>
-					<mj-image width="200px" src="https://blog.winter-software.com/img/logo.png"></mj-image>
-					<mj-divider border-width="1px"></mj-divider>
-					<mj-text>{newsletter.Article.BodyHtml}</mj-text>
-					<mj-divider border-width="1px"></mj-divider>
-					<mj-text align="center"><a href="{unsubscribeLink}">Unsubscribe</a></mj-text>
-					</mj-column></mj-section></mj-body></mjml>
-					""";
+				string template = TemplateService.Process("newsletter", new Dictionary<EmailTemplateService.Constants, object?>{
+					{EmailTemplateService.Constants.BrowserLink, articleLink},
+					{EmailTemplateService.Constants.ContentLogo, "https://blog.winter-software.com/img/logo.png"},
+					{EmailTemplateService.Constants.ContentTitle, newsletter.Article.Title},
+					{EmailTemplateService.Constants.ContentBody, newsletter.Article.BodyHtml},
+					{EmailTemplateService.Constants.EmailUnsubscribeLink, unsubscribeLink}
+				});
+
 				var message = new MimeMessage {
 					From = { sender },
-					To = {  },
 					Subject = newsletter.Article.Title
 				};
-				var builder = new BodyBuilder() {
+				var builder = new BodyBuilder {
 					HtmlBody = mjmlRenderer.Render(template, options).Html
 				};
 				message.Body = builder.ToMessageBody();
