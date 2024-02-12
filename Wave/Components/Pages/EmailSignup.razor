@@ -5,11 +5,15 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity.UI.Services
 @using Microsoft.EntityFrameworkCore
+@using Wave.Services
 
-@inject IOptions<Features> Features
 @inject IStringLocalizer<EmailSignup> Localizer
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IOptions<Features> Features
+@inject IOptions<Customization> Customizations
+@inject NavigationManager Navigation
 @inject IEmailSender EmailSender
+@inject EmailTemplateService TemplateService
 
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
 
@@ -70,7 +74,18 @@
 		await context.SaveChangesAsync();
 
 		if (subscriber.Unsubscribed) {
-			await EmailSender.SendEmailAsync(subscriber.Email, Localizer["ConfirmEmailSubject"], Localizer["ConfirmEmailBody"]);
+			string confirmLink = Navigation.ToAbsoluteUri("#").AbsoluteUri; // TODO
+
+			var customization = Customizations.Value;
+			string body = TemplateService.Default(
+				Navigation.BaseUri,
+				!string.IsNullOrWhiteSpace(customization.LogoLink) ? 
+					customization.LogoLink : 
+					Navigation.ToAbsoluteUri("/img/logo.png").AbsoluteUri,
+				Localizer["ConfirmEmailTitle"],
+				string.Format(Localizer["ConfirmEmailBody"], customization.AppName) + 
+				$"""<p style="text-align: center"><a href="{confirmLink}">{Localizer["Submit"]}</a></p>""");
+			await EmailSender.SendEmailAsync(subscriber.Email, Localizer["ConfirmEmailSubject"], body);
 		}
 	}
 
