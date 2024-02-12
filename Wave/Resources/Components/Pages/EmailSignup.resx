@@ -128,4 +128,10 @@
     <data name="ConfirmEmailBody" xml:space="preserve">
         <value>Please follow the following link to confirm that you want to subscribe to the newsletter of {0} for free. If this has not been you, you can ignore this Email. You can unsubscribe at any point. </value>
     </data>
+    <data name="Failure_Message" xml:space="preserve">
+        <value>Failed to confirm Email. Your token might be wrong or expired. If this error persists, please request a new confirmation mail by filling out this form again.</value>
+    </data>
+    <data name="Success_Message" xml:space="preserve">
+        <value>Your Email has been confirmed successfully. You will not receive notifications about future articles.</value>
+    </data>
 </root>

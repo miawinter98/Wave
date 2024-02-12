@@ -1,14 +1,19 @@
 ﻿@page "/Email/Subscribe"
+@page "/Email/Confirm"
 
 @using Microsoft.Extensions.Options
 @using Wave.Data
 @using System.ComponentModel.DataAnnotations
+@using System.Net
 @using Microsoft.AspNetCore.Identity.UI.Services
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Caching.Distributed
 @using Wave.Services
 
+@inject ILogger<EmailSignup> Logger
 @inject IStringLocalizer<EmailSignup> Localizer
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IDistributedCache TokenCache
 @inject IOptions<Features> Features
 @inject IOptions<Customization> Customizations
 @inject NavigationManager Navigation
@@ -48,11 +53,44 @@
 	[SupplyParameterFromForm(FormName = "email-signup")]
 	private InputModel Model { get; set; } = new();
 
+	[Parameter, SupplyParameterFromQuery(Name = "user")]
+	public string? Id { get; set; }
+	[Parameter, SupplyParameterFromQuery(Name = "token")]
+    public string? Token { get; set; }
+
 	private string Message { get; set; } = string.Empty;
 
 	protected override void OnInitialized() {
 		if (Features.Value.EmailSubscriptions is not true)
 			throw new ApplicationException("Email subscriptions not enabled.");
+
+		if (Id is null || Token is null) return;
+
+		try {
+			string cacheKey = "subscribe-" + Id;
+			byte[]? tokenInCache = TokenCache.Get(cacheKey);
+
+			if (tokenInCache is null || Token != Convert.ToBase64String(tokenInCache)) {
+				Message = Localizer["Failure_Message"];
+				return;
+			}
+
+			var realId = new Guid(Convert.FromBase64String(Id));
+			using var context = ContextFactory.CreateDbContext();
+			var subscriber = context.Set<EmailSubscriber>().IgnoreQueryFilters().FirstOrDefault(s => s.Id == realId);
+			if (subscriber is null) {
+				Message = Localizer["Failure_Message"];
+				return;
+			}
+			subscriber.Unsubscribed = false;
+			context.SaveChanges();
+
+			TokenCache.Remove(cacheKey);
+			Message = Localizer["Success_Message"];
+		} catch (Exception ex) {
+			Logger.LogError(ex, "Error trying to confirm subscriber.");
+			Message = Localizer["Failure_Message"];
+		}
 	}
 
 	private async Task OnValidSubmit() {
@@ -74,7 +112,17 @@
 		await context.SaveChangesAsync();
 
 		if (subscriber.Unsubscribed) {
-			string confirmLink = Navigation.ToAbsoluteUri("#").AbsoluteUri; // TODO
+			string id = Convert.ToBase64String(subscriber.Id.ToByteArray());
+			string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+
+			await TokenCache.SetAsync("subscribe-" + id, 
+				Convert.FromBase64String(token), 
+				new DistributedCacheEntryOptions {
+				AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+			});
+			
+			string confirmLink = Navigation.ToAbsoluteUri(
+				$"/Email/Confirm?user={WebUtility.UrlEncode(id)}&token={WebUtility.UrlEncode(token)}").AbsoluteUri;
 
 			var customization = Customizations.Value;
 			string body = TemplateService.Default(

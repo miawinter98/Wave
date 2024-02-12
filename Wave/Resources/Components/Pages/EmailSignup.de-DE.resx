@@ -122,4 +122,10 @@
     <data name="ConfirmEmailTitle" xml:space="preserve">
         <value>E-Mail Bestätigen</value>
     </data>
+    <data name="Failure_Message" xml:space="preserve">
+        <value>Fehler beim bestätigen der E-Mail. Ihr Token ist möglicherweise falsch oder abgelaufen. Sollte dieser Fehler weiterhin bestehen, fordern Sie eine neue Bestätigungsmail an, indem Sie das untenstehende Formular erneut ausfüllen.</value>
+    </data>
+    <data name="Success_Message" xml:space="preserve">
+        <value>Ihre E-Mail wurde erfolgreich bestätigt. Sie werden nun in zukunft Benachrichtigungen zu neuen Artikeln erhalten.</value>
+    </data>
 </root>
