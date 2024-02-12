@@ -8,6 +8,7 @@
 @rendermode InteractiveServer
 @attribute [StreamRendering]
 @inject IOptions<Customization> Customizations
+@inject IOptions<Features> Features
 @inject NavigationManager Navigation
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory;
 @inject IStringLocalizer<Home> Localizer
@@ -25,6 +26,10 @@
 	@if (!string.IsNullOrWhiteSpace(Customizations.Value.AppDescription)) {
 		<meta property="description" content="@Customizations.Value.AppDescription">
 		<meta property="og:description" content="@Customizations.Value.AppDescription">
+	}
+	@if (Features.Value.Rss) { 
+		<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName" href="/rss/rss.xml">
+		<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName" href="/rss/atom.xml">
 	}
 </HeadContent>
 

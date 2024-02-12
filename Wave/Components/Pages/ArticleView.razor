@@ -9,6 +9,7 @@
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject NavigationManager Navigation
 @inject IOptions<Customization> Customizations
+@inject IOptions<Features> Features
 @inject IStringLocalizer<ArticleView> Localizer
 
 <PageTitle>@(TitlePrefix + (Article?.Title ?? Localizer["NotFound_Title"]))</PageTitle>
@@ -30,6 +31,10 @@
             <meta property="og:article:modified_time" content="@Article.LastModified.Value.ToString("u")">
         }
         <meta property="og:site_name" content="@Customizations.Value.AppName">
+        @if (Features.Value.Rss) { 
+	        <link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName" href="/rss/rss.xml">
+	        <link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName" href="/rss/atom.xml">
+        }
     </HeadContent>
 }
 

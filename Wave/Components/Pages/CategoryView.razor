@@ -2,9 +2,19 @@
 @using Microsoft.EntityFrameworkCore
 @using Wave.Data
 @using System.Net
+@using Microsoft.Extensions.Options
 
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IOptions<Customization> Customizations
+@inject IOptions<Features> Features
 @inject IStringLocalizer<CategoryView> Localizer
+
+<HeadContent>
+	@if (Features.Value.Rss && Category is not null) { 
+		<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName | @Category.Name" href="/rss/rss.xml?category=@WebUtility.UrlEncode(Category.Name)">
+		<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName | @Category.Name" href="/rss/atom.xml?category=@WebUtility.UrlEncode(Category.Name)">
+	}
+</HeadContent>
 
 <PageTitle>@(TitlePrefix + Localizer["Title"] + " | " + (Category?.Name ?? "Not Found"))</PageTitle>
 
