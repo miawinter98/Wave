@@ -114,6 +114,7 @@ public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbCon
 						// TODO mailto: unsubscribe:
 						// List-Unsubscribe:  <mailto: unsubscribe@example.com?subject=unsubscribe>,  <http://www.example.com/unsubscribe.html>
 						message.Headers.Add(HeaderId.ListUnsubscribe, $"<{unsubscribeLink}>");
+						message.Headers.Add(HeaderId.ListUnsubscribePost, "One-Click");
 						message.To.Add(new MailboxAddress(subscriber.Name, subscriber.Email));
 						message.Body = builder.ToMessageBody();
 						client.Send(message);

@@ -7,6 +7,7 @@
 @using System.Net
 @using Microsoft.EntityFrameworkCore
 @using Wave.Services
+@using Wave.Utilities
 
 @inject ILogger<EmailSignup> Logger
 @inject IStringLocalizer<EmailSignup> Localizer
@@ -63,7 +64,7 @@
 
 		if (Id is null || Token is null) return;
 		try {
-			var id = await TemplateService.ValidateTokensAsync(Id, Token);
+			var id = await TemplateService.ValidateTokensAsync(Id, Token, deleteToken: false);
 
 			if (id is null) {
 				Message = Localizer["Failure_Message"];
@@ -78,11 +79,30 @@
 			}
 			subscriber.Unsubscribed = false;
 			await context.SaveChangesAsync();
-
-			await TemplateService.ValidateTokensAsync(Id, Token, deleteToken: true);
 			Message = Localizer["Success_Message"];
 
+			await TemplateService.ValidateTokensAsync(Id, Token, deleteToken: true);
 
+			var articles = await context.Set<EmailNewsletter>()
+				.IgnoreAutoIncludes()
+				.Include(a => a.Article).ThenInclude(a => a.Author)
+				.OrderByDescending(a => a.DistributionDateTime)
+				.Take(3)
+				.ToListAsync();
+			string body = $"<p>{Localizer["WelcomeEmailBody"]}</p>\n";
+
+			foreach (var n in articles) {
+				string articleLink = ArticleUtilities.GenerateArticleLink(n.Article, new Uri(Customizations.Value.AppUrl, UriKind.Absolute));
+				body = body +
+				       "<div style=\"padding: 10px; background: #333; color: #fff; margin-bottom: 10px\">" +
+				       $"<h3>{n.Article.Title}</h3>" +
+				       $"<small>{n.Article.Author.Name}</small>" +
+				       $"<p>{n.Article.Body[..Math.Min(100, n.Article.Body.Length)]}...</p>" +
+				       $"<a href=\"{articleLink}\">Link</a>" +
+				       "</div>";
+			}
+			await EmailSender.SendSubscribedMailAsync(subscriber, 
+				Localizer["WelcomeEmailSubject"], Localizer["WelcomeEmailTitle"], body, subscribedRole: "welcome");
 		} catch (Exception ex) {
 			Logger.LogError(ex, "Error trying to confirm subscriber.");
 			Message = Localizer["Failure_Message"];

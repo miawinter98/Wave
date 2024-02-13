@@ -134,4 +134,13 @@
     <data name="Success_Message" xml:space="preserve">
         <value>Your Email has been confirmed successfully. You will not receive notifications about future articles.</value>
     </data>
+  <data name="WelcomeEmailSubject" xml:space="preserve">
+    <value>Your Newsletter Subscription has been Confirmed</value>
+  </data>
+  <data name="WelcomeEmailTitle" xml:space="preserve">
+    <value>You are now subscribed!</value>
+  </data>
+  <data name="WelcomeEmailBody" xml:space="preserve">
+    <value>You are now being notified about new articles coming out. Have a look at the following section for what you might have missed. You can always unsubscribe using the link at the bottom of this or future Emails.</value>
+  </data>
 </root>

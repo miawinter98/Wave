@@ -128,4 +128,13 @@
     <data name="Success_Message" xml:space="preserve">
         <value>Ihre E-Mail wurde erfolgreich bestätigt. Sie werden nun in zukunft Benachrichtigungen zu neuen Artikeln erhalten.</value>
     </data>
+  <data name="WelcomeEmailTitle" xml:space="preserve">
+    <value>Sie sind nun Abonniert!</value>
+  </data>
+  <data name="WelcomeEmailSubject" xml:space="preserve">
+    <value>Ihr Newsletter-Abonnement wurde Bestätigt</value>
+  </data>
+  <data name="WelcomeEmailBody" xml:space="preserve">
+    <value>Sie werden von nun an über neue Artikel informiert. Schauen Sie doch mal in der folgenden Sektion was Sie vielleicht verpasst haben. Sie können sich jeder Zeit in diesem oder zukünftigen E-Mails abmelden über den Link den Sie am ende finden.</value>
+  </data>
 </root>
