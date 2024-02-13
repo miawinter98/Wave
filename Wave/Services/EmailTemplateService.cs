@@ -15,10 +15,10 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 	
 	private Regex TokenMatcher { get; } = MyRegex();
 
-	public async Task<(string user, string token)> CreateConfirmTokensAsync(Guid subscriberId) {
+	public async Task<(string user, string token)> CreateConfirmTokensAsync(Guid subscriberId, string role = "subscribe") {
 		string user = Convert.ToBase64String(subscriberId.ToByteArray());
 		string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-		string cacheKey = "subscribe-" + user;
+		string cacheKey = role + "-" + user;
 		
 		await TokenCache.SetAsync(cacheKey, 
 			Convert.FromBase64String(token), 
@@ -29,8 +29,8 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		return (user, token);
 	}
 
-	public async Task<Guid?> ValidateTokensAsync(string user, string token) {
-		string cacheKey = "subscribe-" + user;
+	public async Task<Guid?> ValidateTokensAsync(string user, string token, string role = "subscribe") {
+		string cacheKey = role + "-" + user;
 		byte[]? tokenInCache = await TokenCache.GetAsync(cacheKey);
 		
 		if (tokenInCache is null || token != Convert.ToBase64String(tokenInCache))
