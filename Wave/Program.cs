@@ -122,6 +122,7 @@ var smtpConfig = builder.Configuration.GetSection("Email:Smtp");
 if (smtpConfig.Exists()) {
 	builder.Services.Configure<SmtpConfiguration>(smtpConfig);
 	builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+	builder.Services.AddScoped<IAdvancedEmailSender, SmtpEmailSender>();
 	builder.Services.AddScoped<IEmailSender<ApplicationUser>, SmtpEmailSender>();
 } else {
 	builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();

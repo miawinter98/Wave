@@ -1,18 +1,20 @@
 ﻿using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Wave.Data;
+using Uri = System.Uri;
 
 namespace Wave.Services;
 
-public class SmtpEmailSender(IOptions<SmtpConfiguration> config, ILogger<SmtpEmailSender> logger) : IEmailSender<ApplicationUser>, IEmailSender {
+public class SmtpEmailSender(ILogger<SmtpEmailSender> logger, IOptions<SmtpConfiguration> config, IOptions<Customization> customizations, EmailTemplateService templateService) : IEmailSender<ApplicationUser>, IAdvancedEmailSender {
+	private ILogger<SmtpEmailSender> Logger { get; } = logger;
     private SmtpConfiguration Configuration { get; } = config.Value;
-    private ILogger<SmtpEmailSender> Logger { get; } = logger;
-    
-    public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink) =>
+	private Customization Customizations { get; } = customizations.Value;
+    private EmailTemplateService TemplateService { get; } = templateService;
+
+	public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink) =>
         SendEmailAsync(email, "Confirm your email",
             $"Please confirm your account by <a href='{confirmationLink}'>clicking here</a>.");
 
@@ -56,11 +58,21 @@ public class SmtpEmailSender(IOptions<SmtpConfiguration> config, ILogger<SmtpEma
 				throw new EmailNotSendException("Failed Email send.", ex);
 			}
             await client.DisconnectAsync(true);
+            Logger.LogInformation("Successfully send mail to {email} (subject: {subject}).", email, subject);
         } catch (Exception ex) {
             Logger.LogError(ex, "Error sending E-Mail");
             throw;
         }
     }
+
+	public Task SendDefaultMailAsync(string receiverMail, string? receiverName, string subject, string title, string bodyHtml) {
+		var host = new Uri(string.IsNullOrWhiteSpace(Customizations.AppUrl) ? "" : Customizations.AppUrl);
+		string logo = !string.IsNullOrWhiteSpace(Customizations.LogoLink)
+			? Customizations.LogoLink
+			: new Uri(host, "/img/logo.png").AbsoluteUri;
+		string body = TemplateService.Default(host.AbsoluteUri, logo, title, bodyHtml);
+		return SendEmailAsync(receiverMail, receiverName, subject, body);
+	}
 }
 
 public class EmailNotSendException(string message, Exception exception) : ApplicationException(message, exception);

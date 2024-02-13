@@ -5,7 +5,6 @@
 @using Wave.Data
 @using System.ComponentModel.DataAnnotations
 @using System.Net
-@using Microsoft.AspNetCore.Identity.UI.Services
 @using Microsoft.EntityFrameworkCore
 @using Wave.Services
 
@@ -15,7 +14,7 @@
 @inject IOptions<Features> Features
 @inject IOptions<Customization> Customizations
 @inject NavigationManager Navigation
-@inject IEmailSender EmailSender
+@inject IAdvancedEmailSender EmailSender
 @inject EmailTemplateService TemplateService
 
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
@@ -80,7 +79,10 @@
 			subscriber.Unsubscribed = false;
 			await context.SaveChangesAsync();
 
+			await TemplateService.ValidateTokensAsync(Id, Token, deleteToken: true);
 			Message = Localizer["Success_Message"];
+
+
 		} catch (Exception ex) {
 			Logger.LogError(ex, "Error trying to confirm subscriber.");
 			Message = Localizer["Failure_Message"];
@@ -111,17 +113,10 @@
 
 				string confirmLink = Navigation.ToAbsoluteUri(
 					$"/Email/Confirm?user={WebUtility.UrlEncode(id)}&token={WebUtility.UrlEncode(token)}").AbsoluteUri;
-
-				var customization = Customizations.Value;
-				string body = TemplateService.Default(
-					Navigation.BaseUri,
-					!string.IsNullOrWhiteSpace(customization.LogoLink) ? 
-						customization.LogoLink : 
-						Navigation.ToAbsoluteUri("/img/logo.png").AbsoluteUri,
-					Localizer["ConfirmEmailTitle"],
-					string.Format(Localizer["ConfirmEmailBody"], customization.AppName) + 
-					$"""<p style="text-align: center"><a href="{confirmLink}">{Localizer["Submit"]}</a></p>""");
-				await EmailSender.SendEmailAsync(subscriber.Email, Localizer["ConfirmEmailSubject"], body);
+				string body = string.Format(Localizer["ConfirmEmailBody"], Customizations.Value.AppName) +
+				              $"""<p style="text-align: center"><a href="{confirmLink}">{Localizer["Submit"]}</a></p>""";
+				await EmailSender.SendDefaultMailAsync(subscriber.Email, subscriber.Name, Localizer["ConfirmEmailSubject"],
+					Localizer["ConfirmEmailTitle"], body);
 			}
 		} catch (Exception ex) {
 			Logger.LogError(ex, "Failed to create subscriber/send confirmation mail.");

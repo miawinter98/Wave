@@ -81,18 +81,12 @@ public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbCon
 				newsletter.IsSend = true;
 				context.SaveChanges();
 
-				string articleLink = ArticleUtilities.GenerateArticleLink(
-					newsletter.Article, new Uri(Customizations.AppUrl, UriKind.Absolute));
-				string template = TemplateService.Process("newsletter", new Dictionary<EmailTemplateService.Constants, object?>{
-					{EmailTemplateService.Constants.BrowserLink, articleLink},
-					{EmailTemplateService.Constants.ContentLogo, (!string.IsNullOrWhiteSpace(Customizations.LogoLink) ? 
-						new Uri(Customizations.LogoLink) : 
-						new Uri(host, "/img/logo.png"))
-						.AbsoluteUri},
-					{EmailTemplateService.Constants.ContentTitle, newsletter.Article.Title},
-					{EmailTemplateService.Constants.ContentBody, newsletter.Article.BodyHtml},
-					{EmailTemplateService.Constants.EmailUnsubscribeLink, "[[<__UNSUBSCRIBE__>]]"}
-				});
+				string articleLink = ArticleUtilities.GenerateArticleLink(newsletter.Article, new Uri(Customizations.AppUrl, UriKind.Absolute));
+				string template = TemplateService.Newsletter(host.AbsoluteUri, articleLink, 
+						(!string.IsNullOrWhiteSpace(Customizations.LogoLink) ? 
+							new Uri(Customizations.LogoLink) : 
+							new Uri(host, "/img/logo.png")).AbsoluteUri, newsletter.Article.Title, newsletter.Article.BodyHtml,
+						"[[<__UNSUBSCRIBE__>]]");
 
 				var message = new MimeMessage {
 					From = { sender },

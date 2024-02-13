@@ -42,12 +42,23 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 	}
 	
 
-	public string Default(string url, string logoLink, string title, string body) {
+	public string Default(string home, string logoLink, string title, string body) {
 		return Process("default", new Dictionary<Constants, object?> {
-			{Constants.HomeLink, url},
+			{Constants.HomeLink, home},
 			{Constants.ContentLogo, logoLink},
 			{Constants.ContentTitle, title},
 			{Constants.ContentBody, body}
+		});
+	}
+
+	public string Newsletter(string home, string browserUrl, string logoLink, string title, string body, string unsubscribe) {
+		return Process("newsletter", new Dictionary<Constants, object?> {
+			{ Constants.HomeLink, home },
+			{ Constants.BrowserLink, browserUrl },
+			{ Constants.ContentLogo, logoLink },
+			{ Constants.ContentTitle, title },
+			{ Constants.ContentBody, body },
+			{ Constants.EmailUnsubscribeLink, unsubscribe }
 		});
 	}
 
