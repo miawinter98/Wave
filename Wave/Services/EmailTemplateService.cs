@@ -15,7 +15,7 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 	
 	private Regex TokenMatcher { get; } = MyRegex();
 
-	public async Task<(string user, string token)> CreateConfirmTokensAsync(Guid subscriberId, string role = "subscribe") {
+	public async Task<(string user, string token)> CreateConfirmTokensAsync(Guid subscriberId, string role = "subscribe", TimeSpan? expiration = null) {
 		string user = Convert.ToBase64String(subscriberId.ToByteArray());
 		string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
 		string cacheKey = role + "-" + user;
@@ -23,7 +23,7 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		await TokenCache.SetAsync(cacheKey, 
 			Convert.FromBase64String(token), 
 			new DistributedCacheEntryOptions {
-				AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+				AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromDays(1)
 			});
 		
 		return (user, token);
