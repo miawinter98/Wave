@@ -44,7 +44,7 @@
 	[Parameter, SupplyParameterFromQuery(Name = "token")]
 	public string? Token { get; set; }
 	[Parameter, SupplyParameterFromQuery(Name = "newsletter")]
-	public int? Newsletter { get; set; }
+	public string? Newsletter { get; set; }
 
 	private string Message { get; set; } = string.Empty;
 
