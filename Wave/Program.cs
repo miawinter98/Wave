@@ -20,11 +20,11 @@ var logMessages = new List<string>();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
-	.AddJsonFile("/configuration/config.json", true, false)
-	.AddYamlFile("/configuration/config.yml", true, false)
-	.AddTomlFile("/configuration/config.toml", true, false)
-	.AddIniFile( "/configuration/config.ini", true, false)
-	.AddXmlFile( "/configuration/config.xml", true, false)
+	.AddJsonFile(Path.Combine(FileSystemService.ConfigurationDirectory, "config.json"), true, false)
+	.AddYamlFile(Path.Combine(FileSystemService.ConfigurationDirectory, "config.yml"), true, false)
+	.AddTomlFile(Path.Combine(FileSystemService.ConfigurationDirectory, "config.toml"), true, false)
+	.AddIniFile( Path.Combine(FileSystemService.ConfigurationDirectory, "config.ini"), true, false)
+	.AddXmlFile( Path.Combine(FileSystemService.ConfigurationDirectory, "config.xml"), true, false)
 	.AddEnvironmentVariables("WAVE_");
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -128,6 +128,7 @@ if (smtpConfig.Exists()) {
 	logMessages.Add("No Email provider configured.");
 }
 
+builder.Services.AddSingleton<FileSystemService>();
 builder.Services.AddSingleton<EmailTemplateService>();
 builder.Services.AddHostedService<EmailBackgroundWorker>();
 

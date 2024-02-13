@@ -4,7 +4,6 @@ using MailKit.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using Mjml.Net;
 using Wave.Data;
 using Wave.Utilities;
 
@@ -32,6 +31,8 @@ public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbCon
 		Logger.LogInformation("First distribution check will be in {waitTime} minutes, at {time}.", 
 			waitTime, now.AddMinutes(waitTime).LocalDateTime.ToString("u"));
 		Timer = new Timer(DoWork, null, TimeSpan.FromMinutes(waitTime), TimeSpan.FromMinutes(15));
+
+		TemplateService.TryCreateDefaultTemplates();
 
 		return Task.CompletedTask;
 	}
@@ -84,7 +85,10 @@ public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbCon
 					newsletter.Article, new Uri(Customizations.AppUrl, UriKind.Absolute));
 				string template = TemplateService.Process("newsletter", new Dictionary<EmailTemplateService.Constants, object?>{
 					{EmailTemplateService.Constants.BrowserLink, articleLink},
-					{EmailTemplateService.Constants.ContentLogo, "https://blog.winter-software.com/img/logo.png"},
+					{EmailTemplateService.Constants.ContentLogo, (!string.IsNullOrWhiteSpace(Customizations.LogoLink) ? 
+						new Uri(Customizations.LogoLink) : 
+						new Uri(host, "/img/logo.png"))
+						.AbsoluteUri},
 					{EmailTemplateService.Constants.ContentTitle, newsletter.Article.Title},
 					{EmailTemplateService.Constants.ContentBody, newsletter.Article.BodyHtml},
 					{EmailTemplateService.Constants.EmailUnsubscribeLink, "[[<__UNSUBSCRIBE__>]]"}
