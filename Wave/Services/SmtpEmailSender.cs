@@ -49,7 +49,12 @@ public class SmtpEmailSender(IOptions<SmtpConfiguration> config, ILogger<SmtpEma
             if (!string.IsNullOrWhiteSpace(Configuration.Username)) {
 				await client.AuthenticateAsync(Configuration.Username, Configuration.Password);
 			}
-            await client.SendAsync(message);
+
+			try {
+				await client.SendAsync(message);
+			} catch (Exception ex) {
+				throw new EmailNotSendException("Failed Email send.", ex);
+			}
             await client.DisconnectAsync(true);
         } catch (Exception ex) {
             Logger.LogError(ex, "Error sending E-Mail");
@@ -57,3 +62,5 @@ public class SmtpEmailSender(IOptions<SmtpConfiguration> config, ILogger<SmtpEma
         }
     }
 }
+
+public class EmailNotSendException(string message, Exception exception) : ApplicationException(message, exception);

@@ -1,4 +1,5 @@
-﻿using MailKit.Net.Smtp;
+﻿using System.Net;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -70,11 +71,8 @@ public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbCon
 			if (!string.IsNullOrWhiteSpace(Configuration.Username)) {
 				client.Authenticate(Configuration.Username, Configuration.Password);
 			}
-
-			var mjmlRenderer = new MjmlRenderer();
-			var options = new MjmlOptions {
-				Beautify = false
-			};
+			
+			var host = new Uri(Customizations.AppUrl, UriKind.Absolute);
 			foreach (var newsletter in newsletters) {
 				Logger.LogInformation("Processing '{title}'.", newsletter.Article.Title);
 				// set newsletter to send first, so we don't spam people 
@@ -84,35 +82,42 @@ public class EmailBackgroundWorker(ILogger<EmailBackgroundWorker> logger, IDbCon
 
 				string articleLink = ArticleUtilities.GenerateArticleLink(
 					newsletter.Article, new Uri(Customizations.AppUrl, UriKind.Absolute));
-				string unsubscribeLink = new Uri(new Uri(Customizations.AppUrl, UriKind.Absolute), "/unsubscribe").AbsoluteUri;
 				string template = TemplateService.Process("newsletter", new Dictionary<EmailTemplateService.Constants, object?>{
 					{EmailTemplateService.Constants.BrowserLink, articleLink},
 					{EmailTemplateService.Constants.ContentLogo, "https://blog.winter-software.com/img/logo.png"},
 					{EmailTemplateService.Constants.ContentTitle, newsletter.Article.Title},
 					{EmailTemplateService.Constants.ContentBody, newsletter.Article.BodyHtml},
-					{EmailTemplateService.Constants.EmailUnsubscribeLink, unsubscribeLink}
+					{EmailTemplateService.Constants.EmailUnsubscribeLink, "[[<__UNSUBSCRIBE__>]]"}
 				});
 
 				var message = new MimeMessage {
 					From = { sender },
 					Subject = newsletter.Article.Title
 				};
-				var builder = new BodyBuilder {
-					HtmlBody = mjmlRenderer.Render(template, options).Html
-				};
-				message.Body = builder.ToMessageBody();
 
 				EmailSubscriber? last = null;
 				while (context.Set<EmailSubscriber>()
-							.Where(s => !s.Unsubscribed && (last == null || s.Id > last.Id))
+							.Where(s => (last == null || s.Id > last.Id))
 							.OrderBy(s => s.Id)
 							.Take(50)
 							.ToList() is { Count: > 0 } subscribers) {
 					last = subscribers.Last();
 
 					foreach (var subscriber in subscribers) {
+						(string user, string token) = TemplateService.CreateConfirmTokensAsync(subscriber.Id, "unsubscribe-" + newsletter.Id, TimeSpan.FromDays(30)).ConfigureAwait(false).GetAwaiter().GetResult();
+						string unsubscribeLink = new Uri(host, 
+							$"/Email/Unsubscribe?newsletter={newsletter.Id:D}&user={WebUtility.UrlEncode(user)}&token={WebUtility.UrlEncode(token)}").AbsoluteUri;
+
+						var builder = new BodyBuilder {
+							HtmlBody = template.Replace("[[<__UNSUBSCRIBE__>]]", unsubscribeLink)
+						};
+
 						message.To.Clear();
+						// TODO mailto: unsubscribe:
+						// List-Unsubscribe:  <mailto: unsubscribe@example.com?subject=unsubscribe>,  <http://www.example.com/unsubscribe.html>
+						message.Headers.Add(HeaderId.ListUnsubscribe, $"<{unsubscribeLink}>");
 						message.To.Add(new MailboxAddress(subscriber.Name, subscriber.Email));
+						message.Body = builder.ToMessageBody();
 						client.Send(message);
 					}
 

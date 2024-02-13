@@ -1,0 +1,111 @@
+﻿@page "/Email/Unsubscribe"
+@using Microsoft.AspNetCore.Identity.UI.Services
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Options
+@using Wave.Data
+@using Wave.Services
+
+@inject ILogger<EmailEdit> Logger
+@inject IStringLocalizer<EmailEdit> Localizer
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IOptions<Customization> Customizations
+@inject NavigationManager Navigation
+@inject IEmailSender EmailSender
+@inject EmailTemplateService TemplateService
+
+<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+
+@if (!string.IsNullOrWhiteSpace(Message)) {
+	<div class="alert alert-success">
+		<span>@Message</span>
+	</div>
+}
+
+<BoardComponent CenterContent="true">
+	<BoardCardComponent Heading="@Localizer["Title"]">
+		<form method="post" @formname="Unsubscribe" @onsubmit="Unsubscribe_Submit">
+			<AntiforgeryToken />
+			<input type="hidden" name="user" value="@Id" />
+			<input type="hidden" name="token" value="@Token" />
+			<input type="hidden" name="newsletter" value="@Newsletter" />
+			
+			<button type="submit" class="btn btn-error w-full">@Localizer["Submit_Unsubscribe"]</button>
+		</form>
+
+	</BoardCardComponent>
+</BoardComponent>
+
+@code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+	
+	[Parameter, SupplyParameterFromQuery(Name = "user")]
+	public string? Id { get; set; }
+	[Parameter, SupplyParameterFromQuery(Name = "token")]
+	public string? Token { get; set; }
+	[Parameter, SupplyParameterFromQuery(Name = "newsletter")]
+	public int? Newsletter { get; set; }
+
+	private string Message { get; set; } = string.Empty;
+
+	protected override async Task OnInitializedAsync() {
+		if (Id is null || Token is null || Newsletter is null) {
+			if (string.IsNullOrWhiteSpace(Message)) Message = Localizer["Load_Failure_Message"];
+			return;
+		}
+
+		try {
+			if (await GetSubscriber() is null) {
+				Message = Localizer["Load_Failure_Message"];
+			}
+		} catch (Exception) {
+			Message = Localizer["Load_Failure_Message"];
+		}
+	}
+
+	private async Task Unsubscribe_Submit() {
+		try {
+			await using var context = await ContextFactory.CreateDbContextAsync();
+			var subscriber = await GetSubscriber(context);
+			if (subscriber is null) {
+				Message = Localizer["Unsubscribe_Failure_Message"];
+				return;
+			}
+
+			subscriber.Unsubscribed = true;
+			await context.SaveChangesAsync();
+			Message = Localizer["Unsubscribe_Success"];
+
+			var customization = Customizations.Value;
+			string body = TemplateService.Default(
+				Navigation.BaseUri,
+				!string.IsNullOrWhiteSpace(customization.LogoLink) ? customization.LogoLink : Navigation.ToAbsoluteUri("/img/logo.png").AbsoluteUri,
+				Localizer["Unsubscribe_ConfirmEmailTitle"],
+				Localizer["Unsubscribe_ConfirmEmailBody"]);
+			await EmailSender.SendEmailAsync(subscriber.Email, Localizer["ConfirmEmailSubject"], body);
+			await TemplateService.ValidateTokensAsync(Id!, Token!, "unsubscribe-" + Newsletter); // delete token
+		} catch (EmailNotSendException ex) {
+			Logger.LogWarning(ex, "Failed to send unsubscribe confirm email. The user has been unsubscribed anyway.");
+		} catch (Exception) {
+			Message = Localizer["Unsubscribe_Failure_Message"];
+		}
+	}
+
+	private async Task<EmailSubscriber?> GetSubscriber(ApplicationDbContext? context = null) {
+		if (Id is null || Token is null || Newsletter is null) {
+			return null;
+		}
+
+		var id = await TemplateService.ValidateTokensAsync(Id, Token, "unsubscribe-" + Newsletter, false);
+		if (id is null) {
+			return null;
+		}
+
+		if (context is null) {
+			await using var context1 = await ContextFactory.CreateDbContextAsync();
+			return context1.Set<EmailSubscriber>().FirstOrDefault(s => s.Id == id);
+		}
+
+		return context.Set<EmailSubscriber>().FirstOrDefault(s => s.Id == id);
+	}
+}

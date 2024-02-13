@@ -29,14 +29,14 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		return (user, token);
 	}
 
-	public async Task<Guid?> ValidateTokensAsync(string user, string token, string role = "subscribe") {
+	public async Task<Guid?> ValidateTokensAsync(string user, string token, string role = "subscribe", bool deleteToken = true) {
 		string cacheKey = role + "-" + user;
 		byte[]? tokenInCache = await TokenCache.GetAsync(cacheKey);
 		
 		if (tokenInCache is null || token != Convert.ToBase64String(tokenInCache))
 			return null;
-		
-		await TokenCache.RemoveAsync(cacheKey);
+
+		if (deleteToken) await TokenCache.RemoveAsync(cacheKey);
 		return new Guid(Convert.FromBase64String(user));
 	}
 	
