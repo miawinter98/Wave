@@ -16,7 +16,7 @@
 	private string Link => 
 		Article.PublishDate.Year >= 9999 
 			? $"/article/{Article.Id}" 
-			: $"/{Article.PublishDate.Year}/{Article.PublishDate.Month:D2}/{Article.PublishDate.Day:D2}/{TitleEncoded}";
+			: $"/{Article.PublishDate.Year}/{Article.PublishDate.Month:D2}/{Article.PublishDate.Day:D2}/{TitleEncoded}#article-title";
 
 	[Parameter(CaptureUnmatchedValues = true)]
 	public Dictionary<string, object>? AdditionalAttributes { get; set; }
