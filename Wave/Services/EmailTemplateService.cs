@@ -1,17 +1,45 @@
 ﻿using System.Text.RegularExpressions;
+using Microsoft.Extensions.Caching.Distributed;
 using Mjml.Net;
 
 namespace Wave.Services;
 
-public partial class EmailTemplateService(ILogger<EmailTemplateService> logger) {
+public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, IDistributedCache tokenCache) {
 	public enum Constants {
 		BrowserLink, HomeLink, ContentLogo, ContentTitle, ContentBody, EmailUnsubscribeLink
 	}
 
 	private ILogger<EmailTemplateService> Logger { get; } = logger;
 	private IMjmlRenderer Renderer { get; } = new MjmlRenderer();
+	private IDistributedCache TokenCache { get; } = tokenCache;
 	
 	private Regex TokenMatcher { get; } = MyRegex();
+
+	public async Task<(string user, string token)> CreateConfirmTokensAsync(Guid subscriberId) {
+		string user = Convert.ToBase64String(subscriberId.ToByteArray());
+		string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+		string cacheKey = "subscribe-" + user;
+		
+		await TokenCache.SetAsync(cacheKey, 
+			Convert.FromBase64String(token), 
+			new DistributedCacheEntryOptions {
+				AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+			});
+		
+		return (user, token);
+	}
+
+	public async Task<Guid?> ValidateTokensAsync(string user, string token) {
+		string cacheKey = "subscribe-" + user;
+		byte[]? tokenInCache = await TokenCache.GetAsync(cacheKey);
+		
+		if (tokenInCache is null || token != Convert.ToBase64String(tokenInCache))
+			return null;
+		
+		await TokenCache.RemoveAsync(cacheKey);
+		return new Guid(Convert.FromBase64String(user));
+	}
+	
 
 	public string Default(string url, string logoLink, string title, string body) {
 		return Process("default", new Dictionary<Constants, object?> {

@@ -7,13 +7,11 @@
 @using System.Net
 @using Microsoft.AspNetCore.Identity.UI.Services
 @using Microsoft.EntityFrameworkCore
-@using Microsoft.Extensions.Caching.Distributed
 @using Wave.Services
 
 @inject ILogger<EmailSignup> Logger
 @inject IStringLocalizer<EmailSignup> Localizer
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
-@inject IDistributedCache TokenCache
 @inject IOptions<Features> Features
 @inject IOptions<Customization> Customizations
 @inject NavigationManager Navigation
@@ -60,32 +58,28 @@
 
 	private string Message { get; set; } = string.Empty;
 
-	protected override void OnInitialized() {
+	protected override async Task OnInitializedAsync() {
 		if (Features.Value.EmailSubscriptions is not true)
 			throw new ApplicationException("Email subscriptions not enabled.");
 
 		if (Id is null || Token is null) return;
-
 		try {
-			string cacheKey = "subscribe-" + Id;
-			byte[]? tokenInCache = TokenCache.Get(cacheKey);
+			var id = await TemplateService.ValidateTokensAsync(Id, Token);
 
-			if (tokenInCache is null || Token != Convert.ToBase64String(tokenInCache)) {
+			if (id is null) {
 				Message = Localizer["Failure_Message"];
 				return;
 			}
 
-			var realId = new Guid(Convert.FromBase64String(Id));
-			using var context = ContextFactory.CreateDbContext();
-			var subscriber = context.Set<EmailSubscriber>().IgnoreQueryFilters().FirstOrDefault(s => s.Id == realId);
+			await using var context = await ContextFactory.CreateDbContextAsync();
+			var subscriber = context.Set<EmailSubscriber>().IgnoreQueryFilters().FirstOrDefault(s => s.Id == id);
 			if (subscriber is null) {
 				Message = Localizer["Failure_Message"];
 				return;
 			}
 			subscriber.Unsubscribed = false;
-			context.SaveChanges();
+			await context.SaveChangesAsync();
 
-			TokenCache.Remove(cacheKey);
 			Message = Localizer["Success_Message"];
 		} catch (Exception ex) {
 			Logger.LogError(ex, "Error trying to confirm subscriber.");
@@ -97,43 +91,41 @@
 		if (Features.Value.EmailSubscriptions is not true)
 			throw new ApplicationException("Email subscriptions not enabled.");
 
-		Message = Localizer["Submit_Message"];
-		await using var context = await ContextFactory.CreateDbContextAsync();
+		try {
+			Message = Localizer["Submit_Message"];
+			await using var context = await ContextFactory.CreateDbContextAsync();
 
-		var subscriber = context.Set<EmailSubscriber>().IgnoreQueryFilters().FirstOrDefault(s => s.Email == Model.Email);
-		if (subscriber?.Unsubscribed is false) return;
+			var subscriber = context.Set<EmailSubscriber>().IgnoreQueryFilters().FirstOrDefault(s => s.Email == Model.Email);
+			if (subscriber?.Unsubscribed is false) return;
 
-		subscriber ??= new EmailSubscriber {
-			Email = Model.Email.Trim(),
-			Unsubscribed = true
-		};
-		subscriber.Name = Model.Name;
-		context.Update(subscriber);
-		await context.SaveChangesAsync();
+			subscriber ??= new EmailSubscriber {
+				Email = Model.Email.Trim(),
+				Unsubscribed = true
+			};
+			subscriber.Name = Model.Name;
+			context.Update(subscriber);
+			await context.SaveChangesAsync();
 
-		if (subscriber.Unsubscribed) {
-			string id = Convert.ToBase64String(subscriber.Id.ToByteArray());
-			string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+			if (subscriber.Unsubscribed) {
+				(string id, string token) = await TemplateService.CreateConfirmTokensAsync(subscriber.Id);
 
-			await TokenCache.SetAsync("subscribe-" + id, 
-				Convert.FromBase64String(token), 
-				new DistributedCacheEntryOptions {
-				AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
-			});
-			
-			string confirmLink = Navigation.ToAbsoluteUri(
-				$"/Email/Confirm?user={WebUtility.UrlEncode(id)}&token={WebUtility.UrlEncode(token)}").AbsoluteUri;
+				string confirmLink = Navigation.ToAbsoluteUri(
+					$"/Email/Confirm?user={WebUtility.UrlEncode(id)}&token={WebUtility.UrlEncode(token)}").AbsoluteUri;
 
-			var customization = Customizations.Value;
-			string body = TemplateService.Default(
-				Navigation.BaseUri,
-				!string.IsNullOrWhiteSpace(customization.LogoLink) ? 
-					customization.LogoLink : 
-					Navigation.ToAbsoluteUri("/img/logo.png").AbsoluteUri,
-				Localizer["ConfirmEmailTitle"],
-				string.Format(Localizer["ConfirmEmailBody"], customization.AppName) + 
-				$"""<p style="text-align: center"><a href="{confirmLink}">{Localizer["Submit"]}</a></p>""");
-			await EmailSender.SendEmailAsync(subscriber.Email, Localizer["ConfirmEmailSubject"], body);
+				var customization = Customizations.Value;
+				string body = TemplateService.Default(
+					Navigation.BaseUri,
+					!string.IsNullOrWhiteSpace(customization.LogoLink) ? 
+						customization.LogoLink : 
+						Navigation.ToAbsoluteUri("/img/logo.png").AbsoluteUri,
+					Localizer["ConfirmEmailTitle"],
+					string.Format(Localizer["ConfirmEmailBody"], customization.AppName) + 
+					$"""<p style="text-align: center"><a href="{confirmLink}">{Localizer["Submit"]}</a></p>""");
+				await EmailSender.SendEmailAsync(subscriber.Email, Localizer["ConfirmEmailSubject"], body);
+			}
+		} catch (Exception ex) {
+			Logger.LogError(ex, "Failed to create subscriber/send confirmation mail.");
+			Message = Localizer["Failure_Message"];
 		}
 	}
 
