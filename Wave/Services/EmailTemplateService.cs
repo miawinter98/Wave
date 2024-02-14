@@ -6,7 +6,7 @@ namespace Wave.Services;
 
 public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, IDistributedCache tokenCache, FileSystemService fileSystem) {
 	public enum Constants {
-		BrowserLink, HomeLink, ContentLogo, ContentTitle, ContentBody, EmailUnsubscribeLink
+		BrowserLink, HomeLink, ContentLogo, ContentTitle, ContentBody, EmailUnsubscribeLink, ArticleRecommendations 
 	}
 
 	private ILogger<EmailTemplateService> Logger { get; } = logger;
@@ -62,9 +62,21 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		});
 	}
 
+	public string Welcome(string home, string logoLink, string title, string body, string unsubscribe, string articles) {
+		return Process("welcome", new Dictionary<Constants, object?> {
+			{ Constants.HomeLink, home },
+			{ Constants.ContentLogo, logoLink },
+			{ Constants.ContentTitle, title },
+			{ Constants.ContentBody, body },
+			{ Constants.EmailUnsubscribeLink, unsubscribe },
+			{ Constants.ArticleRecommendations, articles }
+		});
+	}
+
 	public void TryCreateDefaultTemplates() {
 		FileSystem.GetEmailTemplate("default", DefaultTemplates["default"]);
 		FileSystem.GetEmailTemplate("newsletter", DefaultTemplates["newsletter"]);
+		FileSystem.GetEmailTemplate("welcome", DefaultTemplates["welcome"]);
 	}
 
 	public string ApplyTokens(string template, Func<string, string?> replacer) {
@@ -172,6 +184,60 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 			     <mj-section>
 			       <mj-column>
 			         <mj-text color="#55575d" font-size="13px" font-family="Ubuntu,Verdana">[[{Constants.ContentBody}]]</mj-text>
+			       </mj-column>
+			     </mj-section>
+			     <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
+			       <mj-column>
+			         <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
+			       </mj-column>
+			     </mj-section>
+			     <mj-section>
+			       <mj-column>
+			         <mj-text align="center" font-size="13px" font-family="Ubuntu,Verdana">
+			           <a href="[[{Constants.EmailUnsubscribeLink}]]">Unsubscribe</a>
+			         </mj-text>
+			       </mj-column>
+			     </mj-section>
+			   </mj-body>
+			 </mjml>
+			 """
+		},
+		{
+			"welcome",
+			$"""
+			 <mjml>
+			   <mj-head>
+			     <mj-preview />
+			   </mj-head>
+			   <mj-body>
+			     <mj-section direction="rtl" padding-bottom="5px" padding-left="0px" padding-right="0px" padding-top="15px" padding="15px 0px 5px 0px">
+			       <mj-column vertical-align="middle" width="33%">
+			         <mj-image align="center" alt="" border-radius="0" border="none" container-background-color="transparent" height="auto" padding-bottom="5px" padding-left="5px" padding-right="5px" padding-top="5px" padding="5px 5px 5px 5px" href="[[{Constants.HomeLink}]]" src="[[{Constants.ContentLogo}]]"></mj-image>
+			       </mj-column>
+			       <mj-column vertical-align="middle" width="67%">
+			         <mj-text font-size="13px" font-family="Ubuntu,Verdana">
+			           <h1>[[{Constants.ContentTitle}]]</h1>
+			         </mj-text>
+			       </mj-column>
+			     </mj-section>
+			     <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
+			       <mj-column>
+			         <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
+			       </mj-column>
+			     </mj-section>
+			     <mj-section>
+			       <mj-column>
+			         <mj-text color="#55575d" font-size="13px" font-family="Ubuntu,Verdana">[[{Constants.ContentBody}]]</mj-text>
+			       </mj-column>
+			     </mj-section>
+			     <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
+			       <mj-column>
+			         <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
+			       </mj-column>
+			     </mj-section>
+			     <mj-section>
+			       <mj-column>
+			         <mj-text color="#55575d" font-size="13px" font-family="Ubuntu,Verdana">[[{Constants.ArticleRecommendations}]]</mj-text>
 			       </mj-column>
 			     </mj-section>
 			     <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">

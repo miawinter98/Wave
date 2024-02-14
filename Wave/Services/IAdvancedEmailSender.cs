@@ -8,4 +8,6 @@ public interface IAdvancedEmailSender : IEmailSender {
 	Task SendDefaultMailAsync(string receiverMail, string? receiverName, string subject, string title, string bodyHtml);
 	Task SendSubscribedMailAsync(EmailSubscriber subscriber, string subject, string title, string bodyHtml, 
 		string browserUrl = "", string subscribedRole = "-1");
+	Task SendWelcomeMailAsync(EmailSubscriber subscriber, string subject, string title, string bodyHtml,
+		IEnumerable<EmailNewsletter> articles);
 }

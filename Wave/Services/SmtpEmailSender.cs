@@ -1,10 +1,12 @@
 ﻿using System.Net;
+using System.Text;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Wave.Data;
+using Wave.Utilities;
 using Uri = System.Uri;
 
 namespace Wave.Services;
@@ -93,6 +95,38 @@ public class SmtpEmailSender(ILogger<SmtpEmailSender> logger, IOptions<SmtpConfi
 		string unsubscribeLink = new Uri(host, 
 			$"/Email/Unsubscribe?newsletter={subscribedRole}&user={WebUtility.UrlEncode(user)}&token={WebUtility.UrlEncode(token)}").AbsoluteUri;
 		string body = TemplateService.Newsletter(host.AbsoluteUri, browserUrl, logo, title, bodyHtml, unsubscribeLink);
+		await SendEmailAsync(subscriber.Email, subscriber.Name, subject, body, 
+			new Header(HeaderId.ListUnsubscribe, $"<{unsubscribeLink}>"),
+			new Header(HeaderId.ListUnsubscribePost, "One-Click"));
+	}
+
+	public async Task SendWelcomeMailAsync(EmailSubscriber subscriber, string subject, string title, string bodyHtml, 
+		IEnumerable<EmailNewsletter> articles) {
+		(string user, string token) = await TemplateService
+			.CreateConfirmTokensAsync(subscriber.Id, "unsubscribe-welcome", TimeSpan.FromDays(30));
+		var host = new Uri(string.IsNullOrWhiteSpace(Customizations.AppUrl) ? "" : Customizations.AppUrl); // TODO get link
+
+		var articlesHtml = new StringBuilder("");
+		foreach (var n in articles) {
+			string articleLink = ArticleUtilities.GenerateArticleLink(n.Article, new Uri(Customizations.AppUrl, UriKind.Absolute));
+			articlesHtml.AppendFormat(
+				"""
+				<div style="padding: 10px; background: #333; color: #fff; margin-bottom: 10px">
+				  <h3>{0}</h3>
+				  <small>{1}</small>
+				  <p>{2}</p>
+				  <a href="{3}">Link</a>
+				</div>
+				""", 
+				n.Article.Title, n.Article.Author.Name, n.Article.Body[..Math.Min(100, n.Article.Body.Length)], articleLink);
+		}
+
+		string logo = !string.IsNullOrWhiteSpace(Customizations.LogoLink)
+			? Customizations.LogoLink
+			: new Uri(host, "/img/logo.png").AbsoluteUri;
+		string unsubscribeLink = new Uri(host, 
+			$"/Email/Unsubscribe?newsletter=welcome&user={WebUtility.UrlEncode(user)}&token={WebUtility.UrlEncode(token)}").AbsoluteUri;
+		string body = TemplateService.Welcome(host.AbsoluteUri, logo, title, bodyHtml, unsubscribeLink, articlesHtml.ToString());
 		await SendEmailAsync(subscriber.Email, subscriber.Name, subject, body, 
 			new Header(HeaderId.ListUnsubscribe, $"<{unsubscribeLink}>"),
 			new Header(HeaderId.ListUnsubscribePost, "One-Click"));
