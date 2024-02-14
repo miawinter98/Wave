@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Wave.Data.Migrations.postgres;
 
 namespace Wave.Data;
 
@@ -81,6 +82,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			newsletter.HasKey(n => n.Id);
 			newsletter.HasOne(n => n.Article).WithOne().HasForeignKey<EmailNewsletter>()
 				.IsRequired().OnDelete(DeleteBehavior.Cascade);
+			newsletter.Property(a => a.DistributionDateTime)
+				.HasConversion(dateTimeOffsetUtcConverter);
 
 			newsletter.ToTable("Newsletter");
 		});
