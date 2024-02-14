@@ -4,6 +4,7 @@
 @using Microsoft.Extensions.Options
 @using Wave.Data
 @using Wave.Services
+@using Wave.Utilities
 
 @inject ILogger<EmailEdit> Logger
 @inject IStringLocalizer<EmailEdit> Localizer
@@ -12,14 +13,9 @@
 @inject NavigationManager Navigation
 @inject IEmailSender EmailSender
 @inject EmailTemplateService TemplateService
+@inject IMessageDisplay Messages
 
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
-
-@if (!string.IsNullOrWhiteSpace(Message)) {
-	<div class="alert alert-success">
-		<span>@Message</span>
-	</div>
-}
 
 <BoardComponent CenterContent="true">
 	<BoardCardComponent Heading="@Localizer["Title"]">
@@ -46,20 +42,22 @@
 	[Parameter, SupplyParameterFromQuery(Name = "newsletter")]
 	public string? Newsletter { get; set; }
 
-	private string Message { get; set; } = string.Empty;
+	[CascadingParameter]
+	public HttpContext? HttpContext { get; set; } 
 
 	protected override async Task OnInitializedAsync() {
 		if (Id is null || Token is null || Newsletter is null) {
-			if (string.IsNullOrWhiteSpace(Message)) Message = Localizer["Load_Failure_Message"];
+			if (HttpContext?.Request.Method.ToUpper() is "POST") 
+				Messages.ShowError(Localizer["Load_Failure_Message"]);
 			return;
 		}
 
 		try {
 			if (await GetSubscriber() is null) {
-				Message = Localizer["Load_Failure_Message"];
+				Messages.ShowError(Localizer["Load_Failure_Message"]);
 			}
 		} catch (Exception) {
-			Message = Localizer["Load_Failure_Message"];
+			Messages.ShowError(Localizer["Load_Failure_Message"]);
 		}
 	}
 
@@ -68,13 +66,13 @@
 			await using var context = await ContextFactory.CreateDbContextAsync();
 			var subscriber = await GetSubscriber(context);
 			if (subscriber is null) {
-				Message = Localizer["Unsubscribe_Failure_Message"];
+				Messages.ShowError(Localizer["Unsubscribe_Failure_Message"]);
 				return;
 			}
 
 			subscriber.Unsubscribed = true;
 			await context.SaveChangesAsync();
-			Message = Localizer["Unsubscribe_Success"];
+			Messages.ShowSuccess(Localizer["Unsubscribe_Success"]);
 
 			var customization = Customizations.Value;
 			string body = TemplateService.Default(
@@ -87,7 +85,7 @@
 		} catch (EmailNotSendException ex) {
 			Logger.LogWarning(ex, "Failed to send unsubscribe confirm email. The user has been unsubscribed anyway.");
 		} catch (Exception) {
-			Message = Localizer["Unsubscribe_Failure_Message"];
+			Messages.ShowError(Localizer["Unsubscribe_Failure_Message"]);
 		}
 	}
 
