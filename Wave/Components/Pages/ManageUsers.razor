@@ -11,6 +11,7 @@
 @inject RoleManager<IdentityRole> RoleManager
 @inject UserManager<ApplicationUser> UserManager
 @inject IStringLocalizer<ManageUsers> Localizer
+@inject IMessageDisplay Toast
 
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
 
@@ -55,12 +56,9 @@
     }
 </section>
 
-<ToastComponent @ref="Toast" />
-
 @code {
 	[CascadingParameter(Name = "TitlePrefix")]
 	private string TitlePrefix { get; set; } = default!;
-	public IMessageDisplay Toast { get; set; } = null!;
     private string ModalId { get; } = "UserDialog";
 
 	[CascadingParameter]

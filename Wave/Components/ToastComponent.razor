@@ -1,9 +1,11 @@
 ﻿@using Wave.Utilities
-@implements IMessageDisplay
+@implements IDisposable
+@inject IMessageDisplay Messages
+@rendermode InteractiveServer
 
 <div class="toast toast-start z-10" role="alert">
-	@foreach (var message in Messages) {
-		<div class="alert @message.Type" @onclick="() => Messages.Remove(message)">
+	@foreach (var message in MessagesDisplayed) {
+		<div class="alert @message.Type" @onclick="() => MessagesDisplayed.Remove(message)">
 			@if (message.Title is null) {
 				@message.Body
 			} else {
@@ -15,10 +17,19 @@
 </div>
 
 @code {
-	private List<IMessageDisplay.Message> Messages { get; } = [];
+	private List<IMessageDisplay.Message> MessagesDisplayed { get; } = [];
 
-	public void ShowMessage(IMessageDisplay.Message message) {
-		Messages.Add(message);
+	protected override void OnInitialized() {
+		Messages.OnMessage += OnMessage;
+	}
+
+	private bool OnMessage(IMessageDisplay.Message message) {
+		MessagesDisplayed.Add(message);
 		StateHasChanged();
+		return true;
+	}
+
+	public void Dispose() {
+		Messages.OnMessage -= OnMessage;
 	}
 }

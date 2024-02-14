@@ -28,7 +28,14 @@
 				<SectionOutlet SectionName="GlobalHeader" />
 				<input id="narrow-reading-toggle" type="checkbox" class="narrow-reading-toggle" />
 				<div class="flex-1 container mx-auto px-4 md:px-12 py-8 reading-toggle-target h-full">
+					<AlertComponent CanDelete="true" />
 					@Body
+					@if (HttpContext is null || HttpContext?.GetEndpoint()?
+						     .Metadata.GetMetadata<RenderModeAttribute>()?
+					     .Mode is not null) { 
+						// for some reason that's how you test for interactive render modes
+						<ToastComponent />
+					}
 				</div>
 			</main>
 			<footer class="flex flex-col md:flex-row items-center justify-center p-4 gap-y-3 gap-x-4 bg-base-300 text-base-content">
@@ -87,4 +94,6 @@
 @code {
 	[CascadingParameter(Name = "UserTheme")]
 	private string? UserTheme { get; set; }
+	[CascadingParameter]
+	private HttpContext? HttpContext { get; set; }
 }

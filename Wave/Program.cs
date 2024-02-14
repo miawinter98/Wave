@@ -129,6 +129,7 @@ if (smtpConfig.Exists()) {
 	logMessages.Add("No Email provider configured.");
 }
 
+builder.Services.AddSingleton<IMessageDisplay, MessageService>();
 builder.Services.AddSingleton<FileSystemService>();
 builder.Services.AddSingleton<EmailTemplateService>();
 builder.Services.AddHostedService<EmailBackgroundWorker>();

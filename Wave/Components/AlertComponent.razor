@@ -1,0 +1,45 @@
+﻿@using Wave.Utilities
+@implements IDisposable
+@inject IMessageDisplay Messages
+
+@if (Message is {} message) {
+	<div class="alert @message.Type" role="alert">
+		<div> </div>
+		<div>
+			@if (message.Title is null) {
+				@message.Body
+			} else {
+				<span class="font-bold">@message.Title</span>
+				<span><small>@message.Body</small></span>
+			}
+		</div>
+		@if (CanDelete) {
+			<button class="btn btn-sm btn-square btn-ghost" onclick="this.parentElement.remove();">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+				</svg>
+			</button>
+		}
+	</div>
+}
+
+@code {
+	[Parameter]
+	public bool CanDelete { get; set; }
+	
+	private IMessageDisplay.Message? Message { get; set; }
+
+	protected override void OnInitialized() {
+		Messages.OnMessage += OnMessage;
+	}
+
+	private bool OnMessage(IMessageDisplay.Message message) {
+		Message = message;
+		StateHasChanged();
+		return true;
+	}
+
+	public void Dispose() {
+		Messages.OnMessage -= OnMessage;
+	}
+}

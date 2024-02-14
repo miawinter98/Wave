@@ -7,6 +7,7 @@
 @using System.Net
 @using Microsoft.EntityFrameworkCore
 @using Wave.Services
+@using Wave.Utilities	
 
 @inject ILogger<EmailSignup> Logger
 @inject IStringLocalizer<EmailSignup> Localizer
@@ -16,14 +17,9 @@
 @inject NavigationManager Navigation
 @inject IAdvancedEmailSender EmailSender
 @inject EmailTemplateService TemplateService
+@inject IMessageDisplay Messages
 
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
-
-@if (!string.IsNullOrWhiteSpace(Message)) {
-	<div class="alert alert-success">
-		<span>@Message</span>
-	</div>
-}
 
 <BoardComponent CenterContent="true">
 	<BoardCardComponent Heading="@Localizer["Title"]">
@@ -55,8 +51,6 @@
 	[Parameter, SupplyParameterFromQuery(Name = "token")]
     public string? Token { get; set; }
 
-	private string Message { get; set; } = string.Empty;
-
 	protected override async Task OnInitializedAsync() {
 		if (Features.Value.EmailSubscriptions is not true)
 			throw new ApplicationException("Email subscriptions not enabled.");
@@ -66,19 +60,19 @@
 			var id = await TemplateService.ValidateTokensAsync(Id, Token, deleteToken: false);
 
 			if (id is null) {
-				Message = Localizer["Failure_Message"];
+				Messages.ShowError(Localizer["Failure_Message"]);
 				return;
 			}
 
 			await using var context = await ContextFactory.CreateDbContextAsync();
 			var subscriber = context.Set<EmailSubscriber>().IgnoreQueryFilters().FirstOrDefault(s => s.Id == id);
 			if (subscriber is null) {
-				Message = Localizer["Failure_Message"];
+				Messages.ShowError(Localizer["Failure_Message"]);
 				return;
 			}
 			subscriber.Unsubscribed = false;
 			await context.SaveChangesAsync();
-			Message = Localizer["Success_Message"];
+			Messages.ShowSuccess(Localizer["Success_Message"]);
 
 			await TemplateService.ValidateTokensAsync(Id, Token, deleteToken: true);
 			
@@ -92,7 +86,7 @@
 				Localizer["WelcomeEmailSubject"], Localizer["WelcomeEmailTitle"], Localizer["WelcomeEmailBody"], articles);
 		} catch (Exception ex) {
 			Logger.LogError(ex, "Error trying to confirm subscriber.");
-			Message = Localizer["Failure_Message"];
+			Messages.ShowError(Localizer["Failure_Message"]);
 		}
 	}
 
@@ -101,7 +95,7 @@
 			throw new ApplicationException("Email subscriptions not enabled.");
 
 		try {
-			Message = Localizer["Submit_Message"];
+			Messages.ShowSuccess(Localizer["Submit_Message"]);
 			await using var context = await ContextFactory.CreateDbContextAsync();
 
 			var subscriber = context.Set<EmailSubscriber>().IgnoreQueryFilters().FirstOrDefault(s => s.Email == Model.Email);
@@ -127,7 +121,6 @@
 			}
 		} catch (Exception ex) {
 			Logger.LogError(ex, "Failed to create subscriber/send confirmation mail.");
-			Message = Localizer["Failure_Message"];
 		}
 	}
 
