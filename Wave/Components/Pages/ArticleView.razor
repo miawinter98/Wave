@@ -6,6 +6,7 @@
 @using System.Diagnostics.CodeAnalysis
 @using Microsoft.Extensions.Options
 
+@inject ILogger<ArticleView> Logger
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject NavigationManager Navigation
 @inject IOptions<Customization> Customizations
@@ -15,62 +16,62 @@
 <PageTitle>@(TitlePrefix + (Article?.Title ?? Localizer["NotFound_Title"]))</PageTitle>
 
 @if (Article is not null) {
-    <HeadContent>
-        <meta name="author" content="@Article.Author.Name">
-        <meta name="description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.Body[..Math.Min(80, Article.Body.Length)] + "... ")">
-        
-        <!-- Open Graph -->
-        <meta property="og:title" content="@Article.Title">
-        <meta property="og:description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.Body[..Math.Min(80, Article.Body.Length)] + "... ")">
-        <meta property="og:url" content="@Navigation.ToAbsoluteUri("/article/" + Article.Id)">
-        <meta property="og:image" content="@Navigation.ToAbsoluteUri("/api/user/pfp/" + Article.Author.Id)">
-        <meta property="og:type" content="article">
-        <meta property="og:article:author" content="@Article.Author.Name">
-        <meta property="og:article:published_time" content="@Article.PublishDate.ToString("u")">
-        @if (Article.LastModified.HasValue) {
-            <meta property="og:article:modified_time" content="@Article.LastModified.Value.ToString("u")">
-        }
-        <meta property="og:site_name" content="@Customizations.Value.AppName">
-        @if (Features.Value.Rss) { 
-	        <link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName" href="/rss/rss.xml">
-	        <link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName" href="/rss/atom.xml">
-        }
-    </HeadContent>
+	<HeadContent>
+		<meta name="author" content="@Article.Author.Name">
+		<meta name="description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.Body[..Math.Min(80, Article.Body.Length)] + "... ")">
+		
+		<!-- Open Graph -->
+		<meta property="og:title" content="@Article.Title">
+		<meta property="og:description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.Body[..Math.Min(80, Article.Body.Length)] + "... ")">
+		<meta property="og:url" content="@Navigation.ToAbsoluteUri("/article/" + Article.Id)">
+		<meta property="og:image" content="@Navigation.ToAbsoluteUri("/api/user/pfp/" + Article.Author.Id)">
+		<meta property="og:type" content="article">
+		<meta property="og:article:author" content="@Article.Author.Name">
+		<meta property="og:article:published_time" content="@Article.PublishDate.ToString("u")">
+		@if (Article.LastModified.HasValue) {
+			<meta property="og:article:modified_time" content="@Article.LastModified.Value.ToString("u")">
+		}
+		<meta property="og:site_name" content="@Customizations.Value.AppName">
+		@if (Features.Value.Rss) { 
+			<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName" href="/rss/rss.xml">
+			<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName" href="/rss/atom.xml">
+		}
+	</HeadContent>
 }
 
 <ErrorBoundary>
-    <ChildContent>
-        <AuthorizeView Policy="ArticleEditOrReviewPermissions">
-            <Authorized>
-                <ArticleComponent Article="@GetArticleProtected(context.User)" />
-                <div class="flex gap-2 mt-3 flex-wrap">
-                    <a class="btn btn-info w-full sm:btn-wide" href="article/@Article.Id/edit" data-enhance-nav="false">@Localizer["Edit"]</a>
-                    @if (Article.Status is ArticleStatus.Draft) {
-                        <form @formname="submit-for-review" method="post" @onsubmit="SubmitForReview" class="max-sm:w-full">
-                            <AntiforgeryToken />
-                            <button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Review_Submit"]</button>
-                        </form>
-                    } else if (Article.Status is ArticleStatus.InReview) {
-                        <form @formname="submit-for-publish" method="post" @onsubmit="SubmitForPublish" class="max-sm:w-full">
-                            <AntiforgeryToken />
-                            <button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Publish_Submit"]</button>
-                        </form>
-                    }
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <ArticleComponent Article="@GetArticlePublic()" />
-            </NotAuthorized>
-        </AuthorizeView>
-    </ChildContent>
-    <ErrorContent>
-        <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["NotFound_Title"]</h1>
-        <p class="my-3">@Localizer["NotFound_Description"]</p>
-        <a class="btn btn-primary" href="/">@Localizer["NotFound_BackToHome_Label"]</a>
-        @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToLower() == "development") {
-            <p class="mt-3">[DEBUG] EXCEPTION MESSAGE: @context.Message</p>
-        }
-    </ErrorContent>
+	<ChildContent>
+		<AuthorizeView Policy="ArticleEditOrReviewPermissions">
+			<Authorized>
+				<ArticleComponent Article="@GetArticleProtected(context.User)" />
+				<div class="flex gap-2 mt-3 flex-wrap">
+					<a class="btn btn-info w-full sm:btn-wide" href="article/@Article.Id/edit" data-enhance-nav="false">@Localizer["Edit"]</a>
+					@if (Article.Status is ArticleStatus.Draft) {
+						<form @formname="submit-for-review" method="post" @onsubmit="SubmitForReview" class="max-sm:w-full">
+							<AntiforgeryToken />
+							<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Review_Submit"]</button>
+						</form>
+					} else if (Article.Status is ArticleStatus.InReview) {
+						<form @formname="submit-for-publish" method="post" @onsubmit="SubmitForPublish" class="max-sm:w-full">
+							<AntiforgeryToken />
+							<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Publish_Submit"]</button>
+						</form>
+					}
+				</div>
+			</Authorized>
+			<NotAuthorized>
+				<ArticleComponent Article="@GetArticlePublic()" />
+			</NotAuthorized>
+		</AuthorizeView>
+	</ChildContent>
+	<ErrorContent>
+		<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["NotFound_Title"]</h1>
+		<p class="my-3">@Localizer["NotFound_Description"]</p>
+		<a class="btn btn-primary" href="/">@Localizer["NotFound_BackToHome_Label"]</a>
+		@if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToLower() == "development") {
+			<p class="mt-3">[DEBUG] EXCEPTION MESSAGE: @context.Message</p>
+		}
+	</ErrorContent>
 </ErrorBoundary>
 
 @code {
@@ -78,110 +79,124 @@
 	private string TitlePrefix { get; set; } = default!;
 
 	#region Route Parameters
-    
+	
 	[Parameter]
-    public Guid? Id { get; set; }
+	public Guid? Id { get; set; }
 	[Parameter]
-    public int? Year { get; set; }
+	public int? Year { get; set; }
 	[Parameter]
-    public int? Month { get; set; }
+	public int? Month { get; set; }
 	[Parameter]
-    public int? Day { get; set; }
-    [Parameter]
-    public string? TitleEncoded { get; set; }
-    
-    private DateTimeOffset? Date => 
-	    Year is {} y && Month is {} m && Day is {} d 
-		    ? new DateTimeOffset(new DateTime(y, m, d)) : 
-		    null;
-    private string? Title => TitleEncoded is null ? null : Uri.UnescapeDataString(TitleEncoded.Replace("-", "%20").Replace("+", "-"));
+	public int? Day { get; set; }
+	[Parameter]
+	public string? TitleEncoded { get; set; }
+	
+	private DateTimeOffset? Date => 
+		Year is {} y && Month is {} m && Day is {} d 
+			? new DateTimeOffset(new DateTime(y, m, d)) : 
+			null;
+	private string? Title => TitleEncoded is null ? null : Uri.UnescapeDataString(TitleEncoded.Replace("-", "%20").Replace("+", "-"));
 
 	#endregion
-    private Article? Article { get; set; }
+	private Article? Article { get; set; }
 
-    [CascadingParameter] 
-    public HttpContext HttpContext { get; set; } = default!;
+	[CascadingParameter] 
+	public HttpContext HttpContext { get; set; } = default!;
 
-    private Article GetArticlePublic() {
-        if (Article is null) throw new ApplicationException("Article not found.");
-        if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
-            return Article;
-        }
-        throw new ApplicationException("Article is not public.");
-    }
+	private Article GetArticlePublic() {
+		if (Article is null) throw new ApplicationException("Article not found.");
+		if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
+			return Article;
+		}
+		throw new ApplicationException("Article is not public.");
+	}
 
-    [SuppressMessage("ReSharper", "ConvertIfStatementToSwitchStatement")]
-    private Article GetArticleProtected(ClaimsPrincipal principal) {
-        if (Article is null) throw new ApplicationException("Article not found.");
+	[SuppressMessage("ReSharper", "ConvertIfStatementToSwitchStatement")]
+	private Article GetArticleProtected(ClaimsPrincipal principal) {
+		if (Article is null) throw new ApplicationException("Article not found.");
 
-        // The Article is publicly available
-        if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
-            return Article;
-        }
+		// The Article is publicly available
+		if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
+			return Article;
+		}
 
-        // Admins always get access
-        if (principal.IsInRole("Admin")) {
-            return Article;
-        }
-        
-        // You can only access your own drafts
-        if (Article.Status is ArticleStatus.Draft) {
-            if (Article.Author.Id == principal.FindFirst("Id")!.Value) {
-                return Article;
-            }
-            throw new ApplicationException("Cannot access draft article without being author or admin.");
-        }
-        // InReview Articles can only be accessed by reviewers
-        if (Article.Status is ArticleStatus.InReview) {
-            if (principal.IsInRole("Reviewer")) {
-                return Article;
-            }
-            throw new ApplicationException("Cannot access in-review article without being a reviewer or admin.");
-        }
+		// Admins always get access
+		if (principal.IsInRole("Admin")) {
+			return Article;
+		}
+		
+		// You can only access your own drafts
+		if (Article.Status is ArticleStatus.Draft) {
+			if (Article.Author.Id == principal.FindFirst("Id")!.Value) {
+				return Article;
+			}
+			throw new ApplicationException("Cannot access draft article without being author or admin.");
+		}
+		// InReview Articles can only be accessed by reviewers
+		if (Article.Status is ArticleStatus.InReview) {
+			if (principal.IsInRole("Reviewer")) {
+				return Article;
+			}
+			throw new ApplicationException("Cannot access in-review article without being a reviewer or admin.");
+		}
 
-        throw new ApplicationException("User does not have access to this article.");
-    }
+		throw new ApplicationException("User does not have access to this article.");
+	}
 
-    protected override void OnInitialized() {
-	    // We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
-	    // running into a null pointer on the Article property and panicking
-	    if (Id is not null) {
-		    using var context = ContextFactory.CreateDbContext();
-		    Article = context.Set<Article>()
-			    .IgnoreQueryFilters().Where(a => !a.IsDeleted)
-			    .Include(a => a.Author)
-			    .Include(a => a.Reviewer)
-			    .Include(a => a.Categories)
-			    .FirstOrDefault(a => a.Id == Id);
-        } else if (Date is { } date && Title is { } title) {
-            using var context = ContextFactory.CreateDbContext();
-            Article = context.Set<Article>()
-                .IgnoreQueryFilters().Where(a => !a.IsDeleted)
-	            .Include(a => a.Author)
-	            .Include(a => a.Reviewer)
-	            .Include(a => a.Categories)
-                .FirstOrDefault(a => a.PublishDate.Date == date.Date && a.Title.ToLower() == title);
-        }
-    }
+	protected override void OnInitialized() {
+		// We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
+		// running into a null pointer on the Article property and panicking
+		if (Id is not null) {
+			using var context = ContextFactory.CreateDbContext();
+			Article = context.Set<Article>()
+				.IgnoreQueryFilters().Where(a => !a.IsDeleted)
+				.Include(a => a.Author)
+				.Include(a => a.Reviewer)
+				.Include(a => a.Categories)
+				.FirstOrDefault(a => a.Id == Id);
+		} else if (Date is { } date && Title is { } title) {
+			using var context = ContextFactory.CreateDbContext();
+			Article = context.Set<Article>()
+				.IgnoreQueryFilters().Where(a => !a.IsDeleted)
+				.Include(a => a.Author)
+				.Include(a => a.Reviewer)
+				.Include(a => a.Categories)
+				.FirstOrDefault(a => a.PublishDate.Date == date.Date && a.Title.ToLower() == title);
+		}
+	}
 
-    private async Task SubmitForReview() {
-        await using var context = await ContextFactory.CreateDbContextAsync();
-        Article!.Status = ArticleStatus.InReview;
-        context.Update(Article);
-        await context.SaveChangesAsync();
-        Navigation.NavigateTo("/");
-    }
+	private async Task SubmitForReview() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+		Article!.Status = ArticleStatus.InReview;
+		context.Update(Article);
+		await context.SaveChangesAsync();
+		Navigation.NavigateTo("/");
+	}
 
-    private async Task SubmitForPublish() {
-        await using var context = await ContextFactory.CreateDbContextAsync();
-        Article!.Status = ArticleStatus.Published;
-        string userId = HttpContext.User.FindFirst("Id")!.Value;
-        if (Article.Author.Id != userId) {
-	        Article.Reviewer = await context.Users.FindAsync(userId);
-        }
-        context.Update(Article);
-        await context.SaveChangesAsync();
-        Navigation.NavigateTo("/");
-    }
+	private async Task SubmitForPublish() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+		Article!.Status = ArticleStatus.Published;
+		string userId = HttpContext.User.FindFirst("Id")!.Value;
+		if (Article.Author.Id != userId) {
+			Article.Reviewer = await context.Users.FindAsync(userId);
+		}
+		context.Update(Article);
+		await context.SaveChangesAsync();
+
+		if (Features.Value.EmailSubscriptions) {
+			try {
+				var newsletter = new EmailNewsletter {
+					Article = Article,
+					DistributionDateTime = Article.PublishDate
+				};
+				context.Add(newsletter);
+				await context.SaveChangesAsync();
+			} catch (Exception ex) {
+				Logger.LogError(ex, "Failed to schedule article {name} for E-Mail distribution.", Article.Title);
+			}
+		}
+
+		Navigation.NavigateTo("/");
+	}
 
 }
