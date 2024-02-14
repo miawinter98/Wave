@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Wave.Data
 @using Humanizer
+@using Wave.Utilities
 
 @rendermode InteractiveServer
 @attribute [Authorize(Policy = "RoleAssignPermissions")]
@@ -59,7 +60,7 @@
 @code {
 	[CascadingParameter(Name = "TitlePrefix")]
 	private string TitlePrefix { get; set; } = default!;
-	public ToastComponent Toast { get; set; } = null!;
+	public IMessageDisplay Toast { get; set; } = null!;
     private string ModalId { get; } = "UserDialog";
 
 	[CascadingParameter]

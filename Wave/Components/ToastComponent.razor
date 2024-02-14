@@ -1,4 +1,7 @@
-﻿<div class="toast toast-start z-10" role="alert">
+﻿@using Wave.Utilities
+@implements IMessageDisplay
+
+<div class="toast toast-start z-10" role="alert">
 	@foreach (var message in Messages) {
 		<div class="alert @message.Type" @onclick="() => Messages.Remove(message)">
 			@if (message.Title is null) {
@@ -12,24 +15,10 @@
 </div>
 
 @code {
-	private List<Message> Messages { get; } = [];
+	private List<IMessageDisplay.Message> Messages { get; } = [];
 
-	public void ShowInfo(string message, string? title = null) {
-		Messages.Add(new Message(message, "alert-info", title, DateTimeOffset.UtcNow));
+	public void ShowMessage(IMessageDisplay.Message message) {
+		Messages.Add(message);
 		StateHasChanged();
 	}
-	public void ShowSuccess(string message, string? title = null) {
-		Messages.Add(new Message(message, "alert-success", title, DateTimeOffset.UtcNow));
-		StateHasChanged();
-	}
-	public void ShowWarning(string message, string? title = null) {
-		Messages.Add(new Message(message, "alert-warning", title, DateTimeOffset.UtcNow));
-		StateHasChanged();
-	}
-	public void ShowError(string message, string? title = null) {
-		Messages.Add(new Message(message, "alert-error", title, DateTimeOffset.UtcNow));
-		StateHasChanged();
-	}
-
-	private sealed record Message(string Body, string Type, string? Title, DateTimeOffset Created);
 }
