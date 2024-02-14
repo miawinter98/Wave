@@ -67,20 +67,19 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		FileSystem.GetEmailTemplate("newsletter", DefaultTemplates["newsletter"]);
 	}
 
-	public string Process(string templateName, Dictionary<Constants, object?> data) {
-		var options = new MjmlOptions {
-			Beautify = false
-		};
+	public string ApplyTokens(string template, Func<string, string?> replacer) {
+		return TokenMatcher.Replace(template, t => replacer(t.Value[2..^2]) ?? "");
+	}
 
-		string template = FileSystem.GetEmailTemplate(templateName, 
-			                  DefaultTemplates.TryGetValue(templateName, out string? s) ? s : null)
-			?? throw new ApplicationException("Failed to retrieve mail template " + templateName + ".");
-		
-		template = TokenMatcher.Replace(template, t => 
-			data.TryGetValue(Enum.Parse<Constants>(t.Value[2..^2], true), out object? v) ? 
-				v?.ToString() ?? "" : 
-				"");
-		
+	public string GetTemplate(string templateName) {
+		return FileSystem.GetEmailTemplate(templateName, 
+			       DefaultTemplates.TryGetValue(templateName, out string? s) ? s : null) 
+		       ?? throw new ApplicationException("Failed to retrieve mail template " + templateName + ".");
+	}
+
+	public string CompileTemplate(string template, string templateName = "unknown") {
+		var options = new MjmlOptions { Beautify = false };
+
 		(string html, var errors) = Renderer.Render(template, options);
 
 		foreach (var error in errors) {
@@ -89,6 +88,12 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		}
 
 		return html;
+	}
+
+	public string Process(string templateName, Dictionary<Constants, object?> data) {
+		string template = ApplyTokens(GetTemplate(templateName), token => 
+			data.TryGetValue(Enum.Parse<Constants>(token, true), out object? v) ? v?.ToString() : null);
+		return CompileTemplate(template, templateName);
 	}
 
 	[GeneratedRegex(@"(\[\[.*?\]\])", 
