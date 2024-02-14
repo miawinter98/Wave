@@ -3,9 +3,9 @@
 @inject IMessageDisplay Messages
 @rendermode InteractiveServer
 
-<div class="toast toast-start z-10" role="alert">
+<div class="toast toast-start z-10 whitespace-normal" role="alert">
 	@foreach (var message in MessagesDisplayed) {
-		<div class="alert @message.Type" @onclick="() => MessagesDisplayed.Remove(message)">
+		<div class="alert @message.Type max-w-sm" @onclick="() => MessagesDisplayed.Remove(message)">
 			@if (message.Title is null) {
 				@message.Body
 			} else {
@@ -25,7 +25,7 @@
 
 	private bool OnMessage(IMessageDisplay.Message message) {
 		MessagesDisplayed.Add(message);
-		StateHasChanged();
+		InvokeAsync(StateHasChanged);
 		return true;
 	}
 
