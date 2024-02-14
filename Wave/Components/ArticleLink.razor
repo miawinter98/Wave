@@ -2,7 +2,7 @@
 @using System.Net
 @using System.Web
 
-<a href="@Link" @attributes="AdditionalAttributes">
+<a href="@Link" target="_top" @attributes="AdditionalAttributes">
 	@ChildContent
 </a>
 
@@ -16,7 +16,7 @@
 	private string Link => 
 		Article.PublishDate.Year >= 9999 
 			? $"/article/{Article.Id}" 
-			: $"/{Article.PublishDate.Year}/{Article.PublishDate.Month:D2}/{Article.PublishDate.Day:D2}/{TitleEncoded}#article-title";
+			: $"/{Article.PublishDate.Year}/{Article.PublishDate.Month:D2}/{Article.PublishDate.Day:D2}/{TitleEncoded}";
 
 	[Parameter(CaptureUnmatchedValues = true)]
 	public Dictionary<string, object>? AdditionalAttributes { get; set; }
