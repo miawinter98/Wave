@@ -11,10 +11,11 @@ using Uri = System.Uri;
 
 namespace Wave.Services;
 
-public class SmtpEmailSender(ILogger<SmtpEmailSender> logger, IOptions<SmtpConfiguration> config, IOptions<Customization> customizations, EmailTemplateService templateService) : IEmailSender<ApplicationUser>, IAdvancedEmailSender {
+public class SmtpEmailSender(ILogger<SmtpEmailSender> logger, IOptions<SmtpConfiguration> config, IOptions<Customization> customizations, EmailTemplateService templateService, FileSystemService fileSystemService) : IEmailSender<ApplicationUser>, IAdvancedEmailSender {
 	private ILogger<SmtpEmailSender> Logger { get; } = logger;
 	private SmtpConfiguration Configuration { get; } = config.Value;
 	private Customization Customizations { get; } = customizations.Value;
+	private FileSystemService FileSystemService { get; } = fileSystemService;
 	private EmailTemplateService TemplateService { get; } = templateService;
 
 	public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink) =>
@@ -106,19 +107,20 @@ public class SmtpEmailSender(ILogger<SmtpEmailSender> logger, IOptions<SmtpConfi
 			.CreateConfirmTokensAsync(subscriber.Id, "unsubscribe-welcome", TimeSpan.FromDays(30));
 		var host = new Uri(string.IsNullOrWhiteSpace(Customizations.AppUrl) ? "" : Customizations.AppUrl); // TODO get link
 
+		string articlePartial = (await FileSystemService.GetPartialTemplateAsync("email-article", """
+			<div style="padding: 10px; background: #9f9f9f; color: #fff; margin-bottom: 10px; border-radius: 2px">
+			  <h3 style="margin-top: 0;">{0}</h3>
+			  <small>{1}</small>
+			  <p>{2}...</p>
+			  <a href="{3}">Link</a>
+			</div>
+			"""))!;
 		var articlesHtml = new StringBuilder("");
 		foreach (var n in articles) {
 			string articleLink = ArticleUtilities.GenerateArticleLink(n.Article, new Uri(Customizations.AppUrl, UriKind.Absolute));
 			articlesHtml.AppendFormat(
-				"""
-				<div style="padding: 10px; background: #333; color: #fff; margin-bottom: 10px">
-				  <h3>{0}</h3>
-				  <small>{1}</small>
-				  <p>{2}</p>
-				  <a href="{3}">Link</a>
-				</div>
-				""", 
-				n.Article.Title, n.Article.Author.Name, n.Article.Body[..Math.Min(100, n.Article.Body.Length)], articleLink);
+				articlePartial, 
+				n.Article.Title, n.Article.Author.Name, n.Article.Body[..Math.Min(250, n.Article.Body.Length)], articleLink);
 		}
 
 		string logo = !string.IsNullOrWhiteSpace(Customizations.LogoLink)

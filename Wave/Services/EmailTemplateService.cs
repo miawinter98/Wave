@@ -77,6 +77,15 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		FileSystem.GetEmailTemplate("default", DefaultTemplates["default"]);
 		FileSystem.GetEmailTemplate("newsletter", DefaultTemplates["newsletter"]);
 		FileSystem.GetEmailTemplate("welcome", DefaultTemplates["welcome"]);
+		FileSystem.GetPartialTemplateAsync("email-article",
+			"""
+			<div style="padding: 10px; background: #9f9f9f; color: #fff; margin-bottom: 10px; border-radius: 2px">
+			  <h3 style="margin-top: 0;">{0}</h3>
+			  <small>{1}</small>
+			  <p>{2}...</p>
+			  <a href="{3}">Link</a>
+			</div>
+			""");
 	}
 
 	public string ApplyTokens(string template, Func<string, string?> replacer) {
