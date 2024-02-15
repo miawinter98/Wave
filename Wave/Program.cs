@@ -107,6 +107,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 
 #region Services
 
+builder.Services.AddHealthChecks();
 builder.Services.AddLocalization(options => {
 	options.ResourcesPath = "Resources";
 });
@@ -170,6 +171,8 @@ app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 app.UseOutputCache();

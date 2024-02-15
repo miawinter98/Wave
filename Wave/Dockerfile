@@ -3,11 +3,14 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 RUN mkdir -p /app/files && chown app /app/files
 RUN mkdir -p /configuration && chown app /configuration
+RUN apt-get update && apt-get install -y curl
 USER app
 VOLUME /app/files
 VOLUME /configuration
 WORKDIR /app
 EXPOSE 8080
+HEALTHCHECK --start-period=5s --start-interval=15s --interval=30s --timeout=30s --retries=3 \
+    CMD curl --fail http://localhost:8080/health || exit 1
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
