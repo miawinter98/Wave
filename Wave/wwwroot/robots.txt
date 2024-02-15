@@ -8,6 +8,8 @@ Disallow: /
 User-agent: *
 Disallow: /Account
 Disallow: /Account/Manage
+Disallow: /Email/Confirm
+Disallow: /Email/Unsubscribe
 
 #  _______  ______    _______  __    _  _______    ______    ___   _______  __   __  _______  _______ 
 # |       ||    _ |  |   _   ||  |  | ||       |  |    _ |  |   | |       ||  | |  ||       ||       |
