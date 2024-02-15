@@ -36,6 +36,11 @@
 				<li><NavLink href="manage/users">@Localizer["ManageUsers_Label"]</NavLink></li>
 			</Authorized>
 		</AuthorizeView>
+		<AuthorizeView Roles="Admin">
+			<Authorized>
+				<li><NavLink href="Newsletter">@Localizer["Newsletter_Label"]</NavLink></li>
+			</Authorized>
+		</AuthorizeView>
 	</ul>
 	<ul class="menu gap-2" aria-label="Account">
 		<AuthorizeView>

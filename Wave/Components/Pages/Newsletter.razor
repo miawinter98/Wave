@@ -1,0 +1,79 @@
+﻿@page "/Newsletter"
+@using Microsoft.Extensions.Options
+@using Wave.Data
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IStringLocalizer<Newsletter> Localizer
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IOptions<Features> Features
+
+<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+
+<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
+
+<section>
+	<div class="form-control w-full max-w-xs mb-3">
+		<label class="label cursor-pointer">
+			<span class="label-text">@Localizer["Enabled_Label"]</span>
+			<input type="checkbox" disabled checked="@Features.Value.EmailSubscriptions" class="checkbox" />
+		</label>
+	</div>
+	
+	<dl class="grid grid-cols-2 lg:grid-cols-4 p-4 w-full">
+		<dt>@Localizer["Subscribers_Total"]</dt>
+		<dd>@SubscribersTotal</dd>
+		<dt>@Localizer["Subscribers_Active"]</dt>
+		<dd>@SubscribersActive</dd>
+	</dl>
+	
+	<div class="overflow-x-auto">
+		<table class="table table-zebra">
+			<thead>
+			<tr>
+				<th>@Localizer["Newsletter_Heading_Article"]</th>
+				<th>@Localizer["Newsletter_Heading_DistributionDateTime"]</th>
+				<th>@Localizer["Newsletter_Heading_IsSend"]</th>
+			</tr>
+			</thead>
+			<tbody>
+			@foreach (var newsletter in Newsletters) {
+				<tr>
+					<td>@newsletter.Article.Title</td>
+					<td>@newsletter.DistributionDateTime.ToString("g")</td>
+					<td><input type="checkbox" disabled checked="@newsletter.IsSend" class="checkbox" /></td>
+				</tr>
+			}
+			</tbody>
+			<tfoot>
+			<tr>
+				<td colspan="3">@Localizer["Newsletter_Footer_Timezone"] @TimeZoneInfo.Local</td>
+			</tr>
+			</tfoot>
+		</table>
+	</div>
+</section>
+
+
+@code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+
+	private IReadOnlyList<EmailNewsletter> Newsletters { get; set; } = [];
+	private int SubscribersTotal { get; set; }
+	private int SubscribersActive { get; set; }
+
+	protected override async Task OnInitializedAsync() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+
+		Newsletters = await context.Set<EmailNewsletter>()
+			.IgnoreQueryFilters().IgnoreAutoIncludes()
+			.Include(n => n.Article)
+			.OrderByDescending(n => n.DistributionDateTime)
+			.ToListAsync();
+
+		SubscribersTotal = await context.Set<EmailSubscriber>().IgnoreQueryFilters().CountAsync();
+		SubscribersActive = await context.Set<EmailSubscriber>().CountAsync();
+	}
+
+}

@@ -98,37 +98,28 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
-    <data name="Home_Label" xml:space="preserve">
-        <value>Startpage</value>
-    </data>
-    <data name="ArticleNew_Label" xml:space="preserve">
-        <value>New Article</value>
-    </data>
-    <data name="Drafts_Label" xml:space="preserve">
-        <value>Drafts</value>
-    </data>
-    <data name="Review_Label" xml:space="preserve">
-        <value>In Review</value>
-    </data>
-    <data name="ManageUsers_Label" xml:space="preserve">
-        <value>Manage Users</value>
-    </data>
-    <data name="Logout_Label" xml:space="preserve">
-        <value>Log Out</value>
-    </data>
-    <data name="Login_Label" xml:space="preserve">
-        <value>Log In</value>
-    </data>
-    <data name="SignUp_Label" xml:space="preserve">
-        <value>Sign Up</value>
-    </data>
-  <data name="Future_Label" xml:space="preserve">
-    <value>Publishing</value>
-  </data>
-    <data name="ManageCategories_Label" xml:space="preserve">
-        <value>Manage Categories</value>
-    </data>
-    <data name="Newsletter_Label" xml:space="preserve">
+    <data name="Title" xml:space="preserve">
         <value>Newsletter</value>
+    </data>
+    <data name="Newsletter_Footer_Timezone" xml:space="preserve">
+        <value>All times are using this timezone:</value>
+    </data>
+    <data name="Subscribers_Total" xml:space="preserve">
+        <value>Total Subscribers</value>
+    </data>
+    <data name="Subscribers_Active" xml:space="preserve">
+        <value>Active Subscribers</value>
+    </data>
+    <data name="Newsletter_Heading_Article" xml:space="preserve">
+        <value>Article</value>
+    </data>
+    <data name="Newsletter_Heading_DistributionDateTime" xml:space="preserve">
+        <value>Distribution at</value>
+    </data>
+    <data name="Newsletter_Heading_IsSend" xml:space="preserve">
+        <value>Has been sent</value>
+    </data>
+    <data name="Enabled_Label" xml:space="preserve">
+        <value>Newsletter is Enabled</value>
     </data>
 </root>
