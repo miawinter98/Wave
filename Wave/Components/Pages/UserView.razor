@@ -1,6 +1,8 @@
 ﻿@page "/profile/{id:guid}"
 @using Wave.Data
 @using Microsoft.EntityFrameworkCore
+@using Wave.Components.Account
+@using System.Security.Claims
 
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IStringLocalizer<UserView> Localizer
@@ -18,9 +20,9 @@
 		<div class="shrink-0 md:w-40 lg:w-56">
 			<ProfilePictureComponent ProfileId="@User.Id" Size="400" />
 		</div>
-		<div>
-			<h2 class="text-2xl lg:text-4xl mb-3">@User.FullName</h2>
-			<p class="my-3">@User.AboutTheAuthor</p>
+		<div class="flex flex-col">
+			<h2 class="text-2xl lg:text-4xl mb-3">@User.Name</h2>
+			<p class="mb-3 flex-1">@User.AboutTheAuthor</p>
 			<div class="flex gap-2 flex-wrap">
 				@foreach (var link in User.Links) {
 					<UserLinkComponent Link="link" class="badge hover:badge-outline flex gap-2 p-4" />
@@ -55,12 +57,13 @@
 @code {
 	[CascadingParameter(Name = "TitlePrefix")]
 	private string TitlePrefix { get; set; } = default!;
+	[CascadingParameter]
+	public required HttpContext HttpContext { get; set; }
 
 	[Parameter]
 	public Guid? Id { get; set; }
 
 	private ApplicationUser? User { get; set; }
-	private List<Article> Articles { get; set; } = [];
 
 	protected override async Task OnInitializedAsync() {
 		await using var context = await ContextFactory.CreateDbContextAsync();
@@ -74,7 +77,7 @@
 		
 		// Validate access to user
 		if (User is not null && User.Articles.Count > 0) {
-			
+		} else if (User is not null && HttpContext.User.FindFirst("Id")?.Value == User.Id) {
 		} else {
 			User = null;
 		}
