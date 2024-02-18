@@ -129,6 +129,8 @@ if (emailConfig?.Smtp.Count > 0) {
 			"Email providers have been configured, but no SenderEmail. " +
 			"Please provider the sender email address used for email distribution.");
 	}
+	builder.Services.AddSingleton<EmailTemplateService>();
+	builder.Services.AddScoped<EmailFactory>();
 
 	foreach (var smtp in emailConfig.Smtp) {
 		builder.Services.AddKeyedScoped<IEmailService, LiveEmailService>(smtp.Key.ToLower(), (provider, key) => 
@@ -147,6 +149,7 @@ if (emailConfig?.Smtp.Count > 0) {
 
 	if (emailConfig.Smtp.Keys.Any(k => k.Equals("bulk", StringComparison.CurrentCultureIgnoreCase))) {
 		builder.Services.AddScoped<NewsletterBackgroundService>();
+		builder.Services.AddHostedService<EmailBackgroundWorker>();
 	} else if (builder.Configuration.GetSection(nameof(Features)).Get<Features>()?.EmailSubscriptions is not true) {
 		throw new ApplicationException(
 			"Email subscriptions have been enabled, but no 'bulk' email provider was configured. " + 
@@ -157,12 +160,8 @@ if (emailConfig?.Smtp.Count > 0) {
 	logMessages.Add("No email provider configured.");
 }
 
-builder.Services.AddScoped<EmailFactory>();
-
 builder.Services.AddSingleton<IMessageDisplay, MessageService>();
 builder.Services.AddSingleton<FileSystemService>();
-builder.Services.AddSingleton<EmailTemplateService>();
-builder.Services.AddHostedService<EmailBackgroundWorker>();
 
 #endregion
 
