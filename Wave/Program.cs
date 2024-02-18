@@ -121,16 +121,40 @@ builder.Services.Configure<Customization>(builder.Configuration.GetSection(nameo
 builder.Services.AddCascadingValue("TitlePrefix",
 	sf => (sf.GetService<IOptions<Customization>>()?.Value.AppName ?? "Wave") + " - ");
 
-var smtpConfig = builder.Configuration.GetSection("Email:Smtp");
-if (smtpConfig.Exists()) {
-	builder.Services.Configure<SmtpConfiguration>(smtpConfig);
-	builder.Services.AddKeyedScoped<IEmailService, LiveEmailService>("live");
-	builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
-	builder.Services.AddScoped<IAdvancedEmailSender, SmtpEmailSender>();
-	builder.Services.AddScoped<IEmailSender<ApplicationUser>, SmtpEmailSender>();
+var emailConfig = builder.Configuration.GetSection("Email").Get<EmailConfiguration>();
+builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("Email"));
+if (emailConfig?.Smtp.Count > 0) {
+	if (string.IsNullOrWhiteSpace(emailConfig.SenderEmail)) {
+		throw new ApplicationException(
+			"Email providers have been configured, but no SenderEmail. " +
+			"Please provider the sender email address used for email distribution.");
+	}
+
+	foreach (var smtp in emailConfig.Smtp) {
+		builder.Services.AddKeyedScoped<IEmailService, LiveEmailService>(smtp.Key.ToLower(), (provider, key) => 
+			ActivatorUtilities.CreateInstance<LiveEmailService>(provider, 
+				provider.GetRequiredService<IOptions<EmailConfiguration>>().Value.Smtp[(string)key]));
+	}
+
+	if (emailConfig.Smtp.Keys.Any(k => k.Equals("live", StringComparison.CurrentCultureIgnoreCase))) {
+		builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+		builder.Services.AddScoped<IAdvancedEmailSender, SmtpEmailSender>();
+		builder.Services.AddScoped<IEmailSender<ApplicationUser>, SmtpEmailSender>();
+	} else {
+		builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+		logMessages.Add("No 'live' email provider configured.");
+	}
+
+	if (emailConfig.Smtp.Keys.Any(k => k.Equals("bulk", StringComparison.CurrentCultureIgnoreCase))) {
+		builder.Services.AddScoped<NewsletterBackgroundService>();
+	} else if (builder.Configuration.GetSection(nameof(Features)).Get<Features>()?.EmailSubscriptions is not true) {
+		throw new ApplicationException(
+			"Email subscriptions have been enabled, but no 'bulk' email provider was configured. " + 
+			"Disable email subscriptions or provide the mail provider for bulk sending");
+	}
 } else {
 	builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-	logMessages.Add("No Email provider configured.");
+	logMessages.Add("No email provider configured.");
 }
 
 builder.Services.AddScoped<EmailFactory>();

@@ -6,18 +6,19 @@ using Wave.Data;
 
 namespace Wave.Services;
 
-public class LiveEmailService(ILogger<LiveEmailService> logger, IOptions<SmtpConfiguration> configuration) : IEmailService {
+public class LiveEmailService(ILogger<LiveEmailService> logger, IOptions<EmailConfiguration> emailConfiguration, SmtpConfiguration configuration) : IEmailService {
 	private ILogger<LiveEmailService> Logger { get; } = logger;
-	private SmtpConfiguration Configuration { get; } = configuration.Value;
+	private EmailConfiguration EmailConfiguration { get; } = emailConfiguration.Value;
+	private SmtpConfiguration Configuration { get; } = configuration;
 
 	private SmtpClient? Client { get; set; }
 
 	public async ValueTask DisposeAsync() {
 		GC.SuppressFinalize(this);
-		await Disconnect(CancellationToken.None);
+		await DisconnectAsync(CancellationToken.None);
 	}
 
-	public async ValueTask Connect(CancellationToken cancellation) {
+	public async ValueTask ConnectAsync(CancellationToken cancellation) {
 		if (Client is not null) return;
 
 		try {
@@ -35,7 +36,7 @@ public class LiveEmailService(ILogger<LiveEmailService> logger, IOptions<SmtpCon
 		}
 	}
 
-	public async ValueTask Disconnect(CancellationToken cancellation) {
+	public async ValueTask DisconnectAsync(CancellationToken cancellation) {
 		if (Client is null) return;
 		await Client.DisconnectAsync(true, cancellation);
 		Client.Dispose();
@@ -47,7 +48,7 @@ public class LiveEmailService(ILogger<LiveEmailService> logger, IOptions<SmtpCon
 			if (Client is null) throw new ApplicationException("Not connected.");
 
 			var message = new MimeMessage {
-				From = { new MailboxAddress(Configuration.SenderName, Configuration.SenderEmail) },
+				From = { new MailboxAddress(EmailConfiguration.SenderName, EmailConfiguration.SenderEmail) },
 				To = { new MailboxAddress(email.ReceiverName, email.ReceiverEmail) },
 				Subject = email.Subject
 			};
@@ -55,7 +56,7 @@ public class LiveEmailService(ILogger<LiveEmailService> logger, IOptions<SmtpCon
 			message.Body = builder.ToMessageBody();
 			foreach ((string id, string value) in email.Headers) {
 				if (id == HeaderId.ListUnsubscribe.ToHeaderName()) {
-					message.Headers.Add(HeaderId.ListId, $"<mailto:{Configuration.ServiceEmail ?? Configuration.SenderEmail}>");
+					message.Headers.Add(HeaderId.ListId, $"<mailto:{EmailConfiguration.ServiceEmail ?? EmailConfiguration.SenderEmail}>");
 				}
 				message.Headers.Add(id, value);
 			}
