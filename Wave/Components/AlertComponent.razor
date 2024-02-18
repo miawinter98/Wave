@@ -3,7 +3,7 @@
 @inject IMessageDisplay Messages
 
 @if (Message is {} message) {
-	<div class="alert @message.Type" role="alert">
+	<div class="my-3 alert @message.Type" role="alert">
 		<div> </div>
 		<div>
 			@if (message.Title is null) {
