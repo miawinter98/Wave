@@ -25,6 +25,7 @@
 				@foreach (var link in User.Links) {
 					<UserLinkComponent Link="link" class="badge hover:badge-outline flex gap-2 p-4" />
 				}
+				<UserContactBadges User="User" />
 			</div>
 		</div>
 	</section>
