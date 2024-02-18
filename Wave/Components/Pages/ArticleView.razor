@@ -189,7 +189,7 @@
 					Article = Article,
 					DistributionDateTime = Article.PublishDate
 				};
-				context.Add(newsletter);
+				await context.Set<EmailNewsletter>().AddAsync(newsletter);
 				await context.SaveChangesAsync();
 			} catch (Exception ex) {
 				Logger.LogError(ex, "Failed to schedule article {name} for E-Mail distribution.", Article.Title);
