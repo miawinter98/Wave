@@ -6,7 +6,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Wave.Utilities
 
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @attribute [Authorize(Policy = "ArticleEditOrReviewPermissions")]
 @inject ILogger<ArticleEditor> Logger
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
