@@ -14,7 +14,7 @@ services:
         - database:db
     environment:
       - "TZ=Europe/Berlin"
-      - "WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development"
+      - "WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development; Include Error Detail=true"
       - "WAVE_ConnectionStrings__Redis=redis,password=development"
     volumes:
       - wave-files:/app/files
