@@ -116,4 +116,7 @@
   <data name="Articles" xml:space="preserve">
     <value>Artikel</value>
   </data>
+  <data name="ProfileNotPublic_Message" xml:space="preserve">
+    <value>Ihr Profil ist momentan nicht öffentlich einsehbar. </value>
+  </data>
 </root>

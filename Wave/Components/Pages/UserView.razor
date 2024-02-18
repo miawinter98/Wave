@@ -1,11 +1,11 @@
 ﻿@page "/profile/{id:guid}"
 @using Wave.Data
 @using Microsoft.EntityFrameworkCore
-@using Wave.Components.Account
-@using System.Security.Claims
+@using Wave.Utilities
 
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IStringLocalizer<UserView> Localizer
+@inject IMessageDisplay Message
 
 <PageTitle>@(TitlePrefix + @Localizer["Title"] + " | " + (User?.FullName ?? Localizer["NotFound_Title"]))</PageTitle>
 
@@ -74,10 +74,11 @@
 				.ThenInclude(a => a.Categories)
 				.FirstOrDefaultAsync(u => u.Id == Id.ToString());
 		}
-		
+
 		// Validate access to user
 		if (User is not null && User.Articles.Count > 0) {
 		} else if (User is not null && HttpContext.User.FindFirst("Id")?.Value == User.Id) {
+			Message.ShowWarning(Localizer["ProfileNotPublic_Message"]);
 		} else {
 			User = null;
 		}
