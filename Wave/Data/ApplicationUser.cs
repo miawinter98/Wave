@@ -28,6 +28,6 @@ public class ApplicationUser : IdentityUser {
 	public string ContactPhone { get; set; } = string.Empty;
 	[MaxLength(64), Phone, PersonalData]
 	public string ContactPhoneBusiness { get; set; } = string.Empty;
-	[MaxLength(128), Phone, PersonalData]
+	[MaxLength(128), Url, PersonalData]
 	public string ContactWebsite { get; set; } = string.Empty;
 }

@@ -168,4 +168,37 @@ I started cooking at the young age of 7...</value>
   <data name="Profile_Link_Label" xml:space="preserve">
     <value>Go to Profile</value>
   </data>
+  <data name="ContactInformation" xml:space="preserve">
+    <value>Contact Information</value>
+  </data>
+  <data name="Contact_Email_Label" xml:space="preserve">
+    <value>Public Email</value>
+  </data>
+  <data name="Contact_Email_Placeholder" xml:space="preserve">
+    <value>john.doe@example.com</value>
+  </data>
+  <data name="Contact_Phone_Label" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Contact_Phone_Placeholder" xml:space="preserve">
+    <value>+55 555 5555 555</value>
+  </data>
+  <data name="Contact_PhoneBusiness_Label" xml:space="preserve">
+    <value>Business Phone</value>
+  </data>
+  <data name="Contact_PhoneBusiness_Placeholder" xml:space="preserve">
+    <value>+55 555 5555 555</value>
+  </data>
+  <data name="Contact_Website_Label" xml:space="preserve">
+    <value>Website</value>
+  </data>
+  <data name="Contact_Website_Placeholder" xml:space="preserve">
+    <value>https://example.com</value>
+  </data>
+  <data name="Contact_Success" xml:space="preserve">
+    <value>Updated contact information</value>
+  </data>
+  <data name="Contact_Error" xml:space="preserve">
+    <value>Error updated contact information</value>
+  </data>
 </root>

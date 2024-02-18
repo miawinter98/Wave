@@ -1,0 +1,100 @@
+﻿@using Wave.Data
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Mvc
+@using Wave.Utilities
+@using System.ComponentModel
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IStringLocalizer<Wave.Components.Account.Pages.Manage.Index> Localizer
+@inject IMessageDisplay Message
+
+<EditForm FormName="update-contact" Model="@Model" OnValidSubmit="@OnValidSubmit" method="post" class="w-full">
+	<DataAnnotationsValidator />
+	
+	<InputLabelComponent For="() => Model.ContactEmail" LabelText="@Localizer["Contact_Email_Label"]">
+		<InputText class="input input-bordered w-full" maxlength="128" type="email" autocomplete="email"
+		           @bind-Value="@Model.ContactEmail" placeholder="@Localizer["Contact_Email_Placeholder"]" />
+	</InputLabelComponent>
+	<InputLabelComponent For="() => Model.ContactPhone" LabelText="@Localizer["Contact_Phone_Label"]">
+		<InputText class="input input-bordered w-full" maxlength="64" type="tel" autocomplete="tel"
+				   @bind-Value="@Model.ContactPhone" placeholder="@Localizer["Contact_Phone_Placeholder"]" />
+	</InputLabelComponent>
+	<InputLabelComponent For="() => Model.ContactPhoneBusiness" LabelText="@Localizer["Contact_PhoneBusiness_Label"]">
+		<InputText class="input input-bordered w-full" maxlength="64" type="tel" autocomplete="tel"
+				   @bind-Value="@Model.ContactPhoneBusiness" placeholder="@Localizer["Contact_PhoneBusiness_Placeholder"]" />
+	</InputLabelComponent>
+	<InputLabelComponent For="() => Model.ContactWebsite" LabelText="@Localizer["Contact_Website_Label"]">
+		<InputText class="input input-bordered w-full" maxlength="128" type="url" autocomplete="url"
+				   @bind-Value="@Model.ContactWebsite" placeholder="@Localizer["Contact_Website_Placeholder"]" />
+	</InputLabelComponent>
+	
+	<button type="submit" class="btn btn-primary w-full">
+		@Localizer["Submit"]
+	</button>
+</EditForm>
+
+@code {
+	[CascadingParameter]
+	public required HttpContext HttpContext { get; set; }
+
+	[Parameter]
+	public required ApplicationUser User { get; set; }
+
+	[SupplyParameterFromForm(FormName = "update-contact")]
+	private InputModel Model { get; set; } = new();
+	
+	protected override void OnInitialized() {
+		if (HttpContext.Request.Method.ToLower() == "post") return;
+		Model.ContactEmail = User.ContactEmail;
+		Model.ContactPhone = User.ContactPhone;
+		Model.ContactPhoneBusiness = User.ContactPhoneBusiness;
+		Model.ContactWebsite = User.ContactWebsite;
+	}
+
+	private async Task OnValidSubmit() {
+		try {
+			User.ContactEmail = Model.ContactEmail ?? "";
+			User.ContactPhone = Model.ContactPhone ?? "";
+			User.ContactPhoneBusiness = Model.ContactPhoneBusiness ?? "";
+			User.ContactWebsite = Model.ContactWebsite ?? "";
+
+			await UserManager.UpdateAsync(User);
+			Message.ShowSuccess(Localizer["Contact_Success"]);
+		} catch {
+			Message.ShowSuccess(Localizer["Contact_Error"]);
+		}
+	}
+
+	private sealed class InputModel {
+		private string? _contactEmail;
+		private string? _contactPhone;
+		private string? _contactPhoneBusiness;
+		private string? _contactWebsite;
+
+		[MaxLength(128), EmailAddress]
+		public string? ContactEmail {
+			get => string.IsNullOrWhiteSpace(_contactEmail) ? null : _contactEmail;
+			set => _contactEmail = value;
+		}
+
+		[MaxLength(64), Phone]
+		public string? ContactPhone {
+			get => string.IsNullOrWhiteSpace(_contactPhone) ? null : _contactPhone;
+			set => _contactPhone = value;
+		}
+
+		[MaxLength(64), Phone]
+		public string? ContactPhoneBusiness {
+			get => string.IsNullOrWhiteSpace(_contactPhoneBusiness) ? null : _contactPhoneBusiness;
+			set => _contactPhoneBusiness = value;
+		}
+
+		[MaxLength(128), Url]
+		public string? ContactWebsite {
+			get => string.IsNullOrWhiteSpace(_contactWebsite) ? null : _contactWebsite;
+			set => _contactWebsite = value;
+		}
+	}
+
+}

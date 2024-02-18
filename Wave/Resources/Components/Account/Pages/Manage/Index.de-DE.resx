@@ -168,4 +168,37 @@ Ich koche seit dem jungen Alter von 7...</value>
   <data name="Profile_Link_Label" xml:space="preserve">
     <value>Profil Öffnen</value>
   </data>
+  <data name="ContactInformation" xml:space="preserve">
+    <value>Kontaktinformation</value>
+  </data>
+  <data name="Contact_Error" xml:space="preserve">
+    <value>Fehler beim aktuallisieren der Kontaktinformationen</value>
+  </data>
+  <data name="Contact_Email_Label" xml:space="preserve">
+    <value>Öffentliche E-Mail</value>
+  </data>
+  <data name="Contact_Email_Placeholder" xml:space="preserve">
+    <value>anna.muster@example.de</value>
+  </data>
+  <data name="Contact_Success" xml:space="preserve">
+    <value>Kontaktinformationen aktuallisiert</value>
+  </data>
+  <data name="Contact_Website_Label" xml:space="preserve">
+    <value>Webseite</value>
+  </data>
+  <data name="Contact_Website_Placeholder" xml:space="preserve">
+    <value>https://example.de</value>
+  </data>
+  <data name="Contact_PhoneBusiness_Label" xml:space="preserve">
+    <value>Telefon Geschäftlich</value>
+  </data>
+  <data name="Contact_Phone_Label" xml:space="preserve">
+    <value>Telefon</value>
+  </data>
+  <data name="Contact_PhoneBusiness_Placeholder" xml:space="preserve">
+    <value>+49 555 5555 555</value>
+  </data>
+  <data name="Contact_Phone_Placeholder" xml:space="preserve">
+    <value>+49 555 5555 555</value>
+  </data>
 </root>

@@ -31,8 +31,13 @@
         }
     </BoardCardComponent>
     <BoardCardComponent Heading="@Localizer["AboutMe"]">
+	    @if (User is not null) {
+		    <AboutMeFormPartial User="@User" />
+	    }
+    </BoardCardComponent>
+    <BoardCardComponent Heading="@Localizer["ContactInformation"]">
         @if (User is not null) {
-            <AboutMeFormPartial User="@User" />
+	        <ContactInformationPartial User="User" />
         }
     </BoardCardComponent>
     <BoardCardComponent Heading="@Localizer["Permissions"]">
