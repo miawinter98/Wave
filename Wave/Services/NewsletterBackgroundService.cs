@@ -35,6 +35,9 @@ public class NewsletterBackgroundService(ILogger<NewsletterBackgroundService> lo
 					Logger.LogInformation("Cancellation requested, skipping processing '{title}'.", newsletter.Article.Title);
 					return;
 				}
+				string replyTo = "";
+				if (!string.IsNullOrWhiteSpace(newsletter.Article.Author.ContactEmail))
+					replyTo = $"{newsletter.Article.Author.Name} <{newsletter.Article.Author.ContactEmail}>";
 
 				Logger.LogInformation("Processing '{title}'.", newsletter.Article.Title);
 				// set newsletter to send first, so we don't spam people 
@@ -53,7 +56,7 @@ public class NewsletterBackgroundService(ILogger<NewsletterBackgroundService> lo
 
 					foreach (var subscriber in subscribers) {
 						var email = await factory.CreateSubscribedEmail(subscriber, articleLink, newsletter.Article.Title,
-							newsletter.Article.Title, newsletter.Article.BodyHtml, newsletter.Id.ToString());
+							newsletter.Article.Title, newsletter.Article.BodyHtml, newsletter.Id.ToString(), replyTo);
 						await client.SendEmailAsync(email);
 					}
 				}
