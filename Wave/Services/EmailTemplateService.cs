@@ -51,8 +51,27 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		});
 	}
 
+	public ValueTask<string> DefaultAsync(string home, string logoLink, string title, string body) {
+		return ProcessAsync("default", new Dictionary<Constants, object?> {
+			{Constants.HomeLink, home},
+			{Constants.ContentLogo, logoLink},
+			{Constants.ContentTitle, title},
+			{Constants.ContentBody, body}
+		});
+	}
+
 	public string Newsletter(string home, string browserUrl, string logoLink, string title, string body, string unsubscribe) {
 		return Process("newsletter", new Dictionary<Constants, object?> {
+			{ Constants.HomeLink, home },
+			{ Constants.BrowserLink, browserUrl },
+			{ Constants.ContentLogo, logoLink },
+			{ Constants.ContentTitle, title },
+			{ Constants.ContentBody, body },
+			{ Constants.EmailUnsubscribeLink, unsubscribe }
+		});
+	}
+	public ValueTask<string> NewsletterAsync(string home, string browserUrl, string logoLink, string title, string body, string unsubscribe) {
+		return ProcessAsync("newsletter", new Dictionary<Constants, object?> {
 			{ Constants.HomeLink, home },
 			{ Constants.BrowserLink, browserUrl },
 			{ Constants.ContentLogo, logoLink },
@@ -77,15 +96,7 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		FileSystem.GetEmailTemplate("default", DefaultTemplates["default"]);
 		FileSystem.GetEmailTemplate("newsletter", DefaultTemplates["newsletter"]);
 		FileSystem.GetEmailTemplate("welcome", DefaultTemplates["welcome"]);
-		FileSystem.GetPartialTemplateAsync("email-article",
-			"""
-			<div style="padding: 10px; background: #9f9f9f; color: #fff; margin-bottom: 10px; border-radius: 2px">
-			  <h3 style="margin-top: 0;">{0}</h3>
-			  <small>{1}</small>
-			  <p>{2}...</p>
-			  <a href="{3}">Link</a>
-			</div>
-			""");
+		FileSystem.GetPartialTemplate("email-article", DefaultPartials["email-article"]);
 	}
 
 	public string ApplyTokens(string template, Func<string, string?> replacer) {
@@ -96,6 +107,17 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		return FileSystem.GetEmailTemplate(templateName, 
 			       DefaultTemplates.TryGetValue(templateName, out string? s) ? s : null) 
 		       ?? throw new ApplicationException("Failed to retrieve mail template " + templateName + ".");
+	}
+	public async ValueTask<string> GetPartialAsync(string partialName) {
+		return await FileSystem.GetPartialTemplateAsync(partialName, 
+					DefaultTemplates.TryGetValue(partialName, out string? s) ? s : null) 
+				?? throw new ApplicationException("Failed to retrieve mail template " + partialName + ".");
+	}
+	
+	public async ValueTask<string> GetTemplateAsync(string templateName) {
+		return await FileSystem.GetEmailTemplateAsync(templateName, 
+					DefaultTemplates.TryGetValue(templateName, out string? s) ? s : null) 
+				?? throw new ApplicationException("Failed to retrieve mail template " + templateName + ".");
 	}
 
 	public string CompileTemplate(string template, string templateName = "unknown") {
@@ -113,6 +135,12 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 
 	public string Process(string templateName, Dictionary<Constants, object?> data) {
 		string template = ApplyTokens(GetTemplate(templateName), token => 
+			data.TryGetValue(Enum.Parse<Constants>(token, true), out object? v) ? v?.ToString() : null);
+		return CompileTemplate(template, templateName);
+	}
+	
+	public async ValueTask<string> ProcessAsync(string templateName, Dictionary<Constants, object?> data) {
+		string template = ApplyTokens(await GetTemplateAsync(templateName), token => 
 			data.TryGetValue(Enum.Parse<Constants>(token, true), out object? v) ? v?.ToString() : null);
 		return CompileTemplate(template, templateName);
 	}
@@ -264,6 +292,21 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 			   </mj-body>
 			 </mjml>
 			 """
+		}
+	};
+
+	private Dictionary<string, string> DefaultPartials { get; } = new()
+	{
+		{
+			"email-article",
+			"""
+			<div style="padding: 10px; background: #9f9f9f; color: #fff; margin-bottom: 10px; border-radius: 2px">
+			  <h3 style="margin-top: 0;">{0}</h3>
+			  <small>{1}</small>
+			  <p>{2}...</p>
+			  <a href="{3}">Link</a>
+			</div>
+			"""
 		}
 	};
 }

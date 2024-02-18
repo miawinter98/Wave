@@ -7,7 +7,7 @@ public class FileSystemService(ILogger<FileSystemService> logger) {
 
 	private ILogger<FileSystemService> Logger { get; } = logger;
 
-	public Task<string?> GetEmailTemplateAsync(string name, string? defaultTemplate = null) {
+	public ValueTask<string?> GetEmailTemplateAsync(string name, string? defaultTemplate = null) {
 		string path = Path.Combine(ConfigurationDirectory, "templates", "email", name + ".mjml");
 		return GetFileContentAsync(path, defaultTemplate);
 	}
@@ -17,7 +17,7 @@ public class FileSystemService(ILogger<FileSystemService> logger) {
 		return GetFileContent(path, defaultTemplate);
 	}
 	
-	public Task<string?> GetPartialTemplateAsync(string name, string? defaultTemplate = null) {
+	public ValueTask<string?> GetPartialTemplateAsync(string name, string? defaultTemplate = null) {
 		string path = Path.Combine(ConfigurationDirectory, "templates", "partials", name + ".html");
 		return GetFileContentAsync(path, defaultTemplate);
 	}
@@ -47,7 +47,7 @@ public class FileSystemService(ILogger<FileSystemService> logger) {
 			return defaultContent;
 		}
 	}
-	private async Task<string?> GetFileContentAsync(string path, string? defaultContent = null) {
+	private async ValueTask<string?> GetFileContentAsync(string path, string? defaultContent = null) {
 		if (!File.Exists(path)) {
 			try {
 				Directory.CreateDirectory(Path.GetDirectoryName(path)!);

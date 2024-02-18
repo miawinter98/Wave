@@ -3,6 +3,7 @@ using Wave.Data;
 
 namespace Wave.Services;
 
+[Obsolete]
 public interface IAdvancedEmailSender : IEmailSender {
 	Task SendEmailAsync(string email, string? name, string subject, string htmlMessage);
 	Task SendDefaultMailAsync(string receiverMail, string? receiverName, string subject, string title, string bodyHtml);

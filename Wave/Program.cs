@@ -124,6 +124,7 @@ builder.Services.AddCascadingValue("TitlePrefix",
 var smtpConfig = builder.Configuration.GetSection("Email:Smtp");
 if (smtpConfig.Exists()) {
 	builder.Services.Configure<SmtpConfiguration>(smtpConfig);
+	builder.Services.AddKeyedScoped<IEmailService, LiveEmailService>("live");
 	builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 	builder.Services.AddScoped<IAdvancedEmailSender, SmtpEmailSender>();
 	builder.Services.AddScoped<IEmailSender<ApplicationUser>, SmtpEmailSender>();
@@ -131,6 +132,8 @@ if (smtpConfig.Exists()) {
 	builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 	logMessages.Add("No Email provider configured.");
 }
+
+builder.Services.AddScoped<EmailFactory>();
 
 builder.Services.AddSingleton<IMessageDisplay, MessageService>();
 builder.Services.AddSingleton<FileSystemService>();
