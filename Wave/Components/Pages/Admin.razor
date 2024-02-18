@@ -5,6 +5,8 @@
 @using Wave.Components.Account.Shared
 @using Wave.Data
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Caching.Distributed;
+@using System.Text;
 
 @attribute [Authorize]
 @inject IdentityUserAccessor UserAccessor
@@ -13,6 +15,7 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 @inject IStringLocalizer<Admin> Localizer
+@inject IDistributedCache WaveDistributedCache
 
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
 
@@ -52,8 +55,8 @@
     protected override async Task OnInitializedAsync() {
         User = await UserAccessor.GetRequiredUserAsync(HttpContext);
 
-        string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "admin.txt");
-        if (File.Exists(path)) Password = await File.ReadAllTextAsync(path);
+        Password = await WaveDistributedCache.GetStringAsync("admin_promote_key")
+                   ?? "";
     }
 
     private async Task Promote() {
@@ -76,7 +79,7 @@
             }
         }
         await UserManager.AddToRoleAsync(User, "Admin");
-        File.Delete(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "admin.txt"));
+        await WaveDistributedCache.RemoveAsync("admin_promote_key");
         await SignInManager.RefreshSignInAsync(User);
         Message = "You have been promoted, this tool is now disabled.";
     }

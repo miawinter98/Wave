@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
+using System.Text;
 using Tomlyn.Extensions.Configuration;
 using Wave.Components;
 using Wave.Components.Account;
@@ -79,7 +81,7 @@ builder.Services.AddAuthorizationBuilder()
 	.AddPolicy("ArticleDeletePermissions", p => p.RequireRole("Moderator", "Admin"))
 	.AddPolicy("CategoryManagePermissions", p => p.RequireRole("Admin"))
 	.AddPolicy("RoleAssignPermissions", p => p.RequireRole("Admin"))
-	
+
 	.AddPolicy("ArticleEditOrReviewPermissions", p => p.RequireRole("Author", "Reviewer", "Admin"));
 builder.Services.AddAuthentication(options => {
 		options.DefaultScheme = IdentityConstants.ApplicationScheme;
@@ -90,7 +92,7 @@ builder.Services.AddAuthentication(options => {
 
 #region Identity
 
-string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
 						  ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
 	options.UseNpgsql(connectionString));
@@ -116,7 +118,7 @@ builder.Services.AddHttpClient();
 
 builder.Services.Configure<Features>(builder.Configuration.GetSection(nameof(Features)));
 builder.Services.Configure<Customization>(builder.Configuration.GetSection(nameof(Customization)));
-builder.Services.AddCascadingValue("TitlePrefix", 
+builder.Services.AddCascadingValue("TitlePrefix",
 	sf => (sf.GetService<IOptions<Customization>>()?.Value.AppName ?? "Wave") + " - ");
 
 var smtpConfig = builder.Configuration.GetSection("Email:Smtp");
@@ -190,10 +192,19 @@ foreach (string message in logMessages) {
 
 	var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 	if (userManager.GetUsersInRoleAsync("Admin").Result.Any() is false) {
-		string admin = Guid.NewGuid().ToString("N")[..16];
+		IDistributedCache cache = app.Services.GetRequiredService<IDistributedCache>();
+
+		// Check first wheter the password exists already
+		string admin = await cache.GetStringAsync("admin_promote_key");
+
+		// If it does not exist, create a new one and save it to redis
+		if (string.IsNullOrWhiteSpace(admin)){
+			admin = Guid.NewGuid().ToString("N")[..16];
+			await cache.SetAsync("admin_promote_key", Encoding.UTF8.GetBytes(admin), new DistributedCacheEntryOptions{});
+		}
+
 		app.Logger.LogWarning("There is currently no user in your installation with the admin role, " +
 							  "go to /Admin and use the following password to self promote your account: {admin}", admin);
-		File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "admin.txt"), admin);
 	}
 }
 
