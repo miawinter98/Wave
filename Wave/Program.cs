@@ -59,6 +59,7 @@ if (builder.Configuration.GetConnectionString("Redis") is { } redisUri) {
 			EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
 			ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
 		});
+	builder.Services.AddDistributedMemoryCache();
 	logMessages.Add("No Redis connection string found.");
 }
 
