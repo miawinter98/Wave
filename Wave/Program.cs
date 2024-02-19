@@ -150,7 +150,7 @@ if (emailConfig?.Smtp.Count > 0) {
 	if (emailConfig.Smtp.Keys.Any(k => k.Equals("bulk", StringComparison.CurrentCultureIgnoreCase))) {
 		builder.Services.AddScoped<NewsletterBackgroundService>();
 		builder.Services.AddHostedService<EmailBackgroundWorker>();
-	} else if (builder.Configuration.GetSection(nameof(Features)).Get<Features>()?.EmailSubscriptions is not true) {
+	} else if (builder.Configuration.GetSection(nameof(Features)).Get<Features>()?.EmailSubscriptions is true) {
 		throw new ApplicationException(
 			"Email subscriptions have been enabled, but no 'bulk' email provider was configured. " + 
 			"Disable email subscriptions or provide the mail provider for bulk sending");
