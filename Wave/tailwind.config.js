@@ -6,6 +6,22 @@ module.exports = {
     safelist: ["youtube"],
     theme: {
         extend: {
+            screens: {
+                '3xl': "1792px",
+                '4xl': "2048px",
+                '5xl': "2304px",
+                '6xl': "2560px",
+                '8xl': "3072px"
+            },
+            container: {
+                'max-width': {
+                    '3xl': "1792px",
+                    '4xl': "2048px",
+                    '5xl': "2304px",
+                    '6xl': "2560px",
+                    '8xl': "3072px"
+                }
+            }
         },
         fontSize: {
             sm: '0.750rem',
