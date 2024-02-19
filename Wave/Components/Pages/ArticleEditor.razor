@@ -314,7 +314,8 @@
 				}
 			}
 
-			var newsletter = await context.Set<EmailNewsletter>().FirstOrDefaultAsync(n => n.Article == article);
+			var newsletter = await context.Set<EmailNewsletter>()
+				.IgnoreQueryFilters().FirstOrDefaultAsync(n => n.Article == article);
 			if (newsletter is not null) {
 				newsletter.DistributionDateTime = article.PublishDate;
 			}
