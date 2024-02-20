@@ -4,7 +4,7 @@ info:
   title: CHANGELOG
   repository_url: https://github.com/miawinter98/Wave
 options:
-  tag_filter_pattern: '^(v|alpha-|beta-)'
+  tag_filter_pattern: '^v'
   issues: 
     prefix:
       - '#'
@@ -16,7 +16,7 @@ options:
         - fixed
         - Implemented
         - Improved
-        - Localized
+        - Removed
   commit_groups:
     # title_maps:
     #   feat: Features
