@@ -5,6 +5,7 @@ public class Customization {
     public string AppDescription { get; set; } = "";
     public string AppUrl { get; set; } = "http://localhost";
     public string DefaultTheme { get; set; } = "";
+    public string DefaultLanguage { get; set; } = "";
     public string LogoLink { get; set; } = "";
     public string Footer { get; set; } = "";
 }

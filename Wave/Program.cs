@@ -173,13 +173,15 @@ builder.Services.AddSingleton<FileSystemService>();
 
 #endregion
 
-
+var customization = builder.Configuration.GetSection(nameof(Customization)).Get<Customization>();
 string[] cultures = ["en-US", "en-GB", "de-DE"];
+
+string defaultLanguage = string.IsNullOrWhiteSpace(customization?.DefaultLanguage) ? cultures[0] : customization.DefaultLanguage;
 builder.Services.Configure<RequestLocalizationOptions>(options => {
 	options.ApplyCurrentCultureToResponseHeaders = true;
 	options.FallBackToParentCultures = true;
 	options.FallBackToParentUICultures = true;
-	options.SetDefaultCulture(cultures[0])
+	options.SetDefaultCulture(defaultLanguage)
 		.AddSupportedCultures(cultures)
 		.AddSupportedUICultures(cultures);
 });
@@ -221,15 +223,15 @@ foreach (string message in logMessages) {
 
 {
 	using var scope = app.Services.CreateScope();
-	using var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+	await using var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 	context.Database.Migrate();
 
 	var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 	if (userManager.GetUsersInRoleAsync("Admin").Result.Any() is false) {
-		IDistributedCache cache = app.Services.GetRequiredService<IDistributedCache>();
+		var cache = app.Services.GetRequiredService<IDistributedCache>();
 
 		// Check first wheter the password exists already
-		string admin = await cache.GetStringAsync("admin_promote_key");
+		string? admin = await cache.GetStringAsync("admin_promote_key");
 
 		// If it does not exist, create a new one and save it to redis
 		if (string.IsNullOrWhiteSpace(admin)){
