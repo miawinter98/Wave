@@ -22,7 +22,6 @@ jobs:
         images: ${{ env.IMAGE_NAME }}
         tags: |
           type=semver,pattern={{version}}
-          type=ref,event=tag
         labels: |
           maintainer=Mia Rose Winter
           org.opencontainers.image.title=Wave
