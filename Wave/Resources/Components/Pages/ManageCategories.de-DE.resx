@@ -137,4 +137,10 @@
   <data name="Category_Error" xml:space="preserve">
     <value>Fehler beim hinzufügen der Kategorie. Kategorien müssen einzigartis sein, ungeachtet Groß-/Kleinschreibung oder Akzenten.</value>
   </data>
+    <data name="Category_Delete_Success" xml:space="preserve">
+        <value>Kategorie wurde erfolgreich gelöscht</value>
+    </data>
+    <data name="Category_Delete_Error" xml:space="preserve">
+        <value>Konnte Kategorie nicht löschen, wird sie noch verwendet?</value>
+    </data>
 </root>

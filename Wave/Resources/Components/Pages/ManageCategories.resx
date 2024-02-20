@@ -137,4 +137,10 @@
   <data name="Category_Error" xml:space="preserve">
     <value>Failed to add category. Categories need to be unique, ignoring case and accents.</value>
   </data>
+    <data name="Category_Delete_Success" xml:space="preserve">
+        <value>Successfully deleted Category</value>
+    </data>
+    <data name="Category_Delete_Error" xml:space="preserve">
+        <value>Could not delete Category, is it still used?</value>
+    </data>
 </root>
