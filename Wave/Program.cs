@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.DataProtection;
@@ -18,6 +19,11 @@ using Wave.Data;
 using Wave.Services;
 using Wave.Utilities;
 
+string humanReadableVersion = Assembly.GetEntryAssembly()?
+	.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+	.InformationalVersion.Split("+", 2)[0] ?? "unknown";
+Console.WriteLine(@"Starting Wave " + humanReadableVersion);
+
 var logMessages = new List<string>();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +34,7 @@ builder.Configuration
 	.AddIniFile( Path.Combine(FileSystemService.ConfigurationDirectory, "config.ini"), true, false)
 	.AddXmlFile( Path.Combine(FileSystemService.ConfigurationDirectory, "config.xml"), true, false)
 	.AddEnvironmentVariables("WAVE_");
+builder.Services.AddCascadingValue("Version", _ => humanReadableVersion);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers(options => {

@@ -87,11 +87,14 @@
 		
 		<div class="bg-base-200 p-4 h-full flex flex-col gap-4 w-48 lg:w-64">
 			<NavMenu />
+			<a class="absolute left-2 right-2 bottom-2 text-center text-slate-400" href="https://github.com/miawinter98/wave">@Version</a>
 		</div>
 	</div>
 </div>
 
 @code {
+	[CascadingParameter(Name = "Version")]
+    private string Version { get; set; } = string.Empty;
 	[CascadingParameter(Name = "UserTheme")]
 	private string? UserTheme { get; set; }
 	[CascadingParameter]

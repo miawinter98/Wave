@@ -14,16 +14,26 @@ HEALTHCHECK --start-period=5s --start-interval=15s --interval=30s --timeout=30s 
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
+ARG VERSION=0.0.1
 WORKDIR /src
 COPY ["Wave/Wave.csproj", "Wave/"]
 RUN dotnet restore "./Wave/Wave.csproj"
 COPY . .
 WORKDIR "/src/Wave"
-RUN dotnet build "./Wave.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./Wave.csproj" \
+    -c $BUILD_CONFIGURATION \
+    -o /app/build \
+    -p:Version="${VERSION}"
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Wave.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+ARG VERSION=0.0.1
+ARG VERSION_SUFFIX=
+RUN dotnet publish "./Wave.csproj" \
+    -c $BUILD_CONFIGURATION \
+    -o /app/publish \
+    -p:UseAppHost=false \
+    -p:Version="${VERSION}"
 
 FROM base AS final
 WORKDIR /app
