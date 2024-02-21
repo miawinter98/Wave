@@ -110,4 +110,16 @@
   <data name="NoArticles_Message" xml:space="preserve">
     <value>Bald wird diese Seite mit ihren Artikeln gefüllt sein! Melden Sie sich an und verfassen Sie ein paar. (Falls noch nicht geschehen, schauen Sie in Ihrer Serverkonsole nach wie Sie ein Adminkonto erstellen)</value>
   </data>
+  <data name="Articles_Load_Error" xml:space="preserve">
+    <value>Fehler beim laden von Artikeln</value>
+  </data>
+  <data name="Paging_Previous" xml:space="preserve">
+    <value>Vorherige Seite</value>
+  </data>
+  <data name="Paging_Page" xml:space="preserve">
+    <value>Seite</value>
+  </data>
+  <data name="Paging_Next" xml:space="preserve">
+    <value>Nächste Seite</value>
+  </data>
 </root>

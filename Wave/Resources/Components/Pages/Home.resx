@@ -110,4 +110,16 @@
   <data name="NoArticles_Message" xml:space="preserve">
     <value>Soon this page will be filled with your articles! Log in and write some. (If you haven't yet, check your servers console on how to create an admin account)</value>
   </data>
+  <data name="Articles_Load_Error" xml:space="preserve">
+    <value>Error loading articles</value>
+  </data>
+  <data name="Paging_Previous" xml:space="preserve">
+    <value>Previous page</value>
+  </data>
+  <data name="Paging_Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+  <data name="Paging_Next" xml:space="preserve">
+    <value>Next page</value>
+  </data>
 </root>
