@@ -2,7 +2,7 @@ name: Create Release
 
 on:
   push:
-    tags: [ v*, alpha-*, beta-* ]
+    tags: [ v* ]
 
 jobs:
   build:
@@ -21,6 +21,7 @@ jobs:
         uses: pfandie/generate-changelog-action@v1.0.6
         id: changelog
         with:
+          config_path: .chglog
           next_tag: ${{ github.ref_name }}
 
       - name: Create Release
