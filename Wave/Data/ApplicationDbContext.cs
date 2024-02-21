@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Wave.Data.Migrations.postgres;
 
 namespace Wave.Data;
 
@@ -76,6 +75,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 					});
 			
 			category.ToTable("Categories");
+		});
+		builder.Entity<ArticleImage>(img => {
+			img.HasKey(i => i.Id);
+			img.Property(i => i.ImageDescription).IsRequired().HasMaxLength(2048);
+
+			img.HasOne<Article>().WithMany(a => a.Images).OnDelete(DeleteBehavior.Cascade);
+
+			img.ToTable("Images");
 		});
 
 		builder.Entity<EmailNewsletter>(newsletter => {

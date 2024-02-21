@@ -10,7 +10,6 @@ public enum ArticleStatus {
 
 // TODO:: Add tags for MVP ?
 // TODO:: Archive System (Notice / Redirect to new content?) (Deprecation date?)
-// TODO:: Reference used files?
 
 public class Article : ISoftDelete {
     [Key]
@@ -31,4 +30,5 @@ public class Article : ISoftDelete {
     public DateTimeOffset? LastModified { get; set; }
 
     public IList<Category> Categories { get; } = [];
+    public IList<ArticleImage> Images { get; } = [];
 }
