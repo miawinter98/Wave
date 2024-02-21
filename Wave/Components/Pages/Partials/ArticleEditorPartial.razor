@@ -20,17 +20,6 @@
 	</ul>
 </div>
 
-<div class="my-3 flex flex-wrap gap-4">
-	@foreach (var image in Article.Images) {
-		<figure>
-			<img src="/images/@(image.Id)?size=400" width="400" alt="@image.ImageDescription"/>
-			<figcaption>
-				@image.ImageDescription
-			</figcaption>
-		</figure>
-	}
-</div>
-
 <EditForm method="post" FormName="article-editor" Model="@Model" OnValidSubmit="OnValidSubmit">
 	<DataAnnotationsValidator/>
 	<input type="hidden" @bind-value="@Model.Id"/>
@@ -154,7 +143,23 @@
 		}
 	</div>
 </EditForm>
-<CategoryPicker/>
+
+<ImageModal Id="@ImageModal" ImageAdded="ImageAdded" />
+<div class="my-3 flex flex-wrap gap-4 min-h-24">
+	@foreach (var image in Article.Images) {
+		<figure class="p-2 bg-base-200">
+			<img class="w-40" src="/images/@(image.Id)?size=400" width="400"
+			     title="@image.ImageDescription" alt="@image.ImageDescription"/>
+			<figcaption>
+				<button type="button" class="btn btn-info w-full mt-3"
+						onclick="navigator.clipboard.writeText('![@image.ImageDescription](@(Navigation.ToAbsoluteUri("/images/" + image.Id))?size=400)')">
+					@Localizer["Image_CopyLink"]
+				</button>
+			</figcaption>
+		</figure>
+	}
+	<button type="button" class="btn" onclick="@(ImageModal).showModal()">@Localizer["Image_Add_Label"]</button>
+</div>
 
 <SectionContent SectionName="scripts">
 	<script>
@@ -199,6 +204,8 @@
 </SectionContent>
 
 @code {
+	private const string ImageModal = "AddImage";
+
 	[Parameter] 
     public Guid? Id { get; set; }
 	[Parameter] 
@@ -281,6 +288,14 @@
 
 			Model.Categories ??= [];
 			context.Update(Article);
+
+			var existingImages = await context.Set<Article>().Where(a => a.Id == Article.Id)
+				.SelectMany(a => a.Images).ToListAsync();
+			foreach (var image in Article.Images) {
+				context.Entry(image).State = 
+					existingImages.Any(i => i.Id == image.Id) ? 
+						EntityState.Modified : EntityState.Added;
+			}
 			
 			var relations = await context.Set<ArticleCategory>()
 				.IgnoreQueryFilters().IgnoreAutoIncludes()
@@ -335,6 +350,11 @@
 		Model.Categories = selected?.Select(Guid.Parse).ToArray();
 	}
 
+	private async Task ImageAdded(ArticleImage image) {
+		Article.Images.Add(image);
+		await InvokeAsync(StateHasChanged);
+	}
+
 	private sealed class InputModel {
 		public Guid? Id { get; set; }
 
@@ -346,5 +366,4 @@
 		public Guid[]? Categories { get; set; }
 		public DateTimeOffset? PublishDate { get; set; }
 	}
-
 }

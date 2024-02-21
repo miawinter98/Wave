@@ -191,4 +191,31 @@
   <data name="Tools_Mark_Tooltip" xml:space="preserve">
     <value>Den selektierten Text markieren</value>
   </data>
+    <data name="Categories_Label" xml:space="preserve">
+        <value>Kategorie</value>
+    </data>
+    <data name="Image_Add_Label" xml:space="preserve">
+        <value>Bild Hochladen</value>
+    </data>
+    <data name="Image_Description_Label" xml:space="preserve">
+        <value>Bildbeschreibung</value>
+    </data>
+    <data name="Image_Description_Placeholder" xml:space="preserve">
+        <value>Ein Bild eines Käsekuchen</value>
+    </data>
+    <data name="Image_Add_Submit" xml:space="preserve">
+        <value>Hinzufügen</value>
+    </data>
+    <data name="Image_Add_Abort" xml:space="preserve">
+        <value>Schließen</value>
+    </data>
+    <data name="Save_Success" xml:space="preserve">
+        <value>Artikel Gespeichert</value>
+    </data>
+    <data name="Save_Error" xml:space="preserve">
+        <value>Unbekannter fehler beim speichern des Artikels</value>
+    </data>
+    <data name="Image_CopyLink" xml:space="preserve">
+        <value>Link Kopieren</value>
+    </data>
 </root>
