@@ -21,4 +21,6 @@ public class Category {
     public CategoryColors Color { get; set; } = CategoryColors.Default;
 
 	public IList<Article> Articles { get; set; } = [];
+
+	public override string ToString() => $"[{Color} {Name}]";
 }

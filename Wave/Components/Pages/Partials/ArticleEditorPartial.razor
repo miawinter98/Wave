@@ -1,0 +1,350 @@
+﻿@using Wave.Data
+@using System.ComponentModel.DataAnnotations
+@using System.Diagnostics.CodeAnalysis
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Wave.Utilities
+
+@inject ILogger<ArticleEditor> Logger
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IStringLocalizer<ArticleEditor> Localizer
+@inject IMessageDisplay Message
+
+<div class="w-full">
+	<ul class="steps w-full max-w-xs">
+		<li class="step @(Article.Status >= ArticleStatus.Draft ? "step-secondary" : "")">@Localizer["Draft"]</li>
+		<li class="step @(Article.Status >= ArticleStatus.InReview ? "step-secondary" : "")">@Localizer["InReview"]</li>
+		<li class="step @(Article.Status >= ArticleStatus.Published ? "step-secondary" : "")">@Localizer["Published"]</li>
+	</ul>
+</div>
+
+<div class="my-3 flex flex-wrap gap-4">
+	@foreach (var image in Article.Images) {
+		<figure>
+			<img src="/images/@(image.Id)?size=400" width="400" alt="@image.ImageDescription"/>
+			<figcaption>
+				@image.ImageDescription
+			</figcaption>
+		</figure>
+	}
+</div>
+
+<EditForm method="post" FormName="article-editor" Model="@Model" OnValidSubmit="OnValidSubmit">
+	<DataAnnotationsValidator/>
+	<input type="hidden" @bind-value="@Model.Id"/>
+
+	<InputLabelComponent LabelText="@Localizer["Title_Label"]" For="() => Model.Title">
+		<InputText class="input input-bordered w-full" maxlength="256" required aria-required
+		           @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off"/>
+	</InputLabelComponent>
+	<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8">
+		<InputLabelComponent LabelText="@Localizer["PublishDate_Label"]" For="() => Model.PublishDate">
+			@if (Article.Status is not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow) {
+				<InputDate class="input input-bordered w-full" Type="InputDateType.DateTimeLocal"
+				           @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" autocomplete="off"/>
+			} else {
+				<input class="input input-bordered w-full"
+				       type="datetime-local" readonly value="@Article.PublishDate.ToString("yyyy-MM-dd\\THH:mm:ss")"/>
+			}
+		</InputLabelComponent>
+		<InputLabelComponent LabelText="@Localizer["Categories_Label"]" For="() => Model.Categories">
+			<select class="select select-bordered w-full h-32" @onchange="CategorySelectionChanged" multiple>
+				@foreach (var category in Categories) {
+					<option value="@category.Id" selected="@Model.Categories?.Contains(category.Id)">@category.Name</option>
+				}
+			</select>
+		</InputLabelComponent>
+	</div>
+
+	<AdvancedMarkdownEditor Title="@Model.Title" MarkdownCallback="() => Model.Body">
+		<div class="join join-vertical min-h-96 h-full w-full" aria-role="toolbar">
+			<Toolbar>
+				<ToolbarSection>
+					<ToolbarButton onclick="window.insertBeforeSelection('# ', true);"
+					               title="@Localizer["Tools_H1_Tooltip"]">
+						<strong>@Localizer["Tools_H1_Label"]</strong>
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeSelection('## ', true);"
+					               title="@Localizer["Tools_H2_Tooltip"]">
+						<strong>@Localizer["Tools_H2_Label"]</strong>
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeSelection('### ', true);"
+					               title="@Localizer["Tools_H3_Tooltip"]">
+						<strong>@Localizer["Tools_H3_Label"]</strong>
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeSelection('#### ', true);"
+					               title="@Localizer["Tools_H4_Tooltip"]">
+						@Localizer["Tools_H4_Label"]
+					</ToolbarButton>
+				</ToolbarSection>
+				<ToolbarSection>
+					<ToolbarButton onclick="window.insertBeforeAndAfterSelection('**');"
+					               title="@Localizer["Tools_Bold_Tooltip"]">
+						<strong>B</strong>
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeAndAfterSelection('*')"
+					               title="@Localizer["Tools_Italic_Tooltip"]">
+						<em>I</em>
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeAndAfterSelection('++')"
+					               title="@Localizer["Tools_Underline_Tooltip"]">
+						<u>U</u>
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeAndAfterSelection('~~')"
+					               title="@Localizer["Tools_StrikeThrough_Tooltip"]">
+						<del>@Localizer["Tools_StrikeThrough_Label"]</del>
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeAndAfterSelection('==')"
+					               title="@Localizer["Tools_Mark_Tooltip"]">
+						<mark>@Localizer["Tools_Mark_Label"]</mark>
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeSelection('> ', true)"
+					               title="@Localizer["Tools_Cite_Tooltip"]">
+						| <em>@Localizer["Tools_Cite_Label"]</em>
+					</ToolbarButton>
+				</ToolbarSection>
+				<ToolbarSection>
+					<ToolbarButton onclick="window.insertBeforeSelection('1. ', true)">
+						1.
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeSelection('a. ', true)">
+						a.
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeSelection('A. ', true)">
+						A.
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeSelection('i. ', true)">
+						i.
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeSelection('I. ', true)">
+						I.
+					</ToolbarButton>
+				</ToolbarSection>
+				<ToolbarSection>
+					<ToolbarButton onclick="window.insertBeforeAndAfterSelection('`')"
+					               title="@Localizer["Tools_CodeLine_Tooltip"]">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+							<path fill-rule="evenodd" d="M14.447 3.026a.75.75 0 0 1 .527.921l-4.5 16.5a.75.75 0 0 1-1.448-.394l4.5-16.5a.75.75 0 0 1 .921-.527ZM16.72 6.22a.75.75 0 0 1 1.06 0l5.25 5.25a.75.75 0 0 1 0 1.06l-5.25 5.25a.75.75 0 1 1-1.06-1.06L21.44 12l-4.72-4.72a.75.75 0 0 1 0-1.06Zm-9.44 0a.75.75 0 0 1 0 1.06L2.56 12l4.72 4.72a.75.75 0 0 1-1.06 1.06L.97 12.53a.75.75 0 0 1 0-1.06l5.25-5.25a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd"/>
+						</svg>
+					</ToolbarButton>
+					<ToolbarButton onclick="window.insertBeforeAndAfterSelection('\n```\n')"
+					               title="@Localizer["Tools_CodeBlock_Tooltip"]">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+							<path fill-rule="evenodd" d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Zm14.25 6a.75.75 0 0 1-.22.53l-2.25 2.25a.75.75 0 1 1-1.06-1.06L15.44 12l-1.72-1.72a.75.75 0 1 1 1.06-1.06l2.25 2.25c.141.14.22.331.22.53Zm-10.28-.53a.75.75 0 0 0 0 1.06l2.25 2.25a.75.75 0 1 0 1.06-1.06L8.56 12l1.72-1.72a.75.75 0 1 0-1.06-1.06l-2.25 2.25Z" clip-rule="evenodd"/>
+						</svg>
+					</ToolbarButton>
+				</ToolbarSection>
+			</Toolbar>
+			<textarea id="tool-target" class="textarea textarea-bordered outline-none w-full flex-1 join-item"
+								  required aria-required placeholder="@Localizer["Body_Placeholder"]"
+								  @bind="@Model.Body" @bind:event="oninput" autocomplete="off"></textarea>
+		</div>
+	</AdvancedMarkdownEditor>
+
+	<div class="flex gap-2 flex-wrap mt-3">
+		<button type="submit" class="btn btn-primary w-full sm:btn-wide @(Saving ? "btn-loading" : "")" disabled="@Saving">
+			@Localizer["EditorSubmit"]
+		</button>
+		@if (Article.Id != Guid.Empty) {
+			<a class="btn w-full sm:btn-wide" href="/article/@(Article.Id)">
+				@Localizer["ViewArticle_Label"]
+			</a>
+		}
+	</div>
+</EditForm>
+<CategoryPicker/>
+
+<SectionContent SectionName="scripts">
+	<script>
+		window.insertBeforeSelection = function(markdown, startOfLine = false) {
+			const target = document.getElementById("tool-target");
+			
+			const start = target.selectionStart;
+			const end = target.selectionEnd;
+			const value = target.value;
+			let doStart = start;
+			if (startOfLine) {
+				doStart = value.lastIndexOf("\n", start) +1;
+			}
+			
+			target.focus();
+			target.value = value.substring(0, doStart) + markdown + value.substring(doStart);
+
+			target.selectionStart = start + markdown.length;
+			target.selectionEnd = end + markdown.length;
+			target.focus();
+			target.dispatchEvent(new Event("input", { bubbles: true }));
+		}
+
+		window.insertBeforeAndAfterSelection = function (markdown) {
+			const target = document.getElementById("tool-target");
+			
+			const start = target.selectionStart;
+			const end = target.selectionEnd;
+			const value = target.value;
+
+			target.focus();
+			target.value = value.substring(0, start) +
+				markdown + value.substring(start, end) + markdown +
+				value.substring(end);
+
+			target.selectionStart = start + markdown.length;
+			target.selectionEnd = end + markdown.length;
+			target.focus();
+			target.dispatchEvent(new Event("input", { bubbles: true }));
+		}
+	</script>
+</SectionContent>
+
+@code {
+	[Parameter] 
+    public Guid? Id { get; set; }
+	[Parameter] 
+    public required ApplicationUser User { get; set; }
+	[SupplyParameterFromForm] 
+    private InputModel Model { get; set; } = new();
+	
+	private Article Article { get; set; } = default!;
+	private List<Category> Categories { get; set; } = [];
+	private bool Saving { get; set; }
+
+	protected override void OnInitialized() {
+		// ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+		Article ??= new Article {Author = User, Title = "", Body = ""};
+	}
+
+	protected override async Task OnInitializedAsync() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+		Categories = await context.Set<Category>().IgnoreQueryFilters().OrderBy(c => c.Color).ToListAsync();
+
+		Article? article = null;
+		if (Id is not null) {
+			// Ensure we are not double-tracking User on existing articles, since 
+			// a different context loaded this user originally 
+			context.Entry(User).State = EntityState.Unchanged;
+
+			article = await context.Set<Article>()
+				.IgnoreQueryFilters().Where(a => !a.IsDeleted)
+				.Include(a => a.Author)
+				.Include(a => a.Reviewer)
+				.Include(a => a.Categories)
+				.Include(a => a.Images)
+				.FirstAsync(a => a.Id == Id);
+			if (article is null) throw new ApplicationException("Article not found.");
+
+			await HandleRoles(article, User);
+		}
+
+		if (article is not null) {
+			Model.Id ??= article.Id;
+			Model.Title ??= article.Title;
+			Model.Body ??= article.Body;
+			Model.PublishDate ??= article.PublishDate.LocalDateTime;
+			Model.Categories ??= article.Categories.Select(c => c.Id).ToArray();
+			Article = article;
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+
+	private async Task OnValidSubmit() {
+		try {
+			Saving = true;
+			
+			// Double check user permissions
+			await HandleRoles(Article, User);
+			
+			if (Model.Title is not null) Article.Title = Model.Title;
+			if (Model.Body is not null) Article.Body = Model.Body;
+			if (Model.PublishDate is not null && 
+			    (Article.Status is not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow))
+				Article.PublishDate = Model.PublishDate.Value;
+			Article.LastModified = DateTimeOffset.UtcNow;
+			Article.BodyHtml = MarkdownUtilities.Parse(Article.Body);
+			
+			await using var context = await ContextFactory.CreateDbContextAsync();
+
+			// Update Newsletter distribution if exists
+			var newsletter = await context.Set<EmailNewsletter>()
+				.IgnoreQueryFilters().IgnoreAutoIncludes()
+				.FirstOrDefaultAsync(n => n.Article == Article);
+			if (newsletter is not null) {
+				newsletter.DistributionDateTime = Article.PublishDate;
+			}
+			
+			// Avoid unnecessary updates 
+			context.Entry(User).State = EntityState.Unchanged;
+			Categories.ForEach(c => context.Entry(c).State = EntityState.Unchanged);
+			await context.Set<ArticleCategory>().IgnoreQueryFilters().IgnoreAutoIncludes()
+				.Where(ac => ac.Article.Id == Article.Id).LoadAsync();
+
+			Model.Categories ??= [];
+			context.Update(Article);
+			
+			var relations = await context.Set<ArticleCategory>()
+				.IgnoreQueryFilters().IgnoreAutoIncludes()
+				.Where(ac => ac.Article == Article && !Model.Categories.Contains(ac.Category.Id))
+				.ToListAsync();
+			context.RemoveRange(relations);
+			
+			foreach (var category in Model.Categories) {
+				if (Article.Categories.Any(c => c.Id == category) is not true) {
+					context.Add(new ArticleCategory {
+						Article = Article,
+						Category = Categories.First(c => c.Id == category)
+					});
+				}
+			}
+
+			await context.SaveChangesAsync();
+			Message.ShowSuccess(Localizer["Save_Success"]);
+		} catch (Exception ex) {
+			Message.ShowError(Localizer["Save_Error"]);
+			Logger.LogError(ex, "Failed to save article.");
+		} finally {
+			Saving = false;
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+
+	[SuppressMessage("ReSharper", "ConvertIfStatementToSwitchStatement")]
+	private async Task HandleRoles(Article article, ApplicationUser me) {
+		// it's our draft
+		if (article.Status is ArticleStatus.Draft && article.Author.Id == me.Id) return;
+
+		var roles = await UserManager.GetRolesAsync(me);
+
+		// reviewers and admins can review articles
+		if (article.Status is ArticleStatus.InReview && roles.Any(r => r is "Admin" or "Reviewer")) {
+			article.Reviewer = me;
+			return;
+		}
+
+		// published articles may only be edited my admins or moderators
+		if (article.Status is ArticleStatus.Published && roles.Any(r => r is "Admin" or "Reviewer")) {
+			article.Reviewer = me; // TODO replace with editor or something?
+			return;
+		}
+
+		throw new ApplicationException("You do not have permissions to edit this article");
+	}
+
+	private void CategorySelectionChanged(ChangeEventArgs args) {
+		string[]? selected = (string[]?) args.Value;
+		Model.Categories = selected?.Select(Guid.Parse).ToArray();
+	}
+
+	private sealed class InputModel {
+		public Guid? Id { get; set; }
+
+		[Required(AllowEmptyStrings = false), MaxLength(256)]
+		public string? Title { get; set; }
+		[Required(AllowEmptyStrings = false)] 
+		public string? Body { get; set; }
+
+		public Guid[]? Categories { get; set; }
+		public DateTimeOffset? PublishDate { get; set; }
+	}
+
+}
