@@ -1,0 +1,24 @@
+﻿@typeparam T
+
+@foreach (var item in Items) {
+	@ChildContent(item)
+}
+
+@code {
+	[SupplyParameterFromQuery]
+	public int Page { get; set; } = 0;
+
+	[Parameter]
+	public required RenderFragment<T> ChildContent { get; set; }
+	[Parameter]
+	public required Func<int, int, ValueTask<IEnumerable<T>>> LoadCallback { get; set; }
+	
+	[Parameter]
+	public int ItemsPerPage { get; set; } = 10;
+
+	private List<T> Items { get; } = [];
+
+	protected override async Task OnInitializedAsync() {
+		foreach (var i in await LoadCallback(Page * ItemsPerPage, ItemsPerPage)) Items.Add(i);
+	}
+}
