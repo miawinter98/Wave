@@ -1,4 +1,4 @@
-style: none
+style: "github"
 template: CHANGELOG.tpl.md
 info:
   title: CHANGELOG
@@ -18,6 +18,14 @@ options:
         - Improved
         - Removed
   commit_groups:
+    sort_by: Custom
+    title_order:
+      - Added
+      - Implemented
+      - Improved
+      - Changed
+      - Removed
+      - fixed
     # title_maps:
     #   feat: Features
     #   fix: Bug Fixes
