@@ -147,6 +147,7 @@ if (emailConfig?.Smtp.Count > 0) {
 	}
 
 	if (emailConfig.Smtp.Keys.Any(k => k.Equals("live", StringComparison.CurrentCultureIgnoreCase))) {
+		builder.Services.AddScoped(sp => sp.GetKeyedService<IEmailService>("live")!);
 		builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 		builder.Services.AddScoped<IAdvancedEmailSender, SmtpEmailSender>();
 		builder.Services.AddScoped<IEmailSender<ApplicationUser>, SmtpEmailSender>();

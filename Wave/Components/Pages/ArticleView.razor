@@ -4,7 +4,11 @@
 @using Wave.Data
 @using System.Security.Claims
 @using System.Diagnostics.CodeAnalysis
+@using System.Globalization
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Options
+@using Wave.Services
+@using Wave.Utilities
 
 @inject ILogger<ArticleView> Logger
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
@@ -12,6 +16,10 @@
 @inject IOptions<Customization> Customizations
 @inject IOptions<Features> Features
 @inject IStringLocalizer<ArticleView> Localizer
+@inject IMessageDisplay Message
+@inject UserManager<ApplicationUser> UserManager
+@inject EmailFactory Email
+@inject IEmailService EmailService
 
 <PageTitle>@(TitlePrefix + (Article?.Title ?? Localizer["NotFound_Title"]))</PageTitle>
 
@@ -166,10 +174,39 @@
 	}
 
 	private async Task SubmitForReview() {
+		if (Article is null) return;
+
 		await using var context = await ContextFactory.CreateDbContextAsync();
-		Article!.Status = ArticleStatus.InReview;
+		Article.Status = ArticleStatus.InReview;
 		context.Update(Article);
 		await context.SaveChangesAsync();
+		Message.ShowSuccess(Localizer["Submit_Review_Success"]);
+
+		try {
+			List<ApplicationUser> reviewers = [
+				.. await UserManager.GetUsersInRoleAsync("Reviewer"),
+				.. await UserManager.GetUsersInRoleAsync("Admin")
+			];
+			if (reviewers.Count > 0) {
+				await EmailService.ConnectAsync(CancellationToken.None);
+
+				foreach (var reviewer in reviewers) {
+					var email = await Email.CreateDefaultEmail(
+						reviewer.Email!, 
+						reviewer.Name, 
+						"Article submitted for Review", 
+						"Article submitted for Review", 
+						$"<p>The Article '{Article.Title}' by {Article.Author.Name} has been submitted for review.</p>");
+					// TODO check if they enabled email notifications (property currently not implemented)
+					await EmailService.SendEmailAsync(email);
+				}
+
+				await EmailService.DisconnectAsync(CancellationToken.None);
+			}
+		} catch (Exception ex) {
+			Logger.LogError(ex, "Failed to send mail to reviewers about article '{title}'.", Article.Title);
+		}
+
 		Navigation.NavigateTo("/");
 	}
 
@@ -194,6 +231,25 @@
 			} catch (Exception ex) {
 				Logger.LogError(ex, "Failed to schedule article {name} for E-Mail distribution.", Article.Title);
 			}
+		}
+
+		try {
+			await EmailService.ConnectAsync(CancellationToken.None);
+			var author = Article.Author;
+
+			var email = await Email.CreateDefaultEmail(
+				author.Email!, 
+				author.Name,
+				"Article has been approved", 
+				"Your Article is going to be published", 
+				$"<p>The Article '{Article.Title}' has been checked and approved by a reviewer.</p>" + 
+				$"<p>It is currently scheduled for {Article.PublishDate.ToString("f", CultureInfo.GetCultureInfo("en-US"))}.</p>");
+			// TODO check if they enabled email notifications (property currently not implemented)
+			await EmailService.SendEmailAsync(email);
+
+			await EmailService.DisconnectAsync(CancellationToken.None);
+		} catch (Exception ex) {
+			Logger.LogError(ex, "Failed to send mail to author about article '{title}' being published.", Article.Title);
 		}
 
 		Navigation.NavigateTo("/");
