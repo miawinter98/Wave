@@ -196,7 +196,8 @@
 						reviewer.Name, 
 						"Article submitted for Review", 
 						"Article submitted for Review", 
-						$"<p>The Article '{Article.Title}' by {Article.Author.Name} has been submitted for review.</p>");
+						$"<p>The Article '{Article.Title}' by {Article.Author.Name} has been submitted for review.</p>",
+						$"The Article '{Article.Title}' by {Article.Author.Name} has been submitted for review.");
 					// TODO check if they enabled email notifications (property currently not implemented)
 					await EmailService.SendEmailAsync(email);
 				}
@@ -243,7 +244,9 @@
 				"Article has been approved", 
 				"Your Article is going to be published", 
 				$"<p>The Article '{Article.Title}' has been checked and approved by a reviewer.</p>" + 
-				$"<p>It is currently scheduled for {Article.PublishDate.ToString("f", CultureInfo.GetCultureInfo("en-US"))}.</p>");
+				$"<p>It is currently scheduled for {Article.PublishDate.ToString("f", CultureInfo.GetCultureInfo("en-US"))}.</p>",
+				$"The Article '{Article.Title}' has been checked and approved by a reviewer. " +
+				$"It is currently scheduled for {Article.PublishDate.ToString("f", CultureInfo.GetCultureInfo("en-US"))}.");
 			// TODO check if they enabled email notifications (property currently not implemented)
 			await EmailService.SendEmailAsync(email);
 
