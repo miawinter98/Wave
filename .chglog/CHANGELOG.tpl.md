@@ -19,4 +19,6 @@
 {{ end }}
 {{ end -}}
 {{ end -}}
+
+### [Unreleased](https://github.com/miawinter98/Wave/compare/{{ .Tag.Name }}..HEAD)
 {{ end -}}
