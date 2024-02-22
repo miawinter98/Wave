@@ -6,7 +6,7 @@
 			<h3 class="card-title line-clamp-2">@Article.Title</h3>
 			<small class="text-sm">@Article.PublishDate.ToString("d")</small>
 			<p class="flex-none line-clamp-5">
-				@Article.Body
+				@Article.BodyPlain[..Math.Min(1000, Article.BodyPlain.Length)]
 			</p>
 			<div class="flex-1 flex items-end">
 				

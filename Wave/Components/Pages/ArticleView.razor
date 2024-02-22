@@ -18,11 +18,11 @@
 @if (Article is not null) {
 	<HeadContent>
 		<meta name="author" content="@Article.Author.Name">
-		<meta name="description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.Body[..Math.Min(80, Article.Body.Length)] + "... ")">
+		<meta name="description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.BodyPlain[..Math.Min(80, Article.BodyPlain.Length)] + "... ")">
 		
 		<!-- Open Graph -->
 		<meta property="og:title" content="@Article.Title">
-		<meta property="og:description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.Body[..Math.Min(80, Article.Body.Length)] + "... ")">
+		<meta property="og:description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.BodyPlain[..Math.Min(80, Article.BodyPlain.Length)] + "... ")">
 		<meta property="og:url" content="@Navigation.ToAbsoluteUri("/article/" + Article.Id)">
 		<meta property="og:image" content="@Navigation.ToAbsoluteUri("/api/user/pfp/" + Article.Author.Id)">
 		<meta property="og:type" content="article">

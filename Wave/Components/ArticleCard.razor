@@ -11,7 +11,7 @@
 			<h2 class="card-title">@Article.Title</h2>
 			<small>@Article.PublishDate.ToString("d")</small>
 			<p class="@(Article.Categories.Count > 0 ? "line-clamp-2" : "line-clamp-4")">
-				@Article.Body
+				@Article.BodyPlain[..Math.Min(1000, Article.BodyPlain.Length)]
 			</p>
 		</ArticleLink>
 		@if (Article.Categories.Count > 0) {

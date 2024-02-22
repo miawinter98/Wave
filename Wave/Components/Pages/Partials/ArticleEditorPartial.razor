@@ -269,6 +269,7 @@
 				Article.PublishDate = Model.PublishDate.Value;
 			Article.LastModified = DateTimeOffset.UtcNow;
 			Article.BodyHtml = MarkdownUtilities.Parse(Article.Body);
+			Article.BodyPlain = HtmlUtilities.GetPlainText(Article.BodyHtml);
 			
 			await using var context = await ContextFactory.CreateDbContextAsync();
 

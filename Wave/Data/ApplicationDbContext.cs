@@ -51,6 +51,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			article.Property(a => a.LastModified)
 				.IsRequired().HasDefaultValueSql("now()")
 				.HasConversion(dateTimeOffsetUtcConverter);
+			
+			article.Property(a => a.BodyPlain).HasDefaultValue("");
 
 			article.HasQueryFilter(a => !a.IsDeleted && a.Status >= ArticleStatus.Published && a.PublishDate <= DateTimeOffset.UtcNow);
 			article.ToTable("Articles");

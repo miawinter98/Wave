@@ -242,6 +242,15 @@ foreach (string message in logMessages) {
 		app.Logger.LogWarning("There is currently no user in your installation with the admin role, " +
 							  "go to /Admin and use the following password to self promote your account: {admin}", admin);
 	}
+
+	// Generate plain text for Articles created before 1.0.0-alpha.3
+	var oldArticles = await context.Set<Article>().IgnoreQueryFilters().IgnoreAutoIncludes()
+		.Where(a => a.BodyPlain.Length < 1).AsNoTracking().ToListAsync();
+	if (oldArticles.Count > 0) {
+		oldArticles.ForEach(a => a.BodyPlain = HtmlUtilities.GetPlainText(a.BodyHtml));
+		context.UpdateRange(oldArticles);
+		await context.SaveChangesAsync();
+	}
 }
 
 app.Run();
