@@ -55,8 +55,12 @@ public class NewsletterBackgroundService(ILogger<NewsletterBackgroundService> lo
 					last = subscribers.Last();
 
 					foreach (var subscriber in subscribers) {
-						var email = await factory.CreateSubscribedEmail(subscriber, articleLink, newsletter.Article.Title,
-							newsletter.Article.Title, newsletter.Article.BodyHtml, newsletter.Id.ToString(), replyTo);
+						var email = await factory.CreateSubscribedEmail(subscriber, articleLink, 
+							newsletter.Article.Title,
+							newsletter.Article.Title, 
+							newsletter.Article.BodyHtml, 
+							newsletter.Article.BodyPlain, 
+							"newsletter-" + newsletter.Id, replyTo);
 						await client.SendEmailAsync(email);
 					}
 				}

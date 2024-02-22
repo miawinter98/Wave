@@ -8,5 +8,6 @@ public interface IEmail {
 	string Subject { get; }
 	string Title { get; }
 	string ContentHtml { get; }
+	string ContentPlain { get; }
 	FrozenDictionary<string, string> Headers { get; }
 }

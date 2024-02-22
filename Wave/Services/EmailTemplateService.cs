@@ -97,6 +97,7 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		FileSystem.GetEmailTemplate("newsletter", DefaultTemplates["newsletter"]);
 		FileSystem.GetEmailTemplate("welcome", DefaultTemplates["welcome"]);
 		FileSystem.GetPartialTemplate("email-article", DefaultPartials["email-article"]);
+		FileSystem.GetPartialTemplate("email-plain-footer", DefaultPartials["email-plain-footer"]);
 	}
 
 	public string ApplyTokens(string template, Func<string, string?> replacer) {
@@ -132,7 +133,7 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 
 		return html;
 	}
-
+	
 	public string Process(string templateName, Dictionary<Constants, object?> data) {
 		string template = ApplyTokens(GetTemplate(templateName), token => 
 			data.TryGetValue(Enum.Parse<Constants>(token, true), out object? v) ? v?.ToString() : null);
@@ -307,6 +308,10 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 			  <a href="{3}">Link</a>
 			</div>
 			"""
+		},
+		{
+			"email-plain-footer",
+			$"Unsubscribe: [[{Constants.EmailUnsubscribeLink}]]"
 		}
 	};
 }

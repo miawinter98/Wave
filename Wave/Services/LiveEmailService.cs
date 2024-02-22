@@ -52,7 +52,10 @@ public class LiveEmailService(ILogger<LiveEmailService> logger, IOptions<EmailCo
 				To = { new MailboxAddress(email.ReceiverName, email.ReceiverEmail) },
 				Subject = email.Subject
 			};
-			var builder = new BodyBuilder { HtmlBody = email.ContentHtml };
+			var builder = new BodyBuilder {
+				HtmlBody = email.ContentHtml,
+				TextBody = email.ContentPlain
+			};
 			message.Body = builder.ToMessageBody();
 			foreach ((string id, string value) in email.Headers) {
 				if (id == HeaderId.ListUnsubscribe.ToHeaderName()) {
