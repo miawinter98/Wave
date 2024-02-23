@@ -13,6 +13,10 @@
 @inject IdentityRedirectManager RedirectManager
 @inject IStringLocalizer<ResendEmailConfirmation> Localizer
 
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow">
+</HeadContent>
+
 <PageTitle>@Localizer["Title"]</PageTitle>
 
 <StatusMessage Message="@Message" />

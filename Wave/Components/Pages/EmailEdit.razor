@@ -15,6 +15,10 @@
 @inject EmailTemplateService TemplateService
 @inject IMessageDisplay Messages
 
+<HeadContent>
+	<meta name="robots" content="noindex,nofollow">
+</HeadContent>
+
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
 
 <BoardComponent CenterContent="true">

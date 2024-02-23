@@ -6,7 +6,6 @@ User-agent: Google-Extended
 Disallow: /
 
 User-agent: *
-Disallow: /Account
 Disallow: /Account/Manage
 Disallow: /Email/Confirm
 Disallow: /Email/Unsubscribe
