@@ -46,11 +46,8 @@
 
 	<section>
 		<h2 class="text-2xl lg:text-4xl mb-3">@Localizer["Articles"]</h2>
-		<ArticleTileArray>
-			@foreach (var article in User.Articles.OrderByDescending(a => a.PublishDate)) {
-				<ArticleTile Article="article" />
-			}
-		</ArticleTileArray>
+		<ArticleCardList Articles="@User.Articles.OrderByDescending(a => a.PublishDate).ToList()" />
+		
 	</section>
 }
 

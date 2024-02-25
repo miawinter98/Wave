@@ -8,7 +8,7 @@
 	</figure>
 	<div class="card-body">
 		<ArticleLink Article="Article">
-			<h2 class="card-title">@Article.Title</h2>
+			<h2 class="card-title line-clamp-1">@Article.Title</h2>
 			<small>@Article.PublishDate.ToString("d")</small>
 			<p class="@(Article.Categories.Count > 0 ? "line-clamp-2" : "line-clamp-4")">
 				@Article.BodyPlain[..Math.Min(1000, Article.BodyPlain.Length)]
