@@ -2,14 +2,13 @@
 
 <ArticleLink Article="Article">
 	<article class="card card-compact min-h-56 bg-base-200 text-base-content rounded-sm h-full">
-		<div class="card-body">
+		<div class="card-body max-h-full">
 			<h3 class="card-title line-clamp-2">@Article.Title</h3>
 			<small class="text-sm">@Article.PublishDate.ToString("d")</small>
-			<p class="flex-none line-clamp-5">
+			<p class="flex-1 overflow-hidden">
 				@Article.BodyPlain[..Math.Min(1000, Article.BodyPlain.Length)]
 			</p>
-			<div class="flex-1 flex items-end">
-				
+			<div class="flex items-end">
 				<small>@Article.Author.Name</small>
 			</div>
 		</div>

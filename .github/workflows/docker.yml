@@ -23,7 +23,7 @@ jobs:
         tags: |
           type=semver,pattern={{version}}
         flavor: |
-          latest=rtue
+          latest=true
         labels: |
           maintainer=Mia Rose Winter
           org.opencontainers.image.title=Wave

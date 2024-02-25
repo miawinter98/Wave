@@ -21,6 +21,11 @@ module.exports = {
                     '6xl': "2560px",
                     '8xl': "3072px"
                 }
+            },
+            lineClamp: {
+                8: '8',
+                10: '10',
+                12: '12'
             }
         },
         fontSize: {
