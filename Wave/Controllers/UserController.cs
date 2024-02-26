@@ -24,11 +24,13 @@ public class UserController(ImageService imageService, IDbContextFactory<Applica
 		var user = await context.Users.Include(u => u.ProfilePicture).FirstOrDefaultAsync(u => u.Id == userId);
 		if (user is null) return NotFound();
 		if (user.ProfilePicture is null) {
-			return StatusCode(StatusCodes.Status204NoContent);
+			return Redirect("/img/default_avatar.jpg");
 		}
 
 		string? path = ImageService.GetPath(user.ProfilePicture.ImageId);
-		if (path is null) return NotFound();
+		if (path is null) {
+			return Redirect("/img/default_avatar.jpg");
+		}
 
 		if (size < 800) return File(await ImageService.GetResized(path, size), ImageService.ImageMimeType);
 		return File(System.IO.File.OpenRead(path), ImageService.ImageMimeType);
