@@ -63,6 +63,14 @@
 						<form @formname="submit-for-publish" method="post" @onsubmit="SubmitForPublish" class="max-sm:w-full">
 							<AntiforgeryToken />
 							<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Publish_Submit"]</button>
+							@if (Features.Value.EmailSubscriptions) {
+								<div class="form-control">
+									<label class="label cursor-pointer">
+										<span class="label-text">@Localizer["Publish_Silent_Label"]</span>
+										<InputCheckbox @bind-Value="PublishSilently" class="checkbox" />
+									</label>
+								</div>
+							}
 						</form>
 					}
 				</div>
@@ -107,6 +115,9 @@
 
 	#endregion
 	private Article? Article { get; set; }
+
+	[Parameter, SupplyParameterFromForm(FormName = "submit-for-publish")]
+	public bool PublishSilently { get; set; }
 
 	[CascadingParameter] 
 	public HttpContext HttpContext { get; set; } = default!;
@@ -221,7 +232,7 @@
 		context.Update(Article);
 		await context.SaveChangesAsync();
 
-		if (Features.Value.EmailSubscriptions) {
+		if (!PublishSilently && Features.Value.EmailSubscriptions) {
 			try {
 				var newsletter = new EmailNewsletter {
 					Article = Article,
@@ -238,6 +249,11 @@
 			await EmailService.ConnectAsync(CancellationToken.None);
 			var author = Article.Author;
 
+			string publishMessage = 
+				Article.PublishDate >= DateTimeOffset.Now ? 
+					"Is is now publicly available." : 
+					$"It is currently scheduled for {Article.PublishDate.ToString("f", CultureInfo.GetCultureInfo("en-US"))}.";
+
 			var email = await Email.CreateDefaultEmail(
 				author.Email!, 
 				author.Name,
@@ -246,7 +262,7 @@
 				$"<p>The Article '{Article.Title}' has been checked and approved by a reviewer.</p>" + 
 				$"<p>It is currently scheduled for {Article.PublishDate.ToString("f", CultureInfo.GetCultureInfo("en-US"))}.</p>",
 				$"The Article '{Article.Title}' has been checked and approved by a reviewer. " +
-				$"It is currently scheduled for {Article.PublishDate.ToString("f", CultureInfo.GetCultureInfo("en-US"))}.");
+				publishMessage);
 			// TODO check if they enabled email notifications (property currently not implemented)
 			await EmailService.SendEmailAsync(email);
 

@@ -122,9 +122,9 @@
   <data name="Review_Submit" xml:space="preserve">
     <value>Submit for Review</value>
   </data>
-  <data name="Publish_Submit" xml:space="preserve">
-    <value>Approv for Publishing</value>
-  </data>
+    <data name="Publish_Submit" xml:space="preserve">
+        <value>Approve for Publishing</value>
+    </data>
   <data name="Meta_Description" xml:space="preserve">
     <value>{1} Continue reading on {0}. </value>
   </data>
@@ -134,4 +134,7 @@
   <data name="ToggleReader_Label" xml:space="preserve">
     <value>Toggle narrow reading view</value>
   </data>
+    <data name="Publish_Silent_Label" xml:space="preserve">
+        <value>Publish without Email</value>
+    </data>
 </root>

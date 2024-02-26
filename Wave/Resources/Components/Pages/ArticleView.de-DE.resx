@@ -134,4 +134,7 @@
   <data name="ToggleReader_Label" xml:space="preserve">
     <value>Enge Leseansicht umschalten</value>
   </data>
+    <data name="Publish_Silent_Label" xml:space="preserve">
+        <value>Ohne E-Mail Veröffentlichen</value>
+    </data>
 </root>
