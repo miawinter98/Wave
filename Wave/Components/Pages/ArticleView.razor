@@ -59,7 +59,8 @@
 							<AntiforgeryToken />
 							<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Review_Submit"]</button>
 						</form>
-					} else if (Article.Status is ArticleStatus.InReview) {
+					} 
+					@if (Article.Status is ArticleStatus.InReview || context.User.IsInRole("Admin")) {
 						<form @formname="submit-for-publish" method="post" @onsubmit="SubmitForPublish" class="max-sm:w-full">
 							<AntiforgeryToken />
 							<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Publish_Submit"]</button>
@@ -232,11 +233,12 @@
 		context.Update(Article);
 		await context.SaveChangesAsync();
 
-		if (!PublishSilently && Features.Value.EmailSubscriptions) {
+		if (Features.Value.EmailSubscriptions) {
 			try {
 				var newsletter = new EmailNewsletter {
 					Article = Article,
-					DistributionDateTime = Article.PublishDate
+					DistributionDateTime = Article.PublishDate,
+					IsSend = PublishSilently
 				};
 				await context.Set<EmailNewsletter>().AddAsync(newsletter);
 				await context.SaveChangesAsync();
@@ -250,7 +252,7 @@
 			var author = Article.Author;
 
 			string publishMessage = 
-				Article.PublishDate >= DateTimeOffset.Now ? 
+				(Article.PublishDate < DateTimeOffset.Now) ?
 					"Is is now publicly available." : 
 					$"It is currently scheduled for {Article.PublishDate.ToString("f", CultureInfo.GetCultureInfo("en-US"))}.";
 
@@ -260,7 +262,7 @@
 				"Article has been approved", 
 				"Your Article is going to be published", 
 				$"<p>The Article '{Article.Title}' has been checked and approved by a reviewer.</p>" + 
-				$"<p>It is currently scheduled for {Article.PublishDate.ToString("f", CultureInfo.GetCultureInfo("en-US"))}.</p>",
+				$"<p>{publishMessage}</p>",
 				$"The Article '{Article.Title}' has been checked and approved by a reviewer. " +
 				publishMessage);
 			// TODO check if they enabled email notifications (property currently not implemented)
