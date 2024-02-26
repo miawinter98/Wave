@@ -22,7 +22,7 @@
         @apply font-body;
     }
     h1, h2, h3, h4, h5, h6 {
-        @apply font-heading;
+        @apply font-heading tracking-tight;
     }
     hyphens-auto {
         hyphenate-limit-chars: 5 3;
