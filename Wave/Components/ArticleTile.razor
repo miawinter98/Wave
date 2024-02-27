@@ -1,15 +1,18 @@
 ﻿@using Wave.Data
+@using System.Globalization
 
 <ArticleLink Article="Article">
 	<article class="card card-compact min-h-56 bg-base-200 text-base-content rounded-md shadow h-full">
 		<div class="card-body max-h-full">
-			<h3 class="card-title line-clamp-2">@Article.Title</h3>
-			<small class="text-sm">@Article.PublishDate.ToString("d")</small>
-			<p class="flex-1 overflow-hidden">
-				@Article.BodyPlain[..Math.Min(1000, Article.BodyPlain.Length)]
-			</p>
-			<div class="flex items-end">
-				<small>@Article.Author.Name</small>
+			<div class="fade-away h-full">
+				<h3 class="card-title line-clamp-2 min-h-[2.8em]">@Article.Title</h3>
+				<p class="flex-1 overflow-hidden hyphens-auto text-justify" lang="@CultureInfo.CurrentCulture">
+					<small>@Article.Author.Name</small>
+					<small class="text-sm">@Article.PublishDate.ToString("d")</small>
+					<br>
+
+					@((MarkupString) Article.BodyPlain[..Math.Min(500, Article.BodyPlain.Length)]) ...
+				</p>
 			</div>
 		</div>
 	</article>

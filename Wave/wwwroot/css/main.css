@@ -39,4 +39,9 @@
     input.narrow-reading-toggle:checked ~ .reading-toggle-target {
         @apply max-w-3xl;
     }
+
+    .fade-away {
+        -webkit-mask-image: linear-gradient(black, black 80%, rgba(0, 0, 0, 0.5) 85%, transparent 100%);
+        mask-image: linear-gradient(black, black 80%, rgba(0, 0, 0, 0.5) 85%, transparent 100%);
+    }
 }
