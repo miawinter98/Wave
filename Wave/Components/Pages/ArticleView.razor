@@ -60,7 +60,7 @@
 							<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Review_Submit"]</button>
 						</form>
 					} 
-					@if (Article.Status is ArticleStatus.InReview || context.User.IsInRole("Admin")) {
+					@if (Article.Status is ArticleStatus.InReview || (Article.Status is ArticleStatus.Draft && context.User.IsInRole("Admin"))) {
 						<form @formname="submit-for-publish" method="post" @onsubmit="SubmitForPublish" class="max-sm:w-full">
 							<AntiforgeryToken />
 							<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Publish_Submit"]</button>
