@@ -11,22 +11,25 @@
 		</h1>
 		<p>
 			<small class="text-sm">
+				@Article.Author.FullName <br>
+
 				<time datetime="@Article.PublishDate.ToString("u")"
 				      title="@Article.PublishDate.ToString("g")">
-					@Article.PublishDate.Humanize()
+					@Article.PublishDate.ToString("g")
 				</time>
+				
 				@if (Article.LastModified is not null && Article.LastModified > Article.PublishDate) {
 					<time datetime="@Article.LastModified.Value.ToString("u")"
 					      title="@Article.LastModified.Value.ToString("g")">
-						&ensp;(@Localizer["ModifiedOn"] @Article.LastModified.Humanize())
+						(@Localizer["ModifiedOn"] @Article.LastModified.Humanize())
 					</time>
 				}
-				@if (Article.Status < ArticleStatus.Published) {
-					<span class="badge badge-sm badge-outline badge-warning ml-2">
-						@Article.Status.Humanize()
-					</span>
-				}
 			</small>
+			@if (Article.Status < ArticleStatus.Published) {
+				<span class="badge badge-sm badge-outline badge-warning ml-2">
+					@Article.Status.Humanize()
+				</span>
+			}
 		</p>
 		<div class="flex justify-between items-end my-3">
 			@if (Article.Categories.Count > 0) {
