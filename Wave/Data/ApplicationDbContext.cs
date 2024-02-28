@@ -37,6 +37,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			article.HasKey(a => a.Id);
 			article.Property(a => a.Title)
 				.IsRequired().HasMaxLength(256);
+			article.Property(a => a.Slug).HasMaxLength(64).IsRequired().HasDefaultValue("");
 
 			article.HasOne(a => a.Author).WithMany(a => a.Articles)
 				.IsRequired().OnDelete(DeleteBehavior.Cascade);

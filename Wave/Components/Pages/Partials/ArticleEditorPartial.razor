@@ -1,6 +1,7 @@
 ﻿@using Wave.Data
 @using System.ComponentModel.DataAnnotations
 @using System.Diagnostics.CodeAnalysis
+@using System.Net
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using Wave.Utilities
@@ -24,11 +25,22 @@
 	<DataAnnotationsValidator/>
 	<input type="hidden" @bind-value="@Model.Id"/>
 
-	<InputLabelComponent LabelText="@Localizer["Title_Label"]" For="() => Model.Title">
-		<InputText class="input input-bordered w-full" maxlength="256" required aria-required
-		           @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off"/>
-	</InputLabelComponent>
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8">
+		<InputLabelComponent LabelText="@Localizer["Title_Label"]" For="() => Model.Title">
+			<InputText class="input input-bordered w-full" maxlength="256" required aria-required
+			           @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off"/>
+		</InputLabelComponent>
+		
+		<InputLabelComponent LabelText="@Localizer["Slug_Label"]" For="() => Model.Slug">
+			@if (Article.Status is not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow) {
+				<InputText class="input input-bordered w-full" maxlength="64"
+				           @bind-Value="@Model.Slug" placeholder="@Localizer["Slug_Placeholder"]" autocomplete="off"/>
+			} else {
+				<input class="input input-bordered w-full" readonly value="@Model.Slug"
+				       placeholder="@Localizer["Slug_Placeholder"]" autocomplete="off" />
+			}
+		</InputLabelComponent>
+
 		<InputLabelComponent LabelText="@Localizer["PublishDate_Label"]" For="() => Model.PublishDate">
 			@if (Article.Status is not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow) {
 				<InputDate class="input input-bordered w-full" Type="InputDateType.DateTimeLocal"
@@ -137,7 +149,7 @@
 			@Localizer["EditorSubmit"]
 		</button>
 		@if (Article.Id != Guid.Empty) {
-			<a class="btn w-full sm:btn-wide" href="/article/@(Article.Id)">
+			<a class="btn w-full sm:btn-wide" href="@ArticleUtilities.GenerateArticleLink(Article, null)">
 				@Localizer["ViewArticle_Label"]
 			</a>
 		}
@@ -247,6 +259,7 @@
 		if (article is not null) {
 			Model.Id ??= article.Id;
 			Model.Title ??= article.Title;
+			Model.Slug ??= article.Slug;
 			Model.Body ??= article.Body;
 			Model.PublishDate ??= article.PublishDate.LocalDateTime;
 			Model.Categories ??= article.Categories.Select(c => c.Id).ToArray();
@@ -267,6 +280,18 @@
 			if (Model.PublishDate is not null && 
 			    (Article.Status is not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow))
 				Article.PublishDate = Model.PublishDate.Value;
+			if (Article.Status is ArticleStatus.Published && Article.PublishDate < DateTimeOffset.Now) {
+				// can't change slugs when the article is public
+			} else if (!string.IsNullOrWhiteSpace(Model.Slug)) {
+				Article.Slug = WebUtility.UrlEncode(Model.Slug);
+			} else if (string.IsNullOrWhiteSpace(Article.Slug)) {
+				Article.Slug = Uri.EscapeDataString(Article.Title.ToLowerInvariant())
+					.Replace("-", "+")
+					.Replace("%20", "-");
+				Article.Slug = Article.Slug[..Math.Min(64, Article.Slug.Length)];
+				Model.Slug = Article.Slug;
+			}
+
 			Article.LastModified = DateTimeOffset.UtcNow;
 			Article.BodyHtml = MarkdownUtilities.Parse(Article.Body);
 			Article.BodyPlain = HtmlUtilities.GetPlainText(Article.BodyHtml);
@@ -361,6 +386,8 @@
 
 		[Required(AllowEmptyStrings = false), MaxLength(256)]
 		public string? Title { get; set; }
+		[MaxLength(64)]
+		public string? Slug { get; set; }
 		[Required(AllowEmptyStrings = false)] 
 		public string? Body { get; set; }
 

@@ -5,6 +5,7 @@
 @using System.Security.Claims
 @using System.Diagnostics.CodeAnalysis
 @using System.Globalization
+@using System.Net
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Options
 @using Wave.Services
@@ -176,12 +177,13 @@
 				.FirstOrDefault(a => a.Id == Id);
 		} else if (Date is { } date && Title is { } title) {
 			using var context = ContextFactory.CreateDbContext();
-			Article = context.Set<Article>()
+			string? slug = TitleEncoded == null ? null : Uri.EscapeDataString(TitleEncoded);
+			Article ??= context.Set<Article>()
 				.IgnoreQueryFilters().Where(a => !a.IsDeleted)
 				.Include(a => a.Author)
 				.Include(a => a.Reviewer)
 				.Include(a => a.Categories)
-				.FirstOrDefault(a => a.PublishDate.Date == date.Date && a.Title.ToLower() == title);
+				.FirstOrDefault(a => a.PublishDate.Date == date.Date && (slug != null && a.Slug == slug || a.Title.ToLower() == title));
 		}
 	}
 

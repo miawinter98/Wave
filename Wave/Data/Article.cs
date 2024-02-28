@@ -22,6 +22,9 @@ public class Article : ISoftDelete {
     public string BodyHtml { get; set; } = string.Empty;
     public string BodyPlain { get; set; } = string.Empty;
 
+    [MaxLength(64)]
+    public string Slug { get; set; } = string.Empty;
+
     public required ApplicationUser Author { get; set; }
     public ApplicationUser? Reviewer { get; set; }
 
