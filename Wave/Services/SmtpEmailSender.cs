@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Wave.Data;
-using Wave.Utilities;
 
 namespace Wave.Services;
 
-public class SmtpEmailSender(EmailFactory email, [FromKeyedServices("live")]IEmailService emailService, [FromKeyedServices("bulk")]IEmailService bulkEmailService) : IEmailSender<ApplicationUser>, IEmailSender, IAsyncDisposable {
+public class SmtpEmailSender(EmailFactory email, [FromKeyedServices("live")]IEmailService emailService) : IEmailSender<ApplicationUser>, IAsyncDisposable {
 	private EmailFactory Email { get; } = email;
 	private IEmailService EmailService { get; } = emailService;
-	private IEmailService BulkEmailService { get; } = bulkEmailService;
 
 	#region IEmailSenderAsync<ApplicationUser>
 	
@@ -29,15 +26,7 @@ public class SmtpEmailSender(EmailFactory email, [FromKeyedServices("live")]IEma
 
 	#endregion
 	
-	#region IEmailSender 
-	
-	public Task SendEmailAsync(string email, string subject, string htmlMessage) {
-		return SendDefaultMailAsync(email, null, subject, subject, htmlMessage, HtmlUtilities.GetPlainText(htmlMessage));
-	}
-
-	#endregion
-
-	public async Task SendDefaultMailAsync(string receiverMail, string? receiverName, string subject, string title, string bodyHtml, string bodyPlain) {
+	private async Task SendDefaultMailAsync(string receiverMail, string? receiverName, string subject, string title, string bodyHtml, string bodyPlain) {
 		await EmailService.ConnectAsync(CancellationToken.None);
 		var email = await Email.CreateDefaultEmail(receiverMail, receiverName, subject, title, bodyHtml, bodyPlain);
 		await EmailService.SendEmailAsync(email);
@@ -47,6 +36,5 @@ public class SmtpEmailSender(EmailFactory email, [FromKeyedServices("live")]IEma
 	public async ValueTask DisposeAsync() {
 		GC.SuppressFinalize(this);
 		await EmailService.DisposeAsync();
-		await BulkEmailService.DisposeAsync();
 	}
 }
