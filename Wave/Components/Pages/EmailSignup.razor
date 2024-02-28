@@ -4,7 +4,6 @@
 @using Microsoft.Extensions.Options
 @using Wave.Data
 @using System.ComponentModel.DataAnnotations
-@using System.Net
 @using Microsoft.EntityFrameworkCore
 @using Wave.Services
 @using Wave.Utilities	
@@ -13,10 +12,8 @@
 @inject IStringLocalizer<EmailSignup> Localizer
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IOptions<Features> Features
-@inject IOptions<Customization> Customizations
-@inject NavigationManager Navigation
-@inject IAdvancedEmailSender EmailSender
-@inject EmailTemplateService TemplateService
+@inject IEmailService EmailService
+@inject EmailFactory Email
 @inject IMessageDisplay Messages
 
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
@@ -57,7 +54,7 @@
 
 		if (Id is null || Token is null) return;
 		try {
-			var id = await TemplateService.ValidateTokensAsync(Id, Token, deleteToken: false);
+			var id = await Email.IsTokenValid(Id, Token);
 
 			if (id is null) {
 				Messages.ShowError(Localizer["Failure_Message"]);
@@ -74,16 +71,24 @@
 			await context.SaveChangesAsync();
 			Messages.ShowSuccess(Localizer["Success_Message"]);
 
-			await TemplateService.ValidateTokensAsync(Id, Token, deleteToken: true);
-			
+			await Email.ClearToken(Id, Token);
+
 			var articles = await context.Set<EmailNewsletter>()
-				.IgnoreAutoIncludes()
+				.IgnoreAutoIncludes().IgnoreQueryFilters().Where(n => n.IsSend)
 				.Include(a => a.Article).ThenInclude(a => a.Author)
 				.OrderByDescending(a => a.DistributionDateTime)
 				.Take(3)
 				.ToListAsync();
-			await EmailSender.SendWelcomeMailAsync(subscriber, 
-				Localizer["WelcomeEmailSubject"], Localizer["WelcomeEmailTitle"], Localizer["WelcomeEmailBody"], articles);
+			var mail = await Email.CreateWelcomeEmail(
+				subscriber, articles,
+				Localizer["WelcomeEmailSubject"], 
+				Localizer["WelcomeEmailTitle"], 
+				Localizer["WelcomeEmailBody"],
+				Localizer["WelcomeEmailBody"]);
+
+			await EmailService.ConnectAsync(CancellationToken.None);
+			await EmailService.SendEmailAsync(mail);
+			await EmailService.DisconnectAsync(CancellationToken.None);
 		} catch (Exception ex) {
 			Logger.LogError(ex, "Error trying to confirm subscriber.");
 			Messages.ShowError(Localizer["Failure_Message"]);
@@ -110,15 +115,19 @@
 			await context.SaveChangesAsync();
 
 			if (subscriber.Unsubscribed) {
-				(string id, string token) = await TemplateService.CreateConfirmTokensAsync(subscriber.Id);
+				var email = await Email.CreateConfirmationEmail(subscriber,
+					Localizer["ConfirmEmailSubject"],
+					Localizer["ConfirmEmailTitle"],
+					Localizer["ConfirmEmailBody"],
+					Localizer["ConfirmEmailBody"],
+					Localizer["Submit"]);
 
-				string confirmLink = Navigation.ToAbsoluteUri(
-					$"/Email/Confirm?user={WebUtility.UrlEncode(id)}&token={WebUtility.UrlEncode(token)}").AbsoluteUri;
-				string body = string.Format(Localizer["ConfirmEmailBody"], Customizations.Value.AppName) +
-				              $"""<p style="text-align: center"><a href="{confirmLink}">{Localizer["Submit"]}</a></p>""";
-				await EmailSender.SendDefaultMailAsync(subscriber.Email, subscriber.Name, Localizer["ConfirmEmailSubject"],
-					Localizer["ConfirmEmailTitle"], body);
+				await EmailService.ConnectAsync(CancellationToken.None);
+				await EmailService.SendEmailAsync(email);
+				await EmailService.DisconnectAsync(CancellationToken.None);
 			}
+
+			Model = new();
 		} catch (Exception ex) {
 			Logger.LogError(ex, "Failed to create subscriber/send confirmation mail.");
 		}

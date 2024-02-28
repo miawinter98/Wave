@@ -1,7 +1,6 @@
 ﻿@page "/Email/Unsubscribe"
 @using Microsoft.AspNetCore.Identity.UI.Services
 @using Microsoft.EntityFrameworkCore
-@using Microsoft.Extensions.Options
 @using Wave.Data
 @using Wave.Services
 @using Wave.Utilities
@@ -9,8 +8,6 @@
 @inject ILogger<EmailEdit> Logger
 @inject IStringLocalizer<EmailEdit> Localizer
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
-@inject IOptions<Customization> Customizations
-@inject NavigationManager Navigation
 @inject IEmailSender EmailSender
 @inject EmailTemplateService TemplateService
 @inject IMessageDisplay Messages
@@ -78,13 +75,7 @@
 			await context.SaveChangesAsync();
 			Messages.ShowSuccess(Localizer["Unsubscribe_Success"]);
 
-			var customization = Customizations.Value;
-			string body = TemplateService.Default(
-				Navigation.BaseUri,
-				!string.IsNullOrWhiteSpace(customization.LogoLink) ? customization.LogoLink : Navigation.ToAbsoluteUri("/img/logo.png").AbsoluteUri,
-				Localizer["Unsubscribe_ConfirmEmailTitle"],
-				Localizer["Unsubscribe_ConfirmEmailBody"]);
-			await EmailSender.SendEmailAsync(subscriber.Email, Localizer["ConfirmEmailSubject"], body);
+			await EmailSender.SendEmailAsync(subscriber.Email, Localizer["ConfirmEmailSubject"], Localizer["Unsubscribe_ConfirmEmailBody"]);
 			await TemplateService.ValidateTokensAsync(Id!, Token!, "unsubscribe-" + Newsletter); // delete token
 		} catch (EmailNotSendException ex) {
 			Logger.LogWarning(ex, "Failed to send unsubscribe confirm email. The user has been unsubscribed anyway.");
