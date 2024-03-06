@@ -315,7 +315,8 @@
 			Model.Categories ??= [];
 			context.Update(Article);
 
-			var existingImages = await context.Set<Article>().Where(a => a.Id == Article.Id)
+			var existingImages = await context.Set<Article>()
+				.IgnoreQueryFilters().Where(a => a.Id == Article.Id)
 				.SelectMany(a => a.Images).ToListAsync();
 			foreach (var image in Article.Images) {
 				context.Entry(image).State = 
