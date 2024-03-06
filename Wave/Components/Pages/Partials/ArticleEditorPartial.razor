@@ -4,6 +4,7 @@
 @using System.Net
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
+@using Wave.Services
 @using Wave.Utilities
 
 @inject ILogger<ArticleEditor> Logger
@@ -12,6 +13,7 @@
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IStringLocalizer<ArticleEditor> Localizer
 @inject IMessageDisplay Message
+@inject ImageService Images
 
 <div class="w-full">
 	<ul class="steps w-full max-w-xs">
@@ -159,15 +161,22 @@
 <ImageModal Id="@ImageModal" ImageAdded="ImageAdded" />
 <div class="my-3 flex flex-wrap gap-4 min-h-24">
 	@foreach (var image in Article.Images) {
-		<figure class="p-2 bg-base-200">
+		<figure class="p-2 bg-base-200 relative">
 			<img class="w-40" src="/images/@(image.Id)?size=400" width="400"
 			     title="@image.ImageDescription" alt="@image.ImageDescription"/>
 			<figcaption>
 				<button type="button" class="btn btn-info w-full mt-3"
-						onclick="navigator.clipboard.writeText('![@image.ImageDescription](@(Navigation.ToAbsoluteUri("/images/" + image.Id))?size=400)')">
+				        onclick="navigator.clipboard.writeText('![@image.ImageDescription](@(Navigation.ToAbsoluteUri("/images/" + image.Id))?size=400)')">
 					@Localizer["Image_CopyLink"]
 				</button>
 			</figcaption>
+			<button type="button" class="btn btn-square btn-sm btn-error absolute top-0 right-0" 
+			        title="@Localizer["Image_Delete_Label"]"
+			        @onclick="async () => await ImageDelete(image)">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+					<path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
+				</svg>
+			</button>
 		</figure>
 	}
 	<button type="button" class="btn" onclick="@(ImageModal).showModal()">@Localizer["Image_Add_Label"]</button>
@@ -317,11 +326,15 @@
 
 			var existingImages = await context.Set<Article>()
 				.IgnoreQueryFilters().Where(a => a.Id == Article.Id)
+				.AsNoTrackingWithIdentityResolution()
 				.SelectMany(a => a.Images).ToListAsync();
 			foreach (var image in Article.Images) {
-				context.Entry(image).State = 
-					existingImages.Any(i => i.Id == image.Id) ? 
-						EntityState.Modified : EntityState.Added;
+				int index = existingImages.FindIndex(a => a.Id == image.Id);
+				context.Entry(image).State = index > -1 ? EntityState.Modified : EntityState.Added;
+				if(index > -1) existingImages.RemoveAt(index);
+			}
+			foreach (var image in existingImages) {
+				context.Entry(image).State = EntityState.Deleted;
 			}
 			
 			var relations = await context.Set<ArticleCategory>()
@@ -340,6 +353,13 @@
 			}
 
 			await context.SaveChangesAsync();
+			foreach (var image in existingImages) {
+				try {
+					Images.Delete(image.Id);
+				} catch (Exception ex) {
+					Logger.LogWarning(ex, "Failed to delete image: {image}", image.Id);
+				}
+			}
 			Message.ShowSuccess(Localizer["Save_Success"]);
 		} catch (Exception ex) {
 			Message.ShowError(Localizer["Save_Error"]);
@@ -382,6 +402,11 @@
 		await InvokeAsync(StateHasChanged);
 	}
 
+	private async Task ImageDelete(ArticleImage image) {
+		Article.Images.Remove(image);
+		await InvokeAsync(StateHasChanged);
+	}
+
 	private sealed class InputModel {
 		public Guid? Id { get; set; }
 
@@ -395,4 +420,5 @@
 		public Guid[]? Categories { get; set; }
 		public DateTimeOffset? PublishDate { get; set; }
 	}
+
 }
