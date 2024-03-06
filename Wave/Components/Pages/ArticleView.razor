@@ -54,7 +54,10 @@
 			<Authorized>
 				<ArticleComponent Article="@GetArticleProtected(context.User)" />
 				<div class="flex gap-2 mt-3 flex-wrap">
-					<a class="btn btn-info w-full sm:btn-wide" href="article/@Article.Id/edit" data-enhance-nav="false">@Localizer["Edit"]</a>
+					@if (CanEdit) {
+						<a class="btn btn-info w-full sm:btn-wide" href="article/@Article!.Id/edit" 
+						   data-enhance-nav="false">@Localizer["Edit"]</a>
+					}
 					@if (Article.Status is ArticleStatus.Draft) {
 						<form @formname="submit-for-review" method="post" @onsubmit="SubmitForReview" class="max-sm:w-full">
 							<AntiforgeryToken />
@@ -124,6 +127,8 @@
 	[CascadingParameter] 
 	public HttpContext HttpContext { get; set; } = default!;
 
+	private bool CanEdit { get; set; }
+
 	private Article GetArticlePublic() {
 		if (Article is null) throw new ApplicationException("Article not found.");
 		if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
@@ -138,17 +143,21 @@
 
 		// The Article is publicly available
 		if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
+			if (principal.IsInRole("Admin"))
+				CanEdit = true;
 			return Article;
 		}
 
 		// Admins always get access
 		if (principal.IsInRole("Admin")) {
+			CanEdit = true;
 			return Article;
 		}
 		
 		// You can only access your own drafts
 		if (Article.Status is ArticleStatus.Draft) {
 			if (Article.Author.Id == principal.FindFirst("Id")!.Value) {
+				CanEdit = true;
 				return Article;
 			}
 			throw new ApplicationException("Cannot access draft article without being author or admin.");
@@ -156,6 +165,7 @@
 		// InReview Articles can only be accessed by reviewers
 		if (Article.Status is ArticleStatus.InReview) {
 			if (principal.IsInRole("Reviewer")) {
+				CanEdit = true;
 				return Article;
 			}
 			throw new ApplicationException("Cannot access in-review article without being a reviewer or admin.");
