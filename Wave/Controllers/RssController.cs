@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Wave.Data;
+using Wave.Utilities;
 
 namespace Wave.Controllers;
 
@@ -66,8 +67,7 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 				var item = new SyndicationItem(
 					article.Title,
 					new TextSyndicationContent(article.BodyHtml, TextSyndicationContentKind.Html),
-					new Uri(host,
-						$"/{article.PublishDate.Year}/{article.PublishDate.Month:D2}/{article.PublishDate.Day:D2}/{Uri.EscapeDataString(article.Title.ToLowerInvariant()).Replace("-", "+").Replace("%20", "-")}"),
+					new Uri(ArticleUtilities.GenerateArticleLink(article, host)),
 					new Uri(host, "article/" + article.Id).AbsoluteUri,
 					article.PublishDate) {
 					Authors = {
