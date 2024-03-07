@@ -103,6 +103,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			subscriber.Property(s => s.Name).IsRequired(false).HasMaxLength(128);
 			subscriber.Property(s => s.Email).IsRequired().HasMaxLength(256).UseCollation("default-case-insensitive");
 			subscriber.HasIndex(s => s.Email).IsUnique();
+			subscriber.Property(s => s.Language).IsRequired().HasMaxLength(8).HasDefaultValue("en-US");
+
+			subscriber.Property(s => s.UnsubscribeReason).HasMaxLength(256);
+			subscriber.Property(s => s.LastMailReceived).HasConversion(dateTimeOffsetUtcConverter);
+			subscriber.Property(s => s.LastMailOpened).HasConversion(dateTimeOffsetUtcConverter);
 
 			subscriber.HasIndex(s => s.Unsubscribed);
 

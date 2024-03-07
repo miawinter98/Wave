@@ -108,7 +108,7 @@
 
 			subscriber ??= new EmailSubscriber {
 				Email = Model.Email.Trim(),
-				Unsubscribed = true
+				Unsubscribed = true, Language = "en-US" // TODO
 			};
 			subscriber.Name = Model.Name;
 			context.Update(subscriber);
