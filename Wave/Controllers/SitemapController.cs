@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Humanizer;
@@ -55,7 +56,7 @@ public class SitemapController(ApplicationDbContext context) : ControllerBase {
 
 		if (lastModified is not null) result.Add(new XElement(nameSpace + "lastmod", lastModified.Value.ToString("yyyy-MM-dd")));
 		if (changeFrequency is not ChangeFrequencies.Unknown) result.Add(new XElement(nameSpace + "changefreq", changeFrequency.ToString().ToLower()));
-		if (Math.Abs(priority - 0.5f) > 0.05) result.Add(new XElement(nameSpace + "priority", priority.ToString("F1")));
+		if (Math.Abs(priority - 0.5f) > 0.05) result.Add(new XElement(nameSpace + "priority", priority.ToString("F1", CultureInfo.InvariantCulture)));
 
 		return result;
 	}
