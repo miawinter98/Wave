@@ -1,19 +1,21 @@
 ﻿using System.Globalization;
+using System.Net;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
-using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Wave.Data;
-using static StackExchange.Redis.Role;
+using Wave.Utilities;
 
 namespace Wave.Controllers;
 
 [ApiController]
-public class SitemapController(ApplicationDbContext context) : ControllerBase {
+public class SitemapController(ApplicationDbContext context, IOptions<Features> features) : ControllerBase {
 	private ApplicationDbContext Context { get; } = context;
+	private Features Features { get; } = features.Value;
 
 	[HttpGet("/sitemap.xml")]
 	[Produces("application/xml")]
@@ -21,7 +23,14 @@ public class SitemapController(ApplicationDbContext context) : ControllerBase {
 	[OutputCache(Duration = 60*15)]
 	public async Task GetSitemapAsync(CancellationToken cancellation) {
 		var host = new Uri($"https://{Request.Host}{Request.PathBase}", UriKind.Absolute);
-		var articles = await Context.Set<Article>().OrderBy(a => a.PublishDate).ToListAsync();
+		var articles = await Context.Set<Article>().OrderBy(a => a.PublishDate).ToListAsync(cancellation);
+		var categories = await Context.Set<Category>().Where(c => c.Articles.Any())
+			.OrderBy(c => c.Color).ThenBy(c => c.Id)
+			.Select(c => new {c.Name, LastModified = c.Articles.Max(a => a.PublishDate)}).ToListAsync(cancellation);
+		var profiles = await Context.Set<ApplicationUser>().Where(a => a.Articles.Any())
+			.OrderBy(a => a.Id)
+			.Select(a => new {a.Id, LastModified = a.Articles.Max(ar => ar.PublishDate)})
+			.ToListAsync(cancellation);
 
 		var document = new XDocument {
 			Declaration = new XDeclaration("1.0", Encoding.UTF8.ToString(), null),
@@ -33,19 +42,37 @@ public class SitemapController(ApplicationDbContext context) : ControllerBase {
 			root.Add(CreateUrlElement(nameSpace, host, articles.Max(a => a.PublishDate).UtcDateTime, priority:1f));
 
 			foreach (var article in articles) {
-				root.Add(CreateUrlElement(nameSpace, new Uri(host,
-					$"/{article.PublishDate.Year}/{article.PublishDate.Month:D2}/{article.PublishDate.Day:D2}/{Uri.EscapeDataString(article.Title.ToLowerInvariant()).Replace("-", "+").Replace("%20", "-")}"), article.LastModified?.UtcDateTime ?? article.PublishDate.UtcDateTime));
+				root.Add(CreateUrlElement(nameSpace, 
+					new Uri(ArticleUtilities.GenerateArticleLink(article, host)), 
+					article.PublishDate.UtcDateTime));
 			}
 		} else {
-			root.Add(CreateUrlElement(nameSpace, host, priority:1f));
+			root.Add(CreateUrlElement(nameSpace, host, DateTimeOffset.Now.UtcDateTime, priority:1f));
 		}
+
+		foreach (var category in categories) {
+			root.Add(CreateUrlElement(nameSpace, 
+				new Uri(host, "/category/" + WebUtility.UrlEncode(category.Name)), 
+				category.LastModified.UtcDateTime));
+		}
+
+		foreach (var profile in profiles) {
+			root.Add(CreateUrlElement(nameSpace, 
+				new Uri(host, "/profile/" + profile.Id),
+				profile.LastModified.UtcDateTime));
+		}
+
+		root.Add(CreateUrlElement(nameSpace, new Uri(host, "/Account/Login")));
+		root.Add(CreateUrlElement(nameSpace, new Uri(host, "/Account/Register")));
+		if (Features.EmailSubscriptions) root.Add(CreateUrlElement(nameSpace, new Uri(host, "/Email/Subscribe")));
+
 		document.Add(root);
 		
 		Response.StatusCode = StatusCodes.Status200OK;
 		Response.ContentType = "application/xml; charset=utf-8";
 		await using var writer = XmlWriter.Create(Response.Body, new XmlWriterSettings {
 			Encoding = Encoding.UTF8,
-			Async = true
+			Async = true, Indent = true
 		});
 		await document.SaveAsync(writer, cancellation);
 		await writer.FlushAsync();
