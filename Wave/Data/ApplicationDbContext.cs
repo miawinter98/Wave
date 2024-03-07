@@ -114,5 +114,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			subscriber.HasQueryFilter(s => !s.Unsubscribed);
 			subscriber.ToTable("NewsletterSubscribers");
 		});
+
+		builder.Entity<ApiKey>(key => {
+			key.HasKey(k => k.Key);
+			key.Property(k => k.Key).IsRequired().HasMaxLength(128);
+			key.Property(k => k.OwnerName).IsRequired().HasMaxLength(128);
+
+			key.HasMany(k => k.ApiClaims).WithOne().OnDelete(DeleteBehavior.Cascade);
+			key.Ignore(k => k.Claims);
+		});
 	}
 }

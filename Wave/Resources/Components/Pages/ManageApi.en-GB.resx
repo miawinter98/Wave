@@ -98,37 +98,4 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
-    <data name="Drafts_Label" xml:space="preserve">
-        <value>Entwürfe</value>
-    </data>
-    <data name="ArticleNew_Label" xml:space="preserve">
-        <value>Neuer Artikel</value>
-    </data>
-    <data name="Home_Label" xml:space="preserve">
-        <value>Startseite</value>
-    </data>
-    <data name="Login_Label" xml:space="preserve">
-        <value>Anmelden</value>
-    </data>
-    <data name="Logout_Label" xml:space="preserve">
-        <value>Abmelden</value>
-    </data>
-    <data name="ManageUsers_Label" xml:space="preserve">
-        <value>Benutzer Verwalten</value>
-    </data>
-    <data name="Review_Label" xml:space="preserve">
-        <value>In Rezension</value>
-    </data>
-    <data name="SignUp_Label" xml:space="preserve">
-        <value>Registrieren</value>
-    </data>
-  <data name="Future_Label" xml:space="preserve">
-    <value>In Veröffentlichung</value>
-  </data>
-    <data name="ManageCategories_Label" xml:space="preserve">
-        <value>Kategorien Verwalten</value>
-    </data>
-    <data name="ManageApi_Label" xml:space="preserve">
-        <value>API Verwalten</value>
-    </data>
 </root>

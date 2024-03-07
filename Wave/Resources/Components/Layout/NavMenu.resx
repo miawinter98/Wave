@@ -131,4 +131,7 @@
     <data name="Newsletter_Label" xml:space="preserve">
         <value>Newsletter</value>
     </data>
+    <data name="ManageApi_Label" xml:space="preserve">
+        <value>Manage API</value>
+    </data>
 </root>

@@ -12,6 +12,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using System.Text;
+using AspNetCore.Authentication.ApiKey;
 using Tomlyn.Extensions.Configuration;
 using Wave.Components;
 using Wave.Components.Account;
@@ -90,11 +91,18 @@ builder.Services.AddAuthorizationBuilder()
 	.AddPolicy("CategoryManagePermissions", p => p.RequireRole("Admin"))
 	.AddPolicy("RoleAssignPermissions", p => p.RequireRole("Admin"))
 
-	.AddPolicy("ArticleEditOrReviewPermissions", p => p.RequireRole("Author", "Reviewer", "Admin"));
+	.AddPolicy("ArticleEditOrReviewPermissions", p => p.RequireRole("Author", "Reviewer", "Admin"))
+	
+	.AddPolicy("EmailApi", p => p.RequireClaim("EmailApi")
+		.AddAuthenticationSchemes(ApiKeyDefaults.AuthenticationScheme));
 builder.Services.AddAuthentication(options => {
 		options.DefaultScheme = IdentityConstants.ApplicationScheme;
 		options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-	}).AddIdentityCookies();
+	}).AddApiKeyInHeader<ApiKeyProvider>(ApiKeyDefaults.AuthenticationScheme, options => {
+		options.KeyName = "X-API-KEY";
+		options.Realm = "Wave API";
+	})
+	.AddIdentityCookies();
 
 #endregion
 

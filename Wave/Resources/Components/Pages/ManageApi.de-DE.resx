@@ -98,37 +98,34 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
-    <data name="Drafts_Label" xml:space="preserve">
-        <value>Entwürfe</value>
-    </data>
-    <data name="ArticleNew_Label" xml:space="preserve">
-        <value>Neuer Artikel</value>
-    </data>
-    <data name="Home_Label" xml:space="preserve">
-        <value>Startseite</value>
-    </data>
-    <data name="Login_Label" xml:space="preserve">
-        <value>Anmelden</value>
-    </data>
-    <data name="Logout_Label" xml:space="preserve">
-        <value>Abmelden</value>
-    </data>
-    <data name="ManageUsers_Label" xml:space="preserve">
-        <value>Benutzer Verwalten</value>
-    </data>
-    <data name="Review_Label" xml:space="preserve">
-        <value>In Rezension</value>
-    </data>
-    <data name="SignUp_Label" xml:space="preserve">
-        <value>Registrieren</value>
-    </data>
-  <data name="Future_Label" xml:space="preserve">
-    <value>In Veröffentlichung</value>
-  </data>
-    <data name="ManageCategories_Label" xml:space="preserve">
-        <value>Kategorien Verwalten</value>
-    </data>
-    <data name="ManageApi_Label" xml:space="preserve">
+    <data name="Title" xml:space="preserve">
         <value>API Verwalten</value>
+    </data>
+    <data name="NewApiKey_Message" xml:space="preserve">
+        <value>Ihr neuer API-Schlüssel:</value>
+    </data>
+    <data name="Claims_Header" xml:space="preserve">
+        <value>Zugriffsberechtigungen</value>
+    </data>
+    <data name="Name_Label" xml:space="preserve">
+        <value>Schlüsselbezeichnung</value>
+    </data>
+    <data name="Name_Placeholder" xml:space="preserve">
+        <value>Meine Software</value>
+    </data>
+    <data name="Submit" xml:space="preserve">
+        <value>Erstellen</value>
+    </data>
+    <data name="Create_Success" xml:space="preserve">
+        <value>Schlüssel Erstellt</value>
+    </data>
+    <data name="Create_Error" xml:space="preserve">
+        <value>Unerwarteter Fehler beim Versuch einen neuen API-Schlüssel zu erstellen</value>
+    </data>
+    <data name="Delete_Success" xml:space="preserve">
+        <value>API-Schlüssel wurde gelöscht</value>
+    </data>
+    <data name="Delete_Error" xml:space="preserve">
+        <value>Unerwarteter Fehler beim Versuch einen API-Schlüssel zu löschen</value>
     </data>
 </root>

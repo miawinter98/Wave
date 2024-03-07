@@ -108,9 +108,11 @@
 
 			subscriber ??= new EmailSubscriber {
 				Email = Model.Email.Trim(),
-				Unsubscribed = true, Language = "en-US" // TODO
+				Unsubscribed = true, 
+				Language = "en-US" // TODO
 			};
 			subscriber.Name = Model.Name;
+			subscriber.UnsubscribeReason = "Not Confirmed";
 			context.Update(subscriber);
 			await context.SaveChangesAsync();
 

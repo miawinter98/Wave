@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OutputCaching;
 using Wave.Data;
 using Wave.Data.Api;
 
@@ -27,6 +29,19 @@ public class ApiController(ApplicationDbContext context, IOptions<Customization>
 		if (article is null) return TypedResults.NoContent();
 
 		return TypedResults.Ok(ArticleDto.GetFromArticle(article, GetHost(), profilePictureSize));
+	}
+
+	[HttpGet("email/subscriber/{email}")]
+	[Produces("application/json")]
+	[Authorize("EmailApi")]
+	[OutputCache(Duration = 60*10)]
+	public async Task<Results<Ok<EmailSubscriberDto>, NotFound>> GetEmailSubscriber([EmailAddress] string email) {
+		var subscriber = await context.Set<EmailSubscriber>()
+			.IgnoreQueryFilters()
+			.FirstOrDefaultAsync(s => s.Email == email);
+		if (subscriber is null) return TypedResults.NotFound();
+
+		return TypedResults.Ok(new EmailSubscriberDto(subscriber));
 	}
 
 	private Uri GetHost() {
