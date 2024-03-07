@@ -6,7 +6,7 @@ const doInsertText = function(dataName, content) {
 		} else if (element.tagName === "IMG") {
 			element.src = content;
 		} else {
-			element.innerText = content;
+			element.textContent = content;
 		}
 	}
 }
