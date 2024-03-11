@@ -1,3 +1,4 @@
+
 /** @type {import('tailwindcss').Config} */
 const defaultTheme = require('tailwindcss/defaultTheme')
 
@@ -46,6 +47,11 @@ module.exports = {
         fontWeight: {
             normal: '400',
             bold: '700'
+        },
+        borderRadius: {
+            DEFAULT: '0.1rem',
+            'md': '0.2rem',
+            'lg': '0.35rem',
         }
     },
     plugins: [require("daisyui"), require('@tailwindcss/typography')],
@@ -74,9 +80,9 @@ module.exports = {
                     "error": "#B3020E",
                     "error-content": "#FFFFFF",
 
-                    "--rounded-box": "0.5rem",
+                    "--rounded-box": "0.2rem",
                     "--rounded-btn": "0.2rem",
-                    "--rounded-badge": "0.2rem",
+                    "--rounded-badge": "0.2rem"
                 }
             },
             {
@@ -101,9 +107,9 @@ module.exports = {
                     "error": "#610107",
                     "error-content": "#FFFFFF",
 
-                    "--rounded-box": "0.5rem",
+                    "--rounded-box": "0.2rem",
                     "--rounded-btn": "0.2rem",
-                    "--rounded-badge": "0.2rem",
+                    "--rounded-badge": "0.2rem"
                 }
             },
             {
