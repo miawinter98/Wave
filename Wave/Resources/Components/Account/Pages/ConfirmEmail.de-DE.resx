@@ -110,4 +110,7 @@
   <data name="Success" xml:space="preserve">
     <value>Vielen Dank fürs Bestätigen ihrer E-Mail Adresse.</value>
   </data>
+    <data name="Login_Label" xml:space="preserve">
+        <value>Anmelden</value>
+    </data>
 </root>

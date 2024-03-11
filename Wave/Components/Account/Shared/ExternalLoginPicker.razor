@@ -4,40 +4,42 @@
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
+@inject IStringLocalizer<ExternalLoginPicker> Localizer
 
-@if (externalLogins.Length == 0)
-{
-    <div>
-        <p>
-            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-            about setting up this ASP.NET application to support logging in via external services</a>.
-        </p>
-    </div>
-}
-else
-{
-    <form class="form-horizontal" action="Account/PerformExternalLogin" method="post">
-        <div>
-            <AntiforgeryToken />
-            <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
-            <p>
-                @foreach (var provider in externalLogins)
-                {
-                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                }
-            </p>
-        </div>
-    </form>
+@if (externalLogins.Length > 0) {
+	<BoardCardComponent Heading="@Localizer["Title"]">
+		<form class="form-horizontal" action="Account/PerformExternalLogin" method="post">
+			<div class="flex flex-col space-y-3">
+				<AntiforgeryToken/>
+				<input type="hidden" name="ReturnUrl" value="@ReturnUrl"/>
+				<p>
+					@foreach (var provider in externalLogins) {
+						if (provider.Name is "OpenIdConnect") {
+							<button type="submit" class="btn btn-wide btn-primary" name="provider" value="@provider.Name" title="@Localizer["OpenId_Tooltip"]">
+								@Localizer["OpenId_Label"]
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+								</svg>
+							</button>
+						} else {
+							<button type="submit" class="btn btn-wide btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+								@provider.DisplayName
+							</button>
+						}
+					}
+				</p>
+			</div>
+		</form>
+	</BoardCardComponent>
 }
 
 @code {
-    private AuthenticationScheme[] externalLogins = [];
+	private AuthenticationScheme[] externalLogins = [];
 
-    [SupplyParameterFromQuery]
-    private string? ReturnUrl { get; set; }
+	[SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToArray();
-    }
+	protected override async Task OnInitializedAsync() {
+		externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToArray();
+	}
+
 }

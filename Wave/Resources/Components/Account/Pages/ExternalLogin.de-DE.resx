@@ -98,19 +98,20 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
-  <data name="Title" xml:space="preserve">
-    <value>Confirm Email</value>
-  </data>
-  <data name="Error_FindingUser" xml:space="preserve">
-    <value>User not found.</value>
-  </data>
-  <data name="Error_ConfirmingEmail" xml:space="preserve">
-    <value>Error confirming your email.</value>
-  </data>
-  <data name="Success" xml:space="preserve">
-    <value>Thank you for confirming your email.</value>
-  </data>
-    <data name="Login_Label" xml:space="preserve">
-        <value>Log In</value>
+    <data name="Message" xml:space="preserve">
+        <value>Sie haben sich erfolgreich mit {0} angemeldet.
+Bitte geben Sie nun eine E-Mail Addresse für diese Webseite ein.</value>
+    </data>
+    <data name="Email_Label" xml:space="preserve">
+        <value>E-Mail</value>
+    </data>
+    <data name="Email_Placeholder" xml:space="preserve">
+        <value>name@example.de</value>
+    </data>
+    <data name="Submit" xml:space="preserve">
+        <value>Registrieren</value>
+    </data>
+    <data name="Title" xml:space="preserve">
+        <value>Benutzerkonto Erstellen</value>
     </data>
 </root>

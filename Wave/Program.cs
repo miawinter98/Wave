@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -19,6 +18,7 @@ using Wave.Components.Account;
 using Wave.Data;
 using Wave.Services;
 using Wave.Utilities;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 string humanReadableVersion = Assembly.GetEntryAssembly()?
 	.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
@@ -94,7 +94,7 @@ builder.Services.AddAuthorizationBuilder()
 	.AddPolicy("ArticleEditOrReviewPermissions", p => p.RequireRole("Author", "Reviewer", "Admin"))
 	
 	.AddPolicy("EmailApi", p => p.RequireClaim("EmailApi")
-		.AddAuthenticationSchemes(ApiKeyDefaults.AuthenticationScheme));
+	.AddAuthenticationSchemes(ApiKeyDefaults.AuthenticationScheme));
 builder.Services.AddAuthentication(options => {
 		options.DefaultScheme = IdentityConstants.ApplicationScheme;
 		options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
@@ -103,6 +103,30 @@ builder.Services.AddAuthentication(options => {
 		options.Realm = "Wave API";
 	})
 	.AddIdentityCookies();
+if (builder.Configuration.GetSection("Oidc").Get<OidcConfiguration>() is {} oidc && !string.IsNullOrWhiteSpace(oidc.Authority)) {
+	builder.Services.AddAuthentication(options => {
+		options.DefaultScheme = IdentityConstants.ApplicationScheme;
+		options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+	}).AddOpenIdConnect(options => {
+		options.SignInScheme = IdentityConstants.ExternalScheme;
+
+		options.Scope.Add(OpenIdConnectScope.OpenIdProfile);
+		options.Scope.Add(OpenIdConnectScope.OfflineAccess);
+		options.Authority = oidc.Authority;
+
+		options.ClientId = oidc.ClientId;
+		options.ClientSecret = oidc.ClientSecret;
+		options.ResponseType = OpenIdConnectResponseType.Code;
+
+		options.MapInboundClaims = false;
+		options.TokenValidationParameters.NameClaimType = "name";
+		options.TokenValidationParameters.RoleClaimType = "role";
+
+		options.CallbackPath = new PathString("/signin-oidc");
+		options.SignedOutCallbackPath = new PathString("/signout-callback-oidc");
+		options.RemoteSignOutPath = new PathString("/signout-oidc");
+	});
+}
 
 #endregion
 
@@ -114,7 +138,10 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
 	options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<ApplicationUser>(options => {
+		options.SignIn.RequireConfirmedAccount = true;
+		options.ClaimsIdentity.UserIdClaimType = "Id";
+	})
 	.AddRoles<IdentityRole>()
 	.AddEntityFrameworkStores<ApplicationDbContext>()
 	.AddSignInManager()

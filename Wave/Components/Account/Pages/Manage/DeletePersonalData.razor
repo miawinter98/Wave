@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
 @using Wave.Data
+@using Wave.Utilities
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
@@ -10,66 +11,69 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<DeletePersonalData> Logger
 @inject IStringLocalizer<DeletePersonalData> Localizer
+@inject IMessageDisplay Message
 
 <PageTitle>@Localizer["Title"]</PageTitle>
 
-<StatusMessage Message="@message" />
-
 <BoardComponent>
-    <BoardCardComponent Heading="@Localizer["Title"]">
-        <Alert Type="Alert.MessageType.Warning" CanRemove="false">
-            <strong class="font-bold">@Localizer["Delete_FinalWarning"]</strong>
-        </Alert>
-        
-        <EditForm Model="Input" FormName="delete-user" OnValidSubmit="OnValidSubmitAsync" method="post" class="w-full">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-error" role="alert" />
-            @if (requirePassword) {
-                <InputLabelComponent LabelText="@Localizer["Delete_Password_Label"]" For="() => Input.Password">
-                    <InputText type="password" @bind-Value="Input.Password" class="input input-bordered w-full" required
-                               autocomplete="current-password" placeholder="@Localizer["Delete_Password_Placeholder"]" />
-                </InputLabelComponent>
-            }
-            <button class="btn btn-lg btn-error w-full" type="submit">@Localizer["Delete_FinalSubmit"]</button>
-        </EditForm>
-    </BoardCardComponent>
+	<BoardCardComponent Heading="@Localizer["Title"]">
+		<Alert Type="Alert.MessageType.Warning" CanRemove="false">
+			<strong class="font-bold">@Localizer["Delete_FinalWarning"]</strong>
+		</Alert>
+
+		<EditForm Model="Input" FormName="delete-user" OnValidSubmit="OnValidSubmitAsync" method="post" class="w-full mt-3">
+			<DataAnnotationsValidator/>
+			@if (RequirePassword) {
+				<InputLabelComponent LabelText="@Localizer["Delete_Password_Label"]" For="() => Input.Password">
+					<InputText type="password" @bind-Value="Input.Password" class="input input-bordered w-full" required
+					           autocomplete="current-password" placeholder="@Localizer["Delete_Password_Placeholder"]"/>
+				</InputLabelComponent>
+			} else {
+				<!-- our model binding fails without zero bound properties -->
+				<InputText type="hidden" @bind-Value="Input.Password" />
+			}
+			<button class="btn btn-lg btn-error w-full" type="submit">@Localizer["Delete_FinalSubmit"]</button>
+		</EditForm>
+	</BoardCardComponent>
 </BoardComponent>
 
 @code {
-    private string? message;
-    private ApplicationUser user = default!;
-    private bool requirePassword;
+	private ApplicationUser User { get; set; } = default!;
+	private bool RequirePassword { get; set; }
 
-    [CascadingParameter] 
-    private HttpContext HttpContext { get; set; } = default!;
-    [SupplyParameterFromForm] 
-    private InputModel Input { get; set; } = new();
+	[CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
-    protected override async Task OnInitializedAsync() {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-        requirePassword = await UserManager.HasPasswordAsync(user);
-    }
+	[SupplyParameterFromForm(FormName = "delete-user")]
+	private InputModel Input { get; set; } = new();
 
-    private async Task OnValidSubmitAsync() {
-        if (requirePassword && !await UserManager.CheckPasswordAsync(user, Input.Password)) {
-            message = Localizer["Delete_ErrorWrongPassword"];
-            return;
-        }
+	protected override async Task OnInitializedAsync() {
+		User = await UserAccessor.GetRequiredUserAsync(HttpContext);
+		RequirePassword = await UserManager.HasPasswordAsync(User);
+	}
 
-        var result = await UserManager.DeleteAsync(user);
-        if (!result.Succeeded) {
-            throw new InvalidOperationException(Localizer["Delete_ErrorUnknown"]);
-        }
+	private async Task OnValidSubmitAsync() {
+		if (RequirePassword && !await UserManager.CheckPasswordAsync(User, Input.Password)) {
+			Message.ShowError(Localizer["Delete_ErrorWrongPassword"]);
+			return;
+		}
 
-        await SignInManager.SignOutAsync();
+		var result = await UserManager.DeleteAsync(User);
+		if (!result.Succeeded) {
+			throw new InvalidOperationException(Localizer["Delete_ErrorUnknown"]);
+		}
 
-        string userId = await UserManager.GetUserIdAsync(user);
-        Logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
+		await SignInManager.SignOutAsync();
 
-        RedirectManager.RedirectToWithStatus("/", Localizer["Delete_Success"], HttpContext);
-    }
+		string userId = await UserManager.GetUserIdAsync(User);
+		Logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
 
-    private sealed class InputModel {
-        [DataType(DataType.Password)] public string Password { get; set; } = "";
-    }
+		Message.ShowSuccess(Localizer["Delete_Success"]);
+		RedirectManager.RedirectTo("/");
+	}
+
+	private sealed class InputModel {
+		[DataType(DataType.Password)] 
+		public string Password { get; set; } = "";
+	}
+
 }
