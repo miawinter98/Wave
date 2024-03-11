@@ -125,6 +125,15 @@ if (builder.Configuration.GetSection("Oidc").Get<OidcConfiguration>() is {} oidc
 		options.CallbackPath = new PathString("/signin-oidc");
 		options.SignedOutCallbackPath = new PathString("/signout-callback-oidc");
 		options.RemoteSignOutPath = new PathString("/signout-oidc");
+
+		options.Events.OnRedirectToIdentityProvider = context => {
+			var uri = new UriBuilder(context.ProtocolMessage.RedirectUri) {
+				Scheme = "https",
+				Port = -1
+			};
+			context.ProtocolMessage.RedirectUri = uri.ToString();
+			return Task.FromResult(0);
+		};
 	});
 }
 
