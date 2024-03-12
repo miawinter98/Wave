@@ -101,6 +101,9 @@ builder.Services.AddAuthentication(options => {
 	}).AddApiKeyInHeader<ApiKeyProvider>(ApiKeyDefaults.AuthenticationScheme, options => {
 		options.KeyName = "X-API-KEY";
 		options.Realm = "Wave API";
+	}).AddApiKeyInRouteValues<ApiKeyProvider>("ApiKeyInRoute", options => {
+		options.KeyName = "apiKey";
+		options.Realm = "Wave API";
 	})
 	.AddIdentityCookies();
 if (builder.Configuration.GetSection("Oidc").Get<OidcConfiguration>() is {} oidc && !string.IsNullOrWhiteSpace(oidc.Authority)) {

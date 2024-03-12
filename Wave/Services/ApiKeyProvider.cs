@@ -13,7 +13,10 @@ public class ApiKeyProvider(ILogger<ApiKeyProvider> logger, ApplicationDbContext
 
 	public async Task<IApiKey?> ProvideAsync(string key) {
 		try {
-			byte[] data = Convert.FromBase64String(key);
+			string unescapedKey = key;
+			if (unescapedKey.Contains('%')) unescapedKey = Uri.UnescapeDataString(key);
+
+			byte[] data = Convert.FromBase64String(unescapedKey);
 			string hashedKey = Convert.ToBase64String(SHA256.HashData(data));
 
 			var apiKey = await context.Set<ApiKey>().Include(a => a.ApiClaims).SingleOrDefaultAsync(k => k.Key == hashedKey);

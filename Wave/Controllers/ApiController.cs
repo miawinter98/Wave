@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
+using AspNetCore.Authentication.ApiKey;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OutputCaching;
 using Wave.Data;
@@ -33,7 +34,7 @@ public class ApiController(ApplicationDbContext context, IOptions<Customization>
 
 	[HttpGet("email/subscriber/{email}")]
 	[Produces("application/json")]
-	[Authorize("EmailApi")]
+	[Authorize("EmailApi", AuthenticationSchemes = ApiKeyDefaults.AuthenticationScheme)]
 	[OutputCache(Duration = 60*10)]
 	public async Task<Results<Ok<EmailSubscriberDto>, NotFound>> GetEmailSubscriber([EmailAddress] string email) {
 		var subscriber = await context.Set<EmailSubscriber>()
