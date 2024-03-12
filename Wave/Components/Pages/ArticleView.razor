@@ -78,6 +78,11 @@
 							}
 						</form>
 					}
+					<AuthorizeView Policy="ArticleDeletePermissions" Context="_">
+						<a class="btn btn-error w-full sm:btn-wide" href="/article/@Article.Id/delete">
+							@Localizer["Delete_Submit"]
+						</a>
+					</AuthorizeView>
 				</div>
 			</Authorized>
 			<NotAuthorized>

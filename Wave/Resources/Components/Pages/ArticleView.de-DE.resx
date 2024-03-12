@@ -137,4 +137,16 @@
     <data name="Publish_Silent_Label" xml:space="preserve">
         <value>Ohne E-Mail Veröffentlichen</value>
     </data>
+    <data name="Delete_Submit" xml:space="preserve">
+        <value>Artikel löschen</value>
+    </data>
+    <data name="Delete_Title" xml:space="preserve">
+        <value>Löschen Bestätigen</value>
+    </data>
+    <data name="Delete_Confirm" xml:space="preserve">
+        <value>Ja, Artikel Löschen</value>
+    </data>
+    <data name="Delete_Warning" xml:space="preserve">
+        <value>Ihr Artikel wird runtergenommen. Bitte beachten Sie das Suchmaschinen eventuell noch links zu diesem Artikel haben, welche dann eine Fehlernachricht produzieren. Der Artikel ist womöglich noch in manchen Caches für die nächsten paar Stunden auffindbar. </value>
+    </data>
 </root>

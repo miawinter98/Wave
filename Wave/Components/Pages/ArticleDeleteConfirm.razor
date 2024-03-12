@@ -1,0 +1,62 @@
+﻿@page "/article/{id:guid}/delete"
+@using Microsoft.EntityFrameworkCore
+@using Wave.Data
+
+@attribute [Authorize(Policy = "ArticleDeletePermissions")]
+
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject NavigationManager Navigation
+@inject ILogger<ArticleDeleteConfirm> Logger
+@inject IStringLocalizer<ArticleView> Localizer
+
+<PageTitle>@(TitlePrefix + (Article is not null ? Localizer["Delete_Title"] : Localizer["NotFound_Title"]))</PageTitle>
+
+@if (Article is not null) {
+	<BoardComponent CenterContent="true">
+		<BoardCardComponent Heading="@Localizer["Delete_Title"]">
+			<Alert CanRemove="false" Type="Alert.MessageType.Warning">
+				<strong>@Localizer["Delete_Warning"]</strong>
+			</Alert>
+			<p class="my-3">@Article.Title</p>
+			<form @formname="delete" method="post" @onsubmit="Delete">
+				<AntiforgeryToken />
+				<button type="submit" class="btn btn-error w-full">
+					@Localizer["Delete_Confirm"]
+				</button>
+			</form>
+		</BoardCardComponent>
+	</BoardComponent>
+} else {
+	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["NotFound_Title"]</h1>
+	<p class="my-3">@Localizer["NotFound_Description"]</p>
+	<a class="btn btn-primary" href="/">@Localizer["NotFound_BackToHome_Label"]</a>
+}
+
+
+@code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+
+	[Parameter]
+	public Guid Id { get; set; }
+
+	private Article? Article { get; set; }
+
+	protected override async Task OnInitializedAsync() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+
+		Article = await context.Set<Article>().IgnoreQueryFilters()
+			.Where(a => !a.IsDeleted).FirstOrDefaultAsync(a => a.Id == Id);
+	}
+
+	private async Task Delete() {
+		if (Article is null) return;
+
+		var context = await ContextFactory.CreateDbContextAsync();
+		Article.IsDeleted = true;
+		context.Entry(Article).State = EntityState.Modified;
+		await context.SaveChangesAsync();
+
+		Navigation.NavigateTo("/");
+	}
+}

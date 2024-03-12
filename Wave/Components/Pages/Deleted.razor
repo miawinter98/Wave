@@ -1,0 +1,58 @@
+﻿@page "/deleted"
+@using Microsoft.EntityFrameworkCore
+@using Wave.Data
+
+@attribute [Authorize(Policy = "ArticleDeletePermissions")]
+
+@inject ILogger<Deleted> Logger
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IStringLocalizer<Deleted> Localizer
+
+<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+
+<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
+
+<ArticleCardList Articles="Articles">
+	<Action Context="article">
+		<form method="post" @formname="@article.Id.ToString()" @onsubmit="Restore" class="w-full">
+			<AntiforgeryToken />
+			<input type="hidden" name="id" value="@article.Id"/>
+			<button type="submit" class="btn btn-sm btn-wide btn-primary max-sm:w-full">@Localizer["Restore_Submit"]</button>
+		</form>
+	</Action>
+</ArticleCardList>
+
+@code {
+	[CascadingParameter(Name = "TitlePrefix")]
+	private string TitlePrefix { get; set; } = default!;
+
+	private List<Article> Articles { get; } = [];
+
+	[SupplyParameterFromForm(Name = "id")]
+	private Guid Id { get; set; }
+
+	protected override async Task OnInitializedAsync() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+		
+		Articles.AddRange(await context.Set<Article>()
+			.IgnoreQueryFilters().IgnoreAutoIncludes()
+			.Include(a => a.Author)
+			.Where(a => a.IsDeleted)
+			.OrderByDescending(a => a.PublishDate).ThenBy(a => a.Id)
+			.ToListAsync());
+	}
+
+	private async Task Restore() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+		var article = await context.Set<Article>()
+			.IgnoreQueryFilters().IgnoreAutoIncludes()
+			.FirstOrDefaultAsync(a => a.Id == Id);
+
+		if (article is null) throw new ApplicationException("Error restoring Article, not found.");
+
+		article.IsDeleted = false;
+		await context.SaveChangesAsync();
+		Articles.RemoveAt(Articles.FindIndex(a => a.Id == article.Id));
+	}
+
+}

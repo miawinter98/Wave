@@ -5,7 +5,7 @@
 } else {
 	<div class="flex flex-col gap-4">
 		@foreach (var article in Articles.OrderByDescending(a => a.PublishDate)) {
-			<ArticleCard Article="article" />
+			<ArticleCard Article="article" Action="Action" />
 		}
 	</div>
 }
@@ -13,4 +13,6 @@
 @code {
 	[Parameter]
 	public required IList<Article> Articles { get; set; } = [];
+	[Parameter]
+	public RenderFragment<Article>? Action { get; set; }
 }

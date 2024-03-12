@@ -1,4 +1,5 @@
-﻿<div class="alert @GetClass shadow" role="alert">
+﻿@using System.Globalization
+<div class="alert @GetClass shadow" role="alert">
     <div>
         @* ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault *@
         @switch (Type) {
@@ -24,7 +25,7 @@
                 break;
         }
     </div>
-    <div class="w-full">
+    <div class="w-full hyphens-auto text-justify" lang="@CultureInfo.CurrentCulture">
         @ChildContent
     </div>
     @if (CanRemove) {

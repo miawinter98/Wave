@@ -131,4 +131,7 @@
     <data name="ManageApi_Label" xml:space="preserve">
         <value>API Verwalten</value>
     </data>
+    <data name="Deleted_Label" xml:space="preserve">
+        <value>Gelöscht</value>
+    </data>
 </root>
