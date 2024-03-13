@@ -195,7 +195,7 @@ if (emailConfig?.Smtp.Count > 0) {
 
 	if (emailConfig.Smtp.Keys.Any(k => k.Equals("live", StringComparison.CurrentCultureIgnoreCase))) {
 		builder.Services.AddScoped(sp => sp.GetKeyedService<IEmailService>("live")!);
-		builder.Services.AddScoped<IEmailSender<ApplicationUser>, SmtpEmailSender>();
+		builder.Services.AddScoped<IEmailSender<ApplicationUser>, IdentityEmailSender>();
 	} else {
 		builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 		logMessages.Add("No 'live' email provider configured.");

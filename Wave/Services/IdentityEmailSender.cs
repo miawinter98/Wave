@@ -1,23 +1,27 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Localization;
 using Wave.Data;
 
 namespace Wave.Services;
 
-public class SmtpEmailSender(EmailFactory email, [FromKeyedServices("live")]IEmailService emailService) : IEmailSender<ApplicationUser>, IAsyncDisposable {
+public class IdentityEmailSender(EmailFactory email, [FromKeyedServices("live")]IEmailService emailService, IStringLocalizer<IdentityEmailSender> localizer) : IEmailSender<ApplicationUser>, IAsyncDisposable {
 	private EmailFactory Email { get; } = email;
 	private IEmailService EmailService { get; } = emailService;
+	private IStringLocalizer<IdentityEmailSender> Localizer { get; } = localizer;
 
 	#region IEmailSenderAsync<ApplicationUser>
 	
 	public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink) =>
-		SendDefaultMailAsync(email, user.FullName, "Confirm your email", "Confirm your email",
-			$"<p>Please confirm your account by <a href='{confirmationLink}'>clicking here</a>.</p>",
-			$"Please confirm your account by clicking here: {confirmationLink}");
+		SendDefaultMailAsync(email, user.FullName, Localizer["ConfirmationMail_Subject"], Localizer["ConfirmationMail_Title"],
+			$"<p>{Localizer["ConfirmationMail_Body"]}</p>" +
+			$"<p style=\"text-align: center\"><a href=\"{confirmationLink}\">{Localizer["ConfirmName_LinkLabel"]}</a></p>",
+			$"{Localizer["ConfirmationMail_Body"]} {confirmationLink}");
 
 	public Task SendPasswordResetLinkAsync(ApplicationUser user, string email, string resetLink) =>
-		SendDefaultMailAsync(email, user.FullName, "Reset your password", "Reset your password",
-			$"<p>Please reset your password by <a href='{resetLink}'>clicking here</a>.</p>",
-			$"Please reset your password by clicking here: {resetLink}");
+		SendDefaultMailAsync(email, user.FullName, Localizer["PasswordResetMail_Subject"], Localizer["PasswordResetMail_Title"],
+			$"<p>{Localizer["PasswordResetMail_Body"]}</p>" +
+			$"<p style=\"text-align: center\"><a href=\"{resetLink}\">{Localizer["PasswordResetMail_LinkLabel"]}</a>.</p>",
+			$"{Localizer["PasswordResetMail_Body"]} {resetLink}");
 
 	public Task SendPasswordResetCodeAsync(ApplicationUser user, string email, string resetCode) =>
 		SendDefaultMailAsync(email, user.FullName, "Reset your password", "Reset your password",
