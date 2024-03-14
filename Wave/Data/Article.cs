@@ -33,6 +33,11 @@ public class Article : ISoftDelete {
     public DateTimeOffset PublishDate { get; set; } = DateTimeOffset.MaxValue;
     public DateTimeOffset? LastModified { get; set; }
 
+    /// <summary>
+    /// Returns LastModified if it's after the articles PublishDate, otherwise gives you the PublishDate
+    /// </summary>
+    public DateTimeOffset LastPublicChange => LastModified > PublishDate ? LastModified.Value : PublishDate;
+
     public IList<Category> Categories { get; } = [];
     public IList<ArticleImage> Images { get; } = [];
 }

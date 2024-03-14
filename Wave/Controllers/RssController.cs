@@ -1,4 +1,5 @@
-﻿using System.ServiceModel.Syndication;
+﻿using System.Net;
+using System.ServiceModel.Syndication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -58,20 +59,44 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 	}
 
 	private SyndicationFeed CreateFeedAsync(IEnumerable<Article> articles, DateTimeOffset date, string? routeName, string? category) {
-		string appName = Customizations.Value.AppName;
-		var host = new Uri($"https://{Request.Host}{Request.PathBase}", UriKind.Absolute);
-		var link = new Uri(Url.RouteUrl(routeName, null, "https", host.Host) ?? host.AbsoluteUri);
+		var customizations = Customizations.Value;
 
-		var feed = new SyndicationFeed(appName, "Feed on " + appName, link, articles
-			.Select(article => {
+		string appName = customizations.AppName;
+		Uri host;
+		if (string.IsNullOrWhiteSpace(customizations.AppUrl)) {
+			host = new Uri(customizations.AppUrl);
+		} else {
+			host = new Uri($"https://{Request.Host}", UriKind.Absolute);
+		}
+		var feedLink = new Uri(Url.RouteUrl(routeName, null, "https", host.Host) ?? host.AbsoluteUri);
+		var htmlLink = host;
+		if (category is not null) {
+			feedLink = new Uri(feedLink.AbsoluteUri + "?category=" + WebUtility.HtmlEncode(category));
+			htmlLink = new Uri(host, "/category/" + WebUtility.HtmlEncode(category));
+		}
+		
+		var feed = new SyndicationFeed(appName, "Feed on " + appName, htmlLink, host.AbsoluteUri, date) {
+			TimeToLive = TimeSpan.FromMinutes(15),
+			Generator = "Wave",
+			Links = { new SyndicationLink(feedLink) {RelationshipType = "self"} },
+			Items = GetItems(articles, host)
+		};
+		if (category != null) feed.Categories.Add(new SyndicationCategory(category));
+
+		return feed;
+	}
+
+	private static IEnumerable<SyndicationItem> GetItems(IEnumerable<Article> articles, Uri host) {
+		return articles.Select(article => {
 				var item = new SyndicationItem(
 					article.Title,
 					new TextSyndicationContent(article.BodyHtml, TextSyndicationContentKind.Html),
 					new Uri(ArticleUtilities.GenerateArticleLink(article, host)),
 					new Uri(host, "article/" + article.Id).AbsoluteUri,
-					article.PublishDate) {
+					article.LastPublicChange) 
+				{
 					Authors = {
-						new SyndicationPerson { Name = article.Author.FullName }
+						new SyndicationPerson {Name = article.Author.FullName}
 					},
 					LastUpdatedTime = article.LastModified ?? article.PublishDate,
 					PublishDate = article.PublishDate
@@ -80,18 +105,9 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 				foreach (var category in article.Categories.OrderBy(c => c.Color)) {
 					item.Categories.Add(new SyndicationCategory(category.Name));
 				}
+
 				return item;
 			})
-			.ToList()) {
-				TimeToLive = TimeSpan.FromMinutes(15),
-				LastUpdatedTime = date,
-				Generator = "Wave",
-				Links = {
-					new SyndicationLink(link) { RelationshipType = "self" }
-				}
-		};
-		if (category != null) feed.Categories.Add(new SyndicationCategory(category));
-
-		return feed;
+			.ToList();
 	}
 }
