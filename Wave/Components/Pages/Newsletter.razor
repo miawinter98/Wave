@@ -67,7 +67,6 @@
 		await using var context = await ContextFactory.CreateDbContextAsync();
 
 		Newsletters = await context.Set<EmailNewsletter>()
-			.IgnoreQueryFilters().IgnoreAutoIncludes()
 			.Include(n => n.Article)
 			.OrderByDescending(n => n.DistributionDateTime)
 			.ToListAsync();

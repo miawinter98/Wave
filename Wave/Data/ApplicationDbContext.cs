@@ -95,6 +95,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			newsletter.Property(a => a.DistributionDateTime)
 				.HasConversion(dateTimeOffsetUtcConverter);
 
+			newsletter.HasQueryFilter(n => !n.Article.IsDeleted);
 			newsletter.ToTable("Newsletter");
 		});
 		builder.Entity<EmailSubscriber>(subscriber => {
