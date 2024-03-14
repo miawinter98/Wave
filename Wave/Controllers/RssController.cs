@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.ServiceModel.Syndication;
+using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,10 +19,10 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 	[HttpGet("rss.xml", Name = "RssFeed")]
 	[Produces("application/rss+xml")]
 	[ResponseCache(Duration = 60*15, Location = ResponseCacheLocation.Any)]
-	public async Task<IActionResult> GetRssFeedAsync(string? category = null) {
+	public async Task<IActionResult> GetRssFeedAsync(string? category = null, Guid? author = null) {
 		if (!Features.Value.Rss) return new JsonResult("RSS is disabled") {StatusCode = StatusCodes.Status401Unauthorized};
 
-		var feed = await CreateFeedAll("RssFeed", category);
+		var feed = await CreateFeedAll("RssFeed", category, author);
 		if (feed is null) return NotFound();
 		Response.ContentType = "application/atom+xml";
 		return Ok(feed);
@@ -29,16 +30,16 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 	[HttpGet("atom.xml", Name = "AtomFeed")]
 	[Produces("application/atom+xml")]
 	[ResponseCache(Duration = 60*15, Location = ResponseCacheLocation.Any)]
-	public async Task<IActionResult> GetAtomFeedAsync(string? category = null) {
+	public async Task<IActionResult> GetAtomFeedAsync(string? category = null, Guid? author = null) {
 		if (!Features.Value.Rss) return new JsonResult("RSS is disabled") {StatusCode = StatusCodes.Status401Unauthorized};
 
-		var feed = await CreateFeedAll("AtomFeed", category);
+		var feed = await CreateFeedAll("AtomFeed", category, author);
 		if (feed is null) return NotFound();
 		Response.ContentType = "application/atom+xml";
 		return Ok(feed);
 	}
 	
-	private async Task<SyndicationFeed?> CreateFeedAll(string? routeName, string? category) {
+	private async Task<SyndicationFeed?> CreateFeedAll(string? routeName, string? category, Guid? author) {
 		var now = DateTimeOffset.UtcNow;
 		IQueryable<Article> query = Context.Set<Article>()
 			.Include(a => a.Author)
@@ -49,16 +50,21 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 		if (!string.IsNullOrWhiteSpace(category)) {
 			query = query.Where(a => a.Categories.Any(c => c.Name == category));
 		}
+		if (author is { } a1) {
+			string authorString = a1.ToString();
+			query = query.Where(a => a.Author.Id == authorString);
+		}
 
 		query = query.Take(15);
 		var articles = await query.ToListAsync();
 		if (articles.Count < 1) return null;
 		var date = query.Max(a => a.PublishDate);
 
-		return CreateFeedAsync(articles, date, routeName, category);
+		return CreateFeedAsync(articles, date, routeName, category, author);
 	}
 
-	private SyndicationFeed CreateFeedAsync(IEnumerable<Article> articles, DateTimeOffset date, string? routeName, string? category) {
+	private SyndicationFeed CreateFeedAsync(IEnumerable<Article> articles, DateTimeOffset date, 
+			string? routeName, string? category, Guid? author) {
 		var customizations = Customizations.Value;
 
 		string appName = customizations.AppName;
@@ -68,17 +74,28 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 		} else {
 			host = new Uri($"https://{Request.Host}", UriKind.Absolute);
 		}
-		var feedLink = new Uri(Url.RouteUrl(routeName, null, "https", host.Host) ?? host.AbsoluteUri);
-		var htmlLink = host;
+		var feedLink = new UriBuilder(Url.RouteUrl(routeName, null, "https", host.Host) ?? host.AbsoluteUri);
+		var htmlLink = new UriBuilder(host);
 		if (category is not null) {
-			feedLink = new Uri(feedLink.AbsoluteUri + "?category=" + WebUtility.HtmlEncode(category));
-			htmlLink = new Uri(host, "/category/" + WebUtility.HtmlEncode(category));
+			feedLink.Query = "category=" + WebUtility.HtmlEncode(category);
+			htmlLink.Path = "/category/" + WebUtility.HtmlEncode(category);
+		}
+		if (author is not null) {
+			var query = HttpUtility.ParseQueryString(feedLink.Query);
+			query.Add("author", author.ToString());
+			feedLink.Query = query.ToString();
+			
+			if (htmlLink.Path.Length < 2) {
+				htmlLink.Path = "/profile/" + author;
+			} else {
+				htmlLink.Query = "?author=" + author;
+			}
 		}
 		
-		var feed = new SyndicationFeed(appName, "Feed on " + appName, htmlLink, host.AbsoluteUri, date) {
+		var feed = new SyndicationFeed(appName, "Feed on " + appName, htmlLink.Uri, host.AbsoluteUri, date) {
 			TimeToLive = TimeSpan.FromMinutes(15),
 			Generator = "Wave",
-			Links = { new SyndicationLink(feedLink) {RelationshipType = "self"} },
+			Links = { new SyndicationLink(feedLink.Uri) {RelationshipType = "self"} },
 			Items = GetItems(articles, host)
 		};
 		if (category != null) feed.Categories.Add(new SyndicationCategory(category));

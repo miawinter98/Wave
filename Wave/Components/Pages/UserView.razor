@@ -1,11 +1,21 @@
 ﻿@page "/profile/{id:guid}"
 @using Wave.Data
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Options
 @using Wave.Utilities
 
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IOptions<Customization> Customizations
+@inject IOptions<Features> Features
 @inject IStringLocalizer<UserView> Localizer
 @inject IMessageDisplay Message
+
+<HeadContent>
+	@if (Features.Value.Rss && User is not null) { 
+		<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName | User @User.FullName" href="/rss/rss.xml?author=@User.Id">
+		<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName | User @User.FullName" href="/rss/atom.xml?author=@User.Id">
+	}
+</HeadContent>
 
 <PageTitle>@(TitlePrefix + @Localizer["Title"] + " | " + (User?.FullName ?? Localizer["NotFound_Title"]))</PageTitle>
 
