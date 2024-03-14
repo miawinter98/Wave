@@ -18,9 +18,10 @@ public class NewsletterBackgroundService(ILogger<NewsletterBackgroundService> lo
 			await using var context = await ContextFactory.CreateDbContextAsync(cancellationToken);
 			var now = DateTimeOffset.UtcNow;
 			var newsletters = context.Set<EmailNewsletter>()
+				.IgnoreQueryFilters()
 				.Include(n => n.Article.Author)
 				.Include(n => n.Article.Categories)
-				.Where(n => !n.IsSend && n.DistributionDateTime <= now)
+				.Where(n => !n.Article.IsDeleted && !n.IsSend && n.DistributionDateTime <= now)
 				.ToList();
 			if (newsletters.Count < 1) return;
 
@@ -38,6 +39,9 @@ public class NewsletterBackgroundService(ILogger<NewsletterBackgroundService> lo
 				string replyTo = "";
 				if (!string.IsNullOrWhiteSpace(newsletter.Article.Author.ContactEmail))
 					replyTo = $"{newsletter.Article.Author.Name} <{newsletter.Article.Author.ContactEmail}>";
+				string aboutTheAuthor = await factory.CreateAuthorCard(
+					newsletter.Article.Author, 
+					new Uri(Customizations.AppUrl, UriKind.Absolute));
 
 				Logger.LogInformation("Processing '{title}'.", newsletter.Article.Title);
 				// set newsletter to send first, so we don't spam people 
@@ -55,10 +59,11 @@ public class NewsletterBackgroundService(ILogger<NewsletterBackgroundService> lo
 					last = subscribers.Last();
 
 					foreach (var subscriber in subscribers) {
-						var email = await factory.CreateSubscribedEmail(subscriber, articleLink, 
+						var email = await factory.CreateSubscribedEmail(
+							subscriber, articleLink, 
 							newsletter.Article.Title,
-							newsletter.Article.Title, 
-							newsletter.Article.BodyHtml, 
+							newsletter.Article.Title,
+							newsletter.Article.BodyHtml + aboutTheAuthor, 
 							newsletter.Article.BodyPlain, 
 							"newsletter-" + newsletter.Id, replyTo);
 						await client.SendEmailAsync(email);

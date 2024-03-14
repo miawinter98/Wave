@@ -98,6 +98,7 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		FileSystem.GetEmailTemplate("welcome", DefaultTemplates["welcome"]);
 		FileSystem.GetPartialTemplate("email-article", DefaultPartials["email-article"]);
 		FileSystem.GetPartialTemplate("email-plain-footer", DefaultPartials["email-plain-footer"]);
+		FileSystem.GetPartialTemplate("email-author", DefaultPartials["email-author"]);
 	}
 
 	public string ApplyTokens(string template, Func<string, string?> replacer) {
@@ -312,6 +313,20 @@ public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, 
 		{
 			"email-plain-footer",
 			$"Unsubscribe: [[{Constants.EmailUnsubscribeLink}]]"
+		},
+		{
+			"email-author",
+			"""
+			<div style="padding: 1em; border: 1px solid black; box-shadow: 4px 4px 0 0 currentColor; background: #ffb3c8; margin-top: 12px; min-height: 108px">
+				<img style="float: left; margin: 0 8px 8px 0; border: 1px solid transparent; border-radius: 4px" 
+					 src="{0}" alt="" width="100" />
+				<span style="margin: 0; color: black">
+					<h2 style="color: black; margin-top: 0;">{1}</h2>
+					<p>{2}</p>
+					<a target="_blank" style="color: black" href="{3}">Profile</a>
+				</span>
+			</div>
+			"""
 		}
 	};
 }

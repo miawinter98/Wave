@@ -82,6 +82,14 @@ public class EmailFactory(IOptions<Customization> customizations, EmailTemplateS
 		}.ToFrozenDictionary());
 	}
 
+	public async ValueTask<string> CreateAuthorCard(ApplicationUser user, Uri host) {
+		var profileLink = new Uri(host, "/profile/" + user.Id);
+		var pfpLink = new Uri(host, "api/user/pfp/" + user.Id + "?size=100");
+
+		string partial = await TemplateService.GetPartialAsync("email-author");
+		return string.Format(partial, pfpLink, user.FullName, user.AboutTheAuthor, profileLink.AbsoluteUri);
+	}
+
 	public async ValueTask<Guid?> IsTokenValid(string id, string token) {
 		return await TemplateService.ValidateTokensAsync(id, token, deleteToken: false);
 	}
