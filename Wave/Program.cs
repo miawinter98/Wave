@@ -178,14 +178,14 @@ builder.Services.AddCascadingValue("TitlePrefix",
 
 var emailConfig = builder.Configuration.GetSection("Email").Get<EmailConfiguration>();
 builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("Email"));
+builder.Services.AddSingleton<EmailTemplateService>();
+builder.Services.AddScoped<EmailFactory>();
 if (emailConfig?.Smtp.Count > 0) {
 	if (string.IsNullOrWhiteSpace(emailConfig.SenderEmail)) {
 		throw new ApplicationException(
 			"Email providers have been configured, but no SenderEmail. " +
 			"Please provider the sender email address used for email distribution.");
 	}
-	builder.Services.AddSingleton<EmailTemplateService>();
-	builder.Services.AddScoped<EmailFactory>();
 
 	foreach (var smtp in emailConfig.Smtp) {
 		builder.Services.AddKeyedScoped<IEmailService, LiveEmailService>(smtp.Key.ToLower(), (provider, key) => 
@@ -210,6 +210,7 @@ if (emailConfig?.Smtp.Count > 0) {
 			"Disable email subscriptions or provide the mail provider for bulk sending");
 	}
 } else {
+	builder.Services.AddSingleton<IEmailService, NoOpEmailService>();
 	builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 	logMessages.Add("No email provider configured.");
 }
