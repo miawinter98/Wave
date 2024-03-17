@@ -11,7 +11,7 @@
 @inject IStringLocalizer<ManageCategories> Localizer
 @inject IMessageDisplay Message
 
-<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+<PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
 
 <ModalComponent Id="@ModalId">
 	<ChildContent>
@@ -67,8 +67,8 @@ bg-error text-error-content
 </ul>
 
 @code {
-	[CascadingParameter(Name = "TitlePrefix")]
-	private string TitlePrefix { get; set; } = default!;
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
 
 	private InputModel Model { get; set; } = new();
 	private List<Category> Categories { get; } = new();

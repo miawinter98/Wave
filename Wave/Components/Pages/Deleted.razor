@@ -8,7 +8,7 @@
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IStringLocalizer<Deleted> Localizer
 
-<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+<PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
 
@@ -23,8 +23,8 @@
 </ArticleCardList>
 
 @code {
-	[CascadingParameter(Name = "TitlePrefix")]
-	private string TitlePrefix { get; set; } = default!;
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
 
 	private List<Article> Articles { get; } = [];
 

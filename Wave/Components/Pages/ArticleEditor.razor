@@ -10,7 +10,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject IStringLocalizer<ArticleEditor> Localizer
 
-<PageTitle>@(TitlePrefix + Localizer["EditorTitle"])</PageTitle>
+<PageTitle>@(Localizer["EditorTitle"] + TitlePostfix)</PageTitle>
 
 @if (User is null) {
 	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
@@ -33,8 +33,8 @@
 
 
 @code {
-	[CascadingParameter(Name = "TitlePrefix")]
-	private string TitlePrefix { get; set; } = default!;
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
 	[CascadingParameter]
 	private Task<AuthenticationState>? AuthenticationState { get; set; }
 

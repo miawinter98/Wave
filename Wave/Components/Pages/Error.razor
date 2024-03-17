@@ -3,7 +3,7 @@
 
 @inject IStringLocalizer<Error> Localizer
 
-<PageTitle>@Localizer["Title"]</PageTitle>
+<PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light text-primary">@Localizer["Title"]</h1>
 
@@ -15,7 +15,9 @@
     </p>
 }
 
-@code{
+@code {
+    [CascadingParameter(Name = "TitlePostfix")]
+    private string TitlePostfix { get; set; } = default!;
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 

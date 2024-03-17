@@ -22,7 +22,7 @@
 @inject EmailFactory Email
 @inject IEmailService EmailService
 
-<PageTitle>@(TitlePrefix + (Article?.Title ?? Localizer["NotFound_Title"]))</PageTitle>
+<PageTitle>@((Article?.Title ?? Localizer["NotFound_Title"]) + TitlePostfix)</PageTitle>
 
 @if (Article is not null) {
 	<HeadContent>
@@ -105,8 +105,8 @@
 </ErrorBoundary>
 
 @code {
-	[CascadingParameter(Name = "TitlePrefix")]
-	private string TitlePrefix { get; set; } = default!;
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
 
 	#region Route Parameters
 	

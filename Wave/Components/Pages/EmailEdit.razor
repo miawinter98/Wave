@@ -16,7 +16,7 @@
 	<meta name="robots" content="noindex,nofollow">
 </HeadContent>
 
-<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+<PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
 
 <BoardComponent CenterContent="true">
 	<BoardCardComponent Heading="@Localizer["Title"]">
@@ -33,8 +33,8 @@
 </BoardComponent>
 
 @code {
-	[CascadingParameter(Name = "TitlePrefix")]
-	private string TitlePrefix { get; set; } = default!;
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
 	
 	[Parameter, SupplyParameterFromQuery(Name = "user")]
 	public string? Id { get; set; }

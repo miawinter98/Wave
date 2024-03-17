@@ -173,8 +173,7 @@ builder.Services.AddHttpClient();
 
 builder.Services.Configure<Features>(builder.Configuration.GetSection(nameof(Features)));
 builder.Services.Configure<Customization>(builder.Configuration.GetSection(nameof(Customization)));
-builder.Services.AddCascadingValue("TitlePrefix",
-	sf => (sf.GetService<IOptions<Customization>>()?.Value.AppName ?? "Wave") + " - ");
+builder.Services.AddCascadingValue("TitlePostfix", sf => " | " + (sf.GetService<IOptions<Customization>>()?.Value.AppName ?? "Wave"));
 
 var emailConfig = builder.Configuration.GetSection("Email").Get<EmailConfiguration>();
 builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("Email"));

@@ -9,7 +9,7 @@
 @inject ILogger<ArticleDeleteConfirm> Logger
 @inject IStringLocalizer<ArticleView> Localizer
 
-<PageTitle>@(TitlePrefix + (Article is not null ? Localizer["Delete_Title"] : Localizer["NotFound_Title"]))</PageTitle>
+<PageTitle>@((Article is not null ? Localizer["Delete_Title"] : Localizer["NotFound_Title"]) + TitlePostfix)</PageTitle>
 
 @if (Article is not null) {
 	<BoardComponent CenterContent="true">
@@ -34,8 +34,8 @@
 
 
 @code {
-	[CascadingParameter(Name = "TitlePrefix")]
-	private string TitlePrefix { get; set; } = default!;
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
 
 	[Parameter]
 	public Guid Id { get; set; }

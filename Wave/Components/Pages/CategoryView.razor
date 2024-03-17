@@ -14,9 +14,12 @@
 		<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName | @Category.Name" href="/rss/rss.xml?category=@WebUtility.UrlEncode(Category.Name)">
 		<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName | @Category.Name" href="/rss/atom.xml?category=@WebUtility.UrlEncode(Category.Name)">
 	}
+	@if (Category is null) {
+		<meta name="robots" content="noindex">
+	}
 </HeadContent>
 
-<PageTitle>@(TitlePrefix + Localizer["Title"] + " | " + (Category?.Name ?? "Not Found"))</PageTitle>
+<PageTitle>@($"{Category?.Name ?? "Not Found"} {TitlePostfix}")</PageTitle>
 
 @if (Category is null) {
 	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["NotFound_Title"]</h1>
@@ -29,8 +32,8 @@
 }
 
 @code {
-	[CascadingParameter(Name = "TitlePrefix")]
-	private string TitlePrefix { get; set; } = default!;
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
 
 	[Parameter]
 	public string CategoryName { get; set; } = string.Empty;

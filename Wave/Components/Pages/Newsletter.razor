@@ -8,7 +8,7 @@
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IOptions<Features> Features
 
-<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+<PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
 
@@ -56,8 +56,8 @@
 
 
 @code {
-	[CascadingParameter(Name = "TitlePrefix")]
-	private string TitlePrefix { get; set; } = default!;
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
 
 	private IReadOnlyList<EmailNewsletter> Newsletters { get; set; } = [];
 	private int SubscribersTotal { get; set; }

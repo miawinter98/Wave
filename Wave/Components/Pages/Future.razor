@@ -6,10 +6,15 @@
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IStringLocalizer<Future> Localizer
 
+<PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
+
 <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
 <ArticleCardList Articles="Articles" />
 
 @code {
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
+
     private List<Article> Articles { get; } = [];
 
     protected override async Task OnInitializedAsync() {

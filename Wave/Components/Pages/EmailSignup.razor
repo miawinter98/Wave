@@ -22,7 +22,7 @@
 	<link rel="canonical" href="@(new UriBuilder(Navigation.BaseUri) { Scheme = "https", Port = -1, Path = "/email/subscribe" }.Uri.AbsoluteUri)" />
 </HeadContent>
 
-<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+<PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
 
 <BoardComponent CenterContent="true">
 	<BoardCardComponent Heading="@Localizer["Title"]">
@@ -44,8 +44,8 @@
 </BoardComponent>
 
 @code {
-	[CascadingParameter(Name = "TitlePrefix")]
-	private string TitlePrefix { get; set; } = default!;
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
 	[SupplyParameterFromForm(FormName = "email-signup")]
 	private InputModel Model { get; set; } = new();
 

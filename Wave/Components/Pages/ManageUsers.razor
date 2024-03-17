@@ -13,7 +13,7 @@
 @inject IStringLocalizer<ManageUsers> Localizer
 @inject IMessageDisplay Toast
 
-<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+<PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1> 
 
@@ -57,8 +57,8 @@
 </section>
 
 @code {
-	[CascadingParameter(Name = "TitlePrefix")]
-	private string TitlePrefix { get; set; } = default!;
+    [CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
     private string ModalId { get; } = "UserDialog";
 
 	[CascadingParameter]
