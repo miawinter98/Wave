@@ -22,6 +22,9 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 	public async Task<IActionResult> GetRssFeedAsync(string? category = null, Guid? author = null) {
 		if (!Features.Value.Rss) return new JsonResult("RSS is disabled") {StatusCode = StatusCodes.Status401Unauthorized};
 
+		if (category is not null || author.HasValue)
+			Response.Headers.Append("x-robots-tag", "noindex");
+
 		var feed = await CreateFeedAll("RssFeed", category, author);
 		if (feed is null) return NotFound();
 		Response.ContentType = "application/atom+xml";
@@ -32,6 +35,9 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 	[ResponseCache(Duration = 60*15, Location = ResponseCacheLocation.Any)]
 	public async Task<IActionResult> GetAtomFeedAsync(string? category = null, Guid? author = null) {
 		if (!Features.Value.Rss) return new JsonResult("RSS is disabled") {StatusCode = StatusCodes.Status401Unauthorized};
+		
+		if (category is not null || author.HasValue)
+			Response.Headers.Append("x-robots-tag", "noindex");
 
 		var feed = await CreateFeedAll("AtomFeed", category, author);
 		if (feed is null) return NotFound();
