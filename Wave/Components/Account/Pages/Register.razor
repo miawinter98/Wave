@@ -15,9 +15,11 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject IStringLocalizer<Register> Localizer
+@inject NavigationManager Navigation
 
 <HeadContent>
 	<meta name="robots" content="nofollow">
+	<link rel="canonical" href="@(new UriBuilder(Navigation.BaseUri) { Scheme = "https", Port = -1, Path = "/account/register" }.Uri.AbsoluteUri)" />
 </HeadContent>
 
 <PageTitle>@Localizer["Title"]</PageTitle>

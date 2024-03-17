@@ -30,9 +30,17 @@
 		<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName" href="/rss/rss.xml">
 		<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName" href="/rss/atom.xml">
 	}
+	
+	@if (Page > TotalPages) {
+		<meta name="robots" content="noindex">
+	} else if (Page > 0) {
+		<link rel="canonical" href="@(new UriBuilder(Navigation.BaseUri) { Scheme = "https", Query = "?page=" + Page, Port = -1 }.Uri.AbsoluteUri)" />
+	} else {
+		<link rel="canonical" href="@(new UriBuilder(Navigation.BaseUri) { Scheme = "https", Port = -1 }.Uri.AbsoluteUri)" />
+	}
 </HeadContent>
 
-<PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
+<PageTitle>@(TitlePrefix[..^3])</PageTitle>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 xl:grid-rows-4 gap-4">
 	<div class="sm:col-span-2 flex flex-col">

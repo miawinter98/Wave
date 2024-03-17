@@ -15,6 +15,12 @@
 @inject IEmailService EmailService
 @inject EmailFactory Email
 @inject IMessageDisplay Messages
+@inject NavigationManager Navigation
+
+<HeadContent>
+	<meta name="robots" content="nofollow">
+	<link rel="canonical" href="@(new UriBuilder(Navigation.BaseUri) { Scheme = "https", Port = -1, Path = "/email/subscribe" }.Uri.AbsoluteUri)" />
+</HeadContent>
 
 <PageTitle>@(TitlePrefix + Localizer["Title"])</PageTitle>
 

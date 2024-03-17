@@ -45,6 +45,10 @@
 			<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName" href="/rss/rss.xml">
 			<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName" href="/rss/atom.xml">
 		}
+		
+		@if (Article is not null) {
+			<link rel="canonical" href="@ArticleUtilities.GenerateArticleLink(Article, new Uri(Navigation.BaseUri))" />
+		}
 	</HeadContent>
 }
 

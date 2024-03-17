@@ -16,6 +16,6 @@ public static class ArticleUtilities {
 
 		if (host is null) return link;
 
-		return new Uri(host, link).AbsoluteUri;
+		return new UriBuilder("https", host.Host, -1, link).Uri.AbsoluteUri;
 	}
 }
