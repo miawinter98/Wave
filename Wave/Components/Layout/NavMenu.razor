@@ -1,7 +1,10 @@
 ﻿@using System.Security.Claims
+@using Microsoft.Extensions.Options
+@using Wave.Data
 @implements IDisposable
 
 @inject NavigationManager NavigationManager
+@inject IOptions<Features> Features
 @inject IStringLocalizer<NavMenu> Localizer
 
 <div class="h-12 hidden md:block" role="banner" aria-label="logo">
@@ -79,11 +82,13 @@
 						</svg>
 					</NavLink>
 				</li>
-				<li>
-					<NavLink href="Account/Register">
-						@Localizer["SignUp_Label"]
-					</NavLink>
-				</li>
+				@if (Features.Value.NativeSignup) {
+					<li>
+						<NavLink href="Account/Register">
+							@Localizer["SignUp_Label"]
+						</NavLink>
+					</li>
+				}
 			</NotAuthorized>
 		</AuthorizeView>
 	</ul>

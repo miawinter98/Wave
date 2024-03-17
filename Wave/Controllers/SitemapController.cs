@@ -63,7 +63,7 @@ public class SitemapController(ApplicationDbContext context, IOptions<Features> 
 		}
 
 		root.Add(CreateUrlElement(nameSpace, new Uri(host, "/Account/Login")));
-		root.Add(CreateUrlElement(nameSpace, new Uri(host, "/Account/Register")));
+		if (Features.NativeSignup) root.Add(CreateUrlElement(nameSpace, new Uri(host, "/Account/Register")));
 		if (Features.EmailSubscriptions) root.Add(CreateUrlElement(nameSpace, new Uri(host, "/Email/Subscribe")));
 
 		document.Add(root);

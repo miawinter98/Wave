@@ -122,4 +122,7 @@
   <data name="Submit" xml:space="preserve">
     <value>Sign Up Now</value>
   </data>
+  <data name="SignupDisabled_Message" xml:space="preserve">
+    <value>Sign up has been disabled on this server. </value>
+  </data>
 </root>

@@ -119,4 +119,10 @@
   <data name="ConfirmPassword_Placeholder" xml:space="preserve">
     <value>Passwort</value>
   </data>
+  <data name="Email_Placeholder" xml:space="preserve">
+    <value>name@example.de</value>
+  </data>
+  <data name="SignupDisabled_Message" xml:space="preserve">
+    <value>Registrationen wurden auf diesem Server deaktiviert.</value>
+  </data>
 </root>
