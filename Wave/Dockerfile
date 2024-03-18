@@ -38,4 +38,5 @@ RUN dotnet publish "./Wave.csproj" \
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY LICENSE .
 ENTRYPOINT ["dotnet", "Wave.dll"]
