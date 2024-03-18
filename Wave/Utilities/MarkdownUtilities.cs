@@ -1,7 +1,7 @@
 ﻿using Markdig;
 using Markdig.Extensions.MediaLinks;
 using Microsoft.AspNetCore.Components;
-using Wave.Data;
+using Markdown.ColorCode;
 
 namespace Wave.Utilities;
 
@@ -18,9 +18,10 @@ public static class MarkdownUtilities {
                 AddControlsProperty = true,
                 Class = "max-w-full"
             })
+            .UseColorCode()
             .DisableHtml()
 		.Build();
-		return Markdown.ToHtml(markdown, pipeline);
+		return Markdig.Markdown.ToHtml(markdown, pipeline);
     }
 
     public static MarkupString ParseToMarkup(string markdown) {

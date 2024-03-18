@@ -44,4 +44,8 @@
         -webkit-mask-image: linear-gradient(black, black 80%, rgba(0, 0, 0, 0.5) 85%, transparent 100%);
         mask-image: linear-gradient(black, black 80%, rgba(0, 0, 0, 0.5) 85%, transparent 100%);
     }
+
+    .prose pre, .prose code {
+        @apply bg-neutral-200 text-black rounded-none border-current border-2;
+    }
 }
