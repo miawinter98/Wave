@@ -99,12 +99,12 @@
 </template>
 <script>
 	async function copyCode(event) {
-		const container = event.srcElement.closest("div").querySelector("code, pre");
+		const container = event.srcElement.closest("pre, div").querySelector("code, pre");
 		let text = container.innerText;
 		await navigator.clipboard.writeText(text);
 	}
 
-	document.querySelectorAll(".prose pre, .prose code").forEach((block) => {
+	document.querySelectorAll(".prose div > pre, .prose pre > code").forEach((block) => {
 		// only add a button if browser supports Clipboard API
 		if (navigator.clipboard) {
 			block.parentElement.classList.add("relative");
