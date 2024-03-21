@@ -21,7 +21,8 @@ public static class MarkdownUtilities {
                 Class = "max-w-full"
             })
             .UseColorCode(HtmlFormatterType.Style, StyleDictionary.DefaultDark, [
-                new ShellLanguage()
+                new ShellLanguage(),
+                new YamlLanguage()
             ])
             .DisableHtml()
 		.Build();
