@@ -2,6 +2,7 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Diagnostics.CodeAnalysis
 @using System.Net
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using Wave.Services
@@ -231,6 +232,9 @@
     public Guid? Id { get; set; }
 	[Parameter] 
     public required ApplicationUser User { get; set; }
+	[Parameter]
+	public required ClaimsPrincipal ClaimsUser { get; set; }
+
 	[SupplyParameterFromForm] 
     private InputModel Model { get; set; } = new();
 	
@@ -261,11 +265,12 @@
 				.Include(a => a.Images)
 				.FirstAsync(a => a.Id == Id);
 			if (article is null) throw new ApplicationException("Article not found.");
-
-			await HandleRoles(article, User);
 		}
 
 		if (article is not null) {
+			if (!article.AllowedToEdit(ClaimsUser))
+				throw new ApplicationException("You are not allowed to edit this article");
+
 			Model.Id ??= article.Id;
 			Model.Title ??= article.Title;
 			Model.Slug ??= article.Slug;
@@ -278,6 +283,10 @@
 	}
 
 	private async Task OnValidSubmit() {
+		if (Article.AllowedToEdit(ClaimsUser) is false) {
+			Message.ShowError("Permission denied.");
+			return;
+		}
 		try {
 			Saving = true;
 			

@@ -1,11 +1,16 @@
 ﻿@using Wave.Components.Account.Shared
 <Router AppAssembly="@typeof(Program).Assembly">
-    <Found Context="routeData">
-        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
-            <NotAuthorized>
-                <RedirectToLogin />
-            </NotAuthorized>
-        </AuthorizeRouteView>
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
+	<Found Context="routeData">
+		<AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+			<NotAuthorized>
+				<RedirectToLogin/>
+			</NotAuthorized>
+			<Authorizing>
+				<div class="flex place-content-center">
+					<span class="loading loading-spinner loading-lg"></span>
+				</div>
+			</Authorizing>
+		</AuthorizeRouteView>
+		<FocusOnNavigate RouteData="@routeData" Selector="h1"/>
+	</Found>
 </Router>

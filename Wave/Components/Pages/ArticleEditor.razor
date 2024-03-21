@@ -3,9 +3,9 @@
 
 @using Wave.Data
 @using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
 
-@rendermode InteractiveServer
-@attribute [Authorize(Policy = "ArticleEditOrReviewPermissions")]
+@rendermode @(new InteractiveServerRenderMode(false))
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IStringLocalizer<ArticleEditor> Localizer
@@ -23,7 +23,7 @@
 		<ChildContent>
 			<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
 			
-			<Wave.Components.Pages.Partials.ArticleEditorPartial Id="@Id" User="@User" />
+			<Wave.Components.Pages.Partials.ArticleEditorPartial Id="@Id" User="@User" ClaimsUser="@ClaimsUser" />
 		</ChildContent>
 		<ErrorContent>
 			<h1 class="text-3xl lg:text-5xl font-light mb-6">Not found</h1>
@@ -41,10 +41,12 @@
 	[Parameter]
 	public Guid? Id { get; set; }
 	private ApplicationUser? User { get; set; }
+	private ClaimsPrincipal? ClaimsUser { get; set; }
 	
 	protected override async Task OnInitializedAsync() {
 		if (AuthenticationState is null) throw new ApplicationException("???");
 		var state = await AuthenticationState;
+		ClaimsUser = state.User;
 		var user = await UserManager.GetUserAsync(state.User);
 		User = user ?? throw new ApplicationException("???2");
 	}

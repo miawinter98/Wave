@@ -3,9 +3,7 @@
 @using Microsoft.EntityFrameworkCore
 @using Wave.Data
 @using System.Security.Claims
-@using System.Diagnostics.CodeAnalysis
 @using System.Globalization
-@using System.Net
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Options
 @using Wave.Services
@@ -54,45 +52,41 @@
 
 <ErrorBoundary>
 	<ChildContent>
-		<AuthorizeView Policy="ArticleEditOrReviewPermissions">
-			<Authorized>
-				<ArticleComponent Article="@GetArticleProtected(context.User)" />
-				<div class="flex gap-2 mt-3 flex-wrap">
-					@if (CanEdit) {
-						<a class="btn btn-info w-full sm:btn-wide" href="article/@Article!.Id/edit" 
-						   data-enhance-nav="false">@Localizer["Edit"]</a>
-					}
-					@if (Article.Status is ArticleStatus.Draft) {
-						<form @formname="submit-for-review" method="post" @onsubmit="SubmitForReview" class="max-sm:w-full">
-							<AntiforgeryToken />
-							<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Review_Submit"]</button>
-						</form>
-					} 
-					@if (Article.Status is ArticleStatus.InReview || (Article.Status is ArticleStatus.Draft && context.User.IsInRole("Admin"))) {
-						<form @formname="submit-for-publish" method="post" @onsubmit="SubmitForPublish" class="max-sm:w-full">
-							<AntiforgeryToken />
-							<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Publish_Submit"]</button>
-							@if (Features.Value.EmailSubscriptions) {
-								<div class="form-control">
-									<label class="label cursor-pointer">
-										<span class="label-text">@Localizer["Publish_Silent_Label"]</span>
-										<InputCheckbox @bind-Value="PublishSilently" class="checkbox" />
-									</label>
-								</div>
-							}
-						</form>
-					}
-					<AuthorizeView Policy="ArticleDeletePermissions" Context="_">
-						<a class="btn btn-error w-full sm:btn-wide" href="/article/@Article.Id/delete">
-							@Localizer["Delete_Submit"]
-						</a>
-					</AuthorizeView>
-				</div>
-			</Authorized>
-			<NotAuthorized>
-				<ArticleComponent Article="@GetArticlePublic()" />
-			</NotAuthorized>
-		</AuthorizeView>
+		@if (GetArticle(HttpContext.User) is {} article) {
+			<ArticleComponent Article="@article"/>
+			
+			<div class="flex gap-2 mt-3 flex-wrap">
+				@if (article.AllowedToEdit(HttpContext.User)) {
+					<a class="btn btn-info w-full sm:btn-wide" href="article/@Article!.Id/edit"
+					   data-enhance-nav="false">@Localizer["Edit"]</a>
+				}
+				@if (article.AllowedToSubmitForReview(HttpContext.User)) {
+					<form @formname="submit-for-review" method="post" @onsubmit="SubmitForReview" class="max-sm:w-full">
+						<AntiforgeryToken/>
+						<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Review_Submit"]</button>
+					</form>
+				}
+				@if (article.AllowedToPublish(HttpContext.User)) {
+					<form @formname="submit-for-publish" method="post" @onsubmit="SubmitForPublish" class="max-sm:w-full">
+						<AntiforgeryToken/>
+						<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Publish_Submit"]</button>
+						@if (Features.Value.EmailSubscriptions && HttpContext.User.IsInRole("Admin")) {
+							<div class="form-control">
+								<label class="label cursor-pointer">
+									<span class="label-text">@Localizer["Publish_Silent_Label"]</span>
+									<InputCheckbox @bind-Value="PublishSilently" class="checkbox"/>
+								</label>
+							</div>
+						}
+					</form>
+				}
+				@if (article.AllowedToDelete(HttpContext.User)) {
+					<a class="btn btn-error w-full sm:btn-wide" href="/article/@article.Id/delete">
+						@Localizer["Delete_Submit"]
+					</a>
+				}
+			</div>
+		}
 	</ChildContent>
 	<ErrorContent>
 		<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["NotFound_Title"]</h1>
@@ -135,52 +129,11 @@
 
 	[CascadingParameter] 
 	public HttpContext HttpContext { get; set; } = default!;
-
-	private bool CanEdit { get; set; }
-
-	private Article GetArticlePublic() {
-		if (Article is null) throw new ApplicationException("Article not found.");
-		if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
-			return Article;
-		}
-		throw new ApplicationException("Article is not public.");
-	}
-
-	[SuppressMessage("ReSharper", "ConvertIfStatementToSwitchStatement")]
-	private Article GetArticleProtected(ClaimsPrincipal principal) {
-		if (Article is null) throw new ApplicationException("Article not found.");
-
-		// The Article is publicly available
-		if (Article.Status >= ArticleStatus.Published && Article.PublishDate <= DateTimeOffset.UtcNow) {
-			if (principal.IsInRole("Admin"))
-				CanEdit = true;
-			return Article;
-		}
-
-		// Admins always get access
-		if (principal.IsInRole("Admin")) {
-			CanEdit = true;
-			return Article;
-		}
-		
-		// You can only access your own drafts
-		if (Article.Status is ArticleStatus.Draft) {
-			if (Article.Author.Id == principal.FindFirst("Id")!.Value) {
-				CanEdit = true;
-				return Article;
-			}
-			throw new ApplicationException("Cannot access draft article without being author or admin.");
-		}
-		// InReview Articles can only be accessed by reviewers
-		if (Article.Status is ArticleStatus.InReview) {
-			if (principal.IsInRole("Reviewer")) {
-				CanEdit = true;
-				return Article;
-			}
-			throw new ApplicationException("Cannot access in-review article without being a reviewer or admin.");
-		}
-
-		throw new ApplicationException("User does not have access to this article.");
+	
+	private Article GetArticle(ClaimsPrincipal principal) {
+		if (Article.AllowedToRead(principal)) return Article!;
+	
+		throw new ApplicationException("Article not found or missing permissions.");
 	}
 
 	protected override void OnInitialized() {
@@ -207,10 +160,10 @@
 	}
 
 	private async Task SubmitForReview() {
-		if (Article is null) return;
+		if (Article.AllowedToSubmitForReview(HttpContext.User) is false) return;
 
 		await using var context = await ContextFactory.CreateDbContextAsync();
-		Article.Status = ArticleStatus.InReview;
+		Article!.Status = ArticleStatus.InReview;
 		context.Update(Article);
 		await context.SaveChangesAsync();
 		Message.ShowSuccess(Localizer["Submit_Review_Success"]);
@@ -224,6 +177,8 @@
 				await EmailService.ConnectAsync(CancellationToken.None);
 
 				foreach (var reviewer in reviewers) {
+					if (reviewer.Id == HttpContext.User.FindFirst("Id")!.Value) continue;
+
 					var email = await Email.CreateDefaultEmail(
 						reviewer.Email!, 
 						reviewer.Name, 
@@ -245,6 +200,8 @@
 	}
 
 	private async Task SubmitForPublish() {
+		if (Article.AllowedToPublish(HttpContext.User) is false) return;
+
 		await using var context = await ContextFactory.CreateDbContextAsync();
 		Article!.Status = ArticleStatus.Published;
 		string userId = HttpContext.User.FindFirst("Id")!.Value;
@@ -269,27 +226,30 @@
 		}
 
 		try {
-			await EmailService.ConnectAsync(CancellationToken.None);
 			var author = Article.Author;
 
-			string publishMessage = 
-				(Article.PublishDate < DateTimeOffset.Now) ?
-					"Is is now publicly available." : 
-					$"It is currently scheduled for {Article.PublishDate.ToString("f", CultureInfo.GetCultureInfo("en-US"))}.";
+			if (author.Id != HttpContext.User.FindFirst("Id")!.Value) {
+				await EmailService.ConnectAsync(CancellationToken.None);
 
-			var email = await Email.CreateDefaultEmail(
-				author.Email!, 
-				author.Name,
-				"Article has been approved", 
-				"Your Article is going to be published", 
-				$"<p>The Article '{Article.Title}' has been checked and approved by a reviewer.</p>" + 
-				$"<p>{publishMessage}</p>",
-				$"The Article '{Article.Title}' has been checked and approved by a reviewer. " +
-				publishMessage);
-			// TODO check if they enabled email notifications (property currently not implemented)
-			await EmailService.SendEmailAsync(email);
+				string publishMessage = 
+					(Article.PublishDate < DateTimeOffset.Now) ?
+						"Is is now publicly available." : 
+						$"It is currently scheduled for {Article.PublishDate.ToString("f", CultureInfo.GetCultureInfo("en-US"))}.";
 
-			await EmailService.DisconnectAsync(CancellationToken.None);
+				var email = await Email.CreateDefaultEmail(
+					author.Email!, 
+					author.Name,
+					"Article has been approved", 
+					"Your Article is going to be published", 
+					$"<p>The Article '{Article.Title}' has been checked and approved by a reviewer.</p>" + 
+					$"<p>{publishMessage}</p>",
+					$"The Article '{Article.Title}' has been checked and approved by a reviewer. " +
+					publishMessage);
+				// TODO check if they enabled email notifications (property currently not implemented)
+				await EmailService.SendEmailAsync(email);
+
+				await EmailService.DisconnectAsync(CancellationToken.None);
+			}
 		} catch (Exception ex) {
 			Logger.LogError(ex, "Failed to send mail to author about article '{title}' being published.", Article.Title);
 		}
