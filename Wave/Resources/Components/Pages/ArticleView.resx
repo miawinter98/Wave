@@ -149,4 +149,7 @@
     <data name="Delete_Warning" xml:space="preserve">
         <value>This will take down your Article. Please keep in mind that search engines may still have links to this article, which will produce error messages. The Article may still be accessable in some caches the next couple of hours.</value>
     </data>
+    <data name="Review_Reviewer_Any" xml:space="preserve">
+        <value>Anyone</value>
+    </data>
 </root>

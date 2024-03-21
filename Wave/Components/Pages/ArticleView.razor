@@ -60,10 +60,37 @@
 					<a class="btn btn-info w-full sm:btn-wide" href="article/@Article!.Id/edit"
 					   data-enhance-nav="false">@Localizer["Edit"]</a>
 				}
+				@if (article.AllowedToDelete(HttpContext.User)) {
+					<a class="btn btn-error w-full sm:btn-wide" href="/article/@article.Id/delete">
+						@Localizer["Delete_Submit"]
+					</a>
+				}
 				@if (article.AllowedToSubmitForReview(HttpContext.User)) {
 					<form @formname="submit-for-review" method="post" @onsubmit="SubmitForReview" class="max-sm:w-full">
 						<AntiforgeryToken/>
-						<button type="submit" class="btn btn-primary w-full sm:btn-wide">@Localizer["Review_Submit"]</button>
+						
+						@if (Reviewers.Count > 1) {
+							<div class="join join-vertical md:join-horizontal w-full">
+								<button type="submit" class="btn btn-primary flex-1 sm:btn-wide join-item">
+									@Localizer["Review_Submit"]
+								</button>
+								<InputSelect @bind-Value="ReviewerId" class="select select-bordered select-primary join-item">
+									<option value="" selected>@Localizer["Review_Reviewer_Any"]</option>
+									@foreach (var reviewer in Reviewers) {
+										if (reviewer.FullName is null) continue;
+
+										<option value="@reviewer.Id">
+											@reviewer.Name
+										</option>
+									}
+								</InputSelect>
+							</div>
+						} else {
+							<button type="submit" class="btn btn-primary w-full sm:btn-wide">
+								@Localizer["Review_Submit"]
+							</button>
+						}
+
 					</form>
 				}
 				@if (article.AllowedToPublish(HttpContext.User)) {
@@ -79,11 +106,6 @@
 							</div>
 						}
 					</form>
-				}
-				@if (article.AllowedToDelete(HttpContext.User)) {
-					<a class="btn btn-error w-full sm:btn-wide" href="/article/@article.Id/delete">
-						@Localizer["Delete_Submit"]
-					</a>
 				}
 			</div>
 		}
@@ -127,9 +149,14 @@
 	[Parameter, SupplyParameterFromForm(FormName = "submit-for-publish")]
 	public bool PublishSilently { get; set; }
 
+	[Parameter, SupplyParameterFromForm(FormName = "submit-for-review")]
+	public string ReviewerId { get; set; } = string.Empty;
+
 	[CascadingParameter] 
 	public HttpContext HttpContext { get; set; } = default!;
-	
+
+	private List<ApplicationUser> Reviewers { get; } = [];
+
 	private Article GetArticle(ClaimsPrincipal principal) {
 		if (Article.AllowedToRead(principal)) return Article!;
 	
@@ -159,35 +186,57 @@
 		}
 	}
 
+	protected override async Task OnInitializedAsync() {
+		Reviewers.AddRange([
+			.. await UserManager.GetUsersInRoleAsync("Reviewer"),
+			.. await UserManager.GetUsersInRoleAsync("Admin")
+		]);
+	}
+
 	private async Task SubmitForReview() {
 		if (Article.AllowedToSubmitForReview(HttpContext.User) is false) return;
 
 		await using var context = await ContextFactory.CreateDbContextAsync();
 		Article!.Status = ArticleStatus.InReview;
+
+		if (!string.IsNullOrWhiteSpace(ReviewerId)) {
+			Article.Reviewer = Reviewers.First(r => r.Id == ReviewerId);
+		}
+
 		context.Update(Article);
 		await context.SaveChangesAsync();
 		Message.ShowSuccess(Localizer["Submit_Review_Success"]);
 
 		try {
-			List<ApplicationUser> reviewers = [
-				.. await UserManager.GetUsersInRoleAsync("Reviewer"),
-				.. await UserManager.GetUsersInRoleAsync("Admin")
-			];
-			if (reviewers.Count > 0) {
+			if (Reviewers.Count > 0) {
 				await EmailService.ConnectAsync(CancellationToken.None);
 
-				foreach (var reviewer in reviewers) {
-					if (reviewer.Id == HttpContext.User.FindFirst("Id")!.Value) continue;
+				if (!string.IsNullOrWhiteSpace(ReviewerId) && Article.Reviewer is not null) {
+					if (Article.Reviewer.Id != HttpContext.User.FindFirst("Id")!.Value) {
+						var email = await Email.CreateDefaultEmail(
+							Article.Reviewer.Email!,
+							Article.Reviewer.Name,
+							"Article submitted for Review",
+							"Article submitted for Review",
+							$"<p>The Article '{Article.Title}' by {Article.Author.Name} has been submitted for review.</p>",
+							$"The Article '{Article.Title}' by {Article.Author.Name} has been submitted for review.");
+						// TODO check if they enabled email notifications (property currently not implemented)
+						await EmailService.SendEmailAsync(email);
+					}
+				} else {
+					foreach (var reviewer in Reviewers) {
+						if (reviewer.Id == HttpContext.User.FindFirst("Id")!.Value) continue;
 
-					var email = await Email.CreateDefaultEmail(
-						reviewer.Email!, 
-						reviewer.Name, 
-						"Article submitted for Review", 
-						"Article submitted for Review", 
-						$"<p>The Article '{Article.Title}' by {Article.Author.Name} has been submitted for review.</p>",
-						$"The Article '{Article.Title}' by {Article.Author.Name} has been submitted for review.");
-					// TODO check if they enabled email notifications (property currently not implemented)
-					await EmailService.SendEmailAsync(email);
+						var email = await Email.CreateDefaultEmail(
+							reviewer.Email!, 
+							reviewer.Name, 
+							"Article submitted for Review", 
+							"Article submitted for Review", 
+							$"<p>The Article '{Article.Title}' by {Article.Author.Name} has been submitted for review.</p>",
+							$"The Article '{Article.Title}' by {Article.Author.Name} has been submitted for review.");
+						// TODO check if they enabled email notifications (property currently not implemented)
+						await EmailService.SendEmailAsync(email);
+					}
 				}
 
 				await EmailService.DisconnectAsync(CancellationToken.None);

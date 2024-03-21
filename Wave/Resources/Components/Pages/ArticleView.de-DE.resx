@@ -149,4 +149,7 @@
     <data name="Delete_Warning" xml:space="preserve">
         <value>Ihr Artikel wird runtergenommen. Bitte beachten Sie das Suchmaschinen eventuell noch links zu diesem Artikel haben, welche dann eine Fehlernachricht produzieren. Der Artikel ist womöglich noch in manchen Caches für die nächsten paar Stunden auffindbar. </value>
     </data>
+    <data name="Review_Reviewer_Any" xml:space="preserve">
+        <value>Jeder</value>
+    </data>
 </root>

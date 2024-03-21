@@ -48,7 +48,15 @@ public static class Permissions {
 
 		// Reviewers can edit in-review articles
 		if (article.Status is ArticleStatus.InReview && principal.IsInRole("Reviewer")) {
-			return true;
+			// Nobody is reviewing this article yet
+			if (article.Reviewer is null || article.Reviewer.Id == article.Author.Id) {
+				return true;
+			} 
+			// This reviewer is the Reviewer of the article 
+			if (article.Reviewer?.Id == principal.FindFirst("Id")!.Value) {
+				return true;
+			}
+			return false;
 		}
 
 		// Moderators can edit published/-ing articles
@@ -107,7 +115,15 @@ public static class Permissions {
 		
 		// Reviewers can reject/delete in-review articles
 		if (article.Status is ArticleStatus.InReview && principal.IsInRole("Reviewer")) {
-			return true;
+			// Nobody is reviewing this article yet
+			if (article.Reviewer is null || article.Reviewer.Id == article.Author.Id) {
+				return true;
+			} 
+			// This reviewer is the Reviewer of the article 
+			if (article.Reviewer?.Id == principal.FindFirst("Id")!.Value) {
+				return true;
+			}
+			return false;
 		}
 
 		// Moderators can take down articles

@@ -81,12 +81,12 @@
 	</section>
 }
 
-<div class="flex gap-2 flex-wrap">
+<div class="flex gap-2 flex-wrap w-full">
 	@if (string.IsNullOrWhiteSpace(Article.Author.AboutTheAuthor)) {
 		<ProfilePill Profile="Article.Author" RoleTag="@Localizer["Author"]"/>
 	}
 	@if (Article.Reviewer is not null && Article.Reviewer.Id != Article.Author.Id) {
-		<ProfilePill Profile="Article.Reviewer" RoleTag="@Localizer["Reviewer"]"/>
+		<ProfilePill Profile="Article.Reviewer" RoleTag="@Localizer["Reviewer"]" DisableProfileLink="true" />
 	}
 </div>
 
