@@ -39,27 +39,27 @@ public class SitemapController(ApplicationDbContext context, IOptions<Features> 
 		XNamespace nameSpace = "http://www.sitemaps.org/schemas/sitemap/0.9";
 		var root = new XElement(nameSpace + "urlset");
 		if (articles.Count > 0) {
-			root.Add(CreateUrlElement(nameSpace, host, articles.Max(a => a.PublishDate).UtcDateTime, priority:1f));
+			root.Add(CreateUrlElement(nameSpace, host, articles.Max(a => a.PublishDate).UtcDateTime, ChangeFrequencies.Daily, 1.0f));
 
 			foreach (var article in articles) {
 				root.Add(CreateUrlElement(nameSpace, 
 					new Uri(ArticleUtilities.GenerateArticleLink(article, host)), 
-					article.PublishDate.UtcDateTime));
+					article.LastPublicChange.UtcDateTime, priority:0.8f));
 			}
 		} else {
-			root.Add(CreateUrlElement(nameSpace, host, DateTimeOffset.Now.UtcDateTime, priority:1f));
+			root.Add(CreateUrlElement(nameSpace, host, DateTimeOffset.Now.UtcDateTime, ChangeFrequencies.Daily, 1.0f));
 		}
 
 		foreach (var category in categories) {
 			root.Add(CreateUrlElement(nameSpace, 
 				new Uri(host, "/category/" + WebUtility.UrlEncode(category.Name)), 
-				category.LastModified.UtcDateTime));
+				category.LastModified.UtcDateTime, priority:0.2f));
 		}
 
 		foreach (var profile in profiles) {
 			root.Add(CreateUrlElement(nameSpace, 
 				new Uri(host, "/profile/" + profile.Id),
-				profile.LastModified.UtcDateTime));
+				profile.LastModified.UtcDateTime, ChangeFrequencies.Weekly, 0.6f));
 		}
 
 		root.Add(CreateUrlElement(nameSpace, new Uri(host, "/Account/Login")));
