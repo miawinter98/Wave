@@ -31,7 +31,7 @@
 		<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName" href="/rss/atom.xml">
 	}
 	
-	@if (Page > TotalPages) {
+	@if (Page >= TotalPages) {
 		<meta name="robots" content="noindex">
 	} else if (Page > 0) {
 		<link rel="canonical" href="@(new UriBuilder(Navigation.BaseUri) { Scheme = "https", Query = "?page=" + Page, Port = -1 }.Uri.AbsoluteUri)" />
@@ -166,7 +166,7 @@
 				.OrderByDescending(a => a.PublishDate).ThenBy(a => a.Id);
 
 			Featured = await query.FirstOrDefaultAsync();
-			TotalPages = (int) Math.Ceiling((await query.CountAsync() - 1) / 10.0);
+			TotalPages = (int) Math.Max(Math.Ceiling((await query.CountAsync() - 1) / 10.0), 1);
 		} catch {
 			Message.ShowError(Localizer["Articles_Load_Error"]);
 		}
