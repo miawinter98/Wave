@@ -5,7 +5,6 @@
 @using Humanizer
 @using Wave.Utilities
 
-@rendermode InteractiveServer
 @attribute [Authorize(Policy = "CategoryManagePermissions")]
 
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
@@ -16,23 +15,26 @@
 
 <ModalComponent Id="@ModalId">
 	<ChildContent>
-		<InputLabelComponent LabelText="@Localizer["Category_Label"]">
-			<InputText @bind-Value="Model.Name" required aria-required class="input input-bordered w-full"
-			           autocomplete="off" placeholder="@Localizer["Category_Name_Placeholder"]"/>
-		</InputLabelComponent>
-		<InputLabelComponent>
-			<InputSelect @bind-Value="Model.Color" required aria-required class="select select-bordered w-full">
-				@foreach (var color in Enum.GetValues<CategoryColors>()) {
-					string postfix = CategoryUtilities.GetCssClassPostfixForColor(color);
-					<option value="@color" class="text-@postfix-content bg-@postfix">
-						@Localizer["Category_Color_" + color]
-					</option>
-				}
-			</InputSelect>
-		</InputLabelComponent>
+		<form method="post" @onsubmit="@AddCategory" @formname="add-category" id="add-category">
+			<AntiforgeryToken />
+			<InputLabelComponent LabelText="@Localizer["Category_Label"]">
+				<InputText @bind-Value="Model.Name" required aria-required class="input input-bordered w-full"
+				           autocomplete="off" placeholder="@Localizer["Category_Name_Placeholder"]"/>
+			</InputLabelComponent>
+			<InputLabelComponent>
+				<InputSelect @bind-Value="Model.Color" required aria-required class="select select-bordered w-full">
+					@foreach (var color in Enum.GetValues<CategoryColors>()) {
+						string postfix = CategoryUtilities.GetCssClassPostfixForColor(color);
+						<option value="@color" class="text-@postfix-content bg-@postfix">
+							@Localizer["Category_Color_" + color]
+						</option>
+					}
+				</InputSelect>
+			</InputLabelComponent>
+		</form>
 	</ChildContent>
 	<Actions>
-		<button class="btn btn-primary" @onclick="AddCategory">@Localizer["Category_Submit"]</button>
+		<button type="submit" form="add-category" class="btn btn-primary">@Localizer["Category_Submit"]</button>
 	</Actions>
 </ModalComponent>
 
@@ -69,11 +71,16 @@ bg-error text-error-content
 					<span class="badge badge-@postfix">@category.Color.Humanize()</span>
 				</td>
 				<td>
-					<button type="button" class="btn btn-sm btn-square btn-error" title="delete" @onclick="async () => await DeleteCategory(category)">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-							<path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
-						</svg>
-					</button>
+					<form method="post" @formname="@category.Id.ToString()" @onsubmit="@DeleteCategory">
+						<AntiforgeryToken />
+						<input type="hidden" name="category-id" value="@category.Id" required />
+						
+						<button type="submit" class="btn btn-sm btn-square btn-error" title="delete">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+								<path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd"/>
+							</svg>
+						</button>
+					</form>
 				</td>
 			</tr>
 		}
@@ -84,14 +91,17 @@ bg-error text-error-content
 	[CascadingParameter(Name = "TitlePostfix")]
 	private string TitlePostfix { get; set; } = default!;
 
+	[SupplyParameterFromForm(FormName = "add-category")]
 	private InputModel Model { get; set; } = new();
+	[SupplyParameterFromForm(Name = "category-id")]
+	private Guid CategoryId { get; set; }
 	private List<Category> Categories { get; } = new();
 
 	private static string ModalId => "CreateCategoryDialog";
 
 	protected override async Task OnInitializedAsync() {
 		await using var context = await ContextFactory.CreateDbContextAsync();
-		(await context.Set<Category>().OrderBy(c => c.Color).ToListAsync()).ForEach(c => Categories.Add(c));
+		Categories.AddRange(await context.Set<Category>().OrderBy(c => c.Color).ToListAsync());
 	}
 
 	private async Task AddCategory() {
@@ -107,20 +117,25 @@ bg-error text-error-content
 			await context.SaveChangesAsync();
 			Categories.Add(category);
 			Categories.Sort((c1, c2) => c1.Color.CompareTo(c2.Color));
-			Model = new();
+			Model = new InputModel();
 			Message.ShowSuccess(Localizer["Category_Success"]);
 		} catch {
 			Message.ShowError(Localizer["Category_Error"]);
 		}
 	}
 
-	private async Task DeleteCategory(Category category) {
+	private async Task DeleteCategory() {
 		try {
 			await using var context = await ContextFactory.CreateDbContextAsync();
 
+			var category = await context.Set<Category>().FindAsync(CategoryId);
+			if (category is null) {
+				Message.ShowError(Localizer["Category_Delete_Error"]);
+				return;
+			}
 			context.Remove(category);
 			await context.SaveChangesAsync();
-			Categories.Remove(category);
+			Categories.RemoveAt(Categories.FindIndex(c => c.Id == CategoryId));
 			Message.ShowSuccess(Localizer["Category_Delete_Success"]);
 		} catch {
 			Message.ShowError(Localizer["Category_Delete_Error"]);
