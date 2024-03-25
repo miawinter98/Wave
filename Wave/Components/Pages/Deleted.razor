@@ -12,7 +12,7 @@
 
 <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
 
-<ArticleCardList Articles="Articles">
+<ArticleCardList Articles="Articles" HasArticleLink="false">
 	<Action Context="article">
 		<form method="post" @formname="@article.Id.ToString()" @onsubmit="Restore" class="w-full">
 			<AntiforgeryToken />
