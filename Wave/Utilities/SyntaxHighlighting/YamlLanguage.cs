@@ -11,17 +11,16 @@ public class YamlLanguage : ILanguage {
 	public string CssClassName => "yml";
 
 	public IList<LanguageRule> Rules { get; } = [
-		new LanguageRule(@"(?:\w+):", new Dictionary<int, string> {
-			{0, ColorCode.Common.ScopeName.XmlAttribute}
+		new LanguageRule(@"(?m)^\s*(#.*)$", new Dictionary<int, string> {
+			{1, ColorCode.Common.ScopeName.Comment}
 		}),
-		new LanguageRule(@"#(?:.*)\b", new Dictionary<int, string> {
-			{0, ColorCode.Common.ScopeName.Comment}
+		new LanguageRule(@"(?s)^(.+)(\-\-\-)", new Dictionary<int, string> {
+			{1, ColorCode.Common.ScopeName.XmlCDataSection}
 		}),
-		new LanguageRule("[^\\\\]\"(?:.*?)[^\\\\]\"", new Dictionary<int, string> {
-			{0, ColorCode.Common.ScopeName.String}
-		}),
-		new LanguageRule(@"\-(?:\s\w.+)\b", new Dictionary<int, string> {
-			{0, ColorCode.Common.ScopeName.XmlAttributeValue}
+		new LanguageRule("""(?m)^\s*(.+:|\- .+)( ".*")?( .+)?""", new Dictionary<int, string> {
+			{1, ColorCode.Common.ScopeName.XmlAttributeValue},
+			{2, ColorCode.Common.ScopeName.String},
+			{3, ColorCode.Common.ScopeName.XmlAttribute}
 		})
 	];
 	
