@@ -1,14 +1,43 @@
 ﻿@using Wave.Data
 @using Humanizer
 
-<article class="card card-side card-compact bg-base-200 text-base-content">
-	<figure class="shrink-0 max-md:!hidden sm:max-w-40">
-		<ArticleLink Article="Article">
-			<img src="/api/user/pfp/@Article.Author.Id" alt="" width="800">
-		</ArticleLink>
-	</figure>
-	<div class="card-body">
-		<ArticleLink Article="Article">
+@if (HasArticleLink) {
+	<ArticleLink Article="Article">
+		<article class="card card-side card-compact bg-base-200 text-base-content">
+			<figure class="shrink-0 max-md:!hidden sm:max-w-40">
+				<img src="/api/user/pfp/@Article.Author.Id?size=600" alt="" width="600">
+			</figure>
+			<div class="card-body">
+				<h2 class="card-title line-clamp-1">@Article.Title</h2>
+				<small>
+					@Article.PublishDate.ToString("d")
+					@if (Article.Status is not ArticleStatus.Published) {
+						<span class="badge badge-sm badge-warning ml-2">@Article.Status.Humanize()</span>
+					}
+				</small>
+				<p class="@(Article.Categories.Count > 0 ? "line-clamp-2" : "line-clamp-4")">
+					@Article.BodyPlain[..Math.Min(1000, Article.BodyPlain.Length)]
+				</p>
+				@if (Action is not null) {
+					<div class="card-actions w-full">
+						@Action(Article)
+					</div>
+				} else if (Article.Categories.Count > 0) {
+					<div class="card-actions flex flex-wrap gap-2">
+						@foreach (var category in Article.Categories.OrderBy(c => c.Color)) {
+							<CategoryBadgeComponent HasCategoryLink="false" Category="category" />
+						}
+					</div>
+				}
+			</div>
+		</article>
+	</ArticleLink>
+} else {
+	<article class="card card-side card-compact bg-base-200 text-base-content">
+		<figure class="shrink-0 max-md:!hidden sm:max-w-40">
+			<img src="/api/user/pfp/@Article.Author.Id?size=600" alt="" width="600">
+		</figure>
+		<div class="card-body">
 			<h2 class="card-title line-clamp-1">@Article.Title</h2>
 			<small>
 				@Article.PublishDate.ToString("d")
@@ -19,24 +48,26 @@
 			<p class="@(Article.Categories.Count > 0 ? "line-clamp-2" : "line-clamp-4")">
 				@Article.BodyPlain[..Math.Min(1000, Article.BodyPlain.Length)]
 			</p>
-		</ArticleLink>
-		@if (Action is not null) {
-			<div class="card-actions w-full">
-				@Action(Article)
-			</div>
-		} else if (Article.Categories.Count > 0) {
-			<div class="card-actions flex flex-wrap gap-2">
-				@foreach (var category in Article.Categories.OrderBy(c => c.Color)) {
-					<CategoryBadgeComponent Category="category" />
-				}
-			</div>
-		}
-	</div>
-</article>
+			@if (Action is not null) {
+				<div class="card-actions w-full">
+					@Action(Article)
+				</div>
+			} else if (Article.Categories.Count > 0) {
+				<div class="card-actions flex flex-wrap gap-2">
+					@foreach (var category in Article.Categories.OrderBy(c => c.Color)) {
+						<CategoryBadgeComponent HasCategoryLink="false" Category="category" />
+					}
+				</div>
+			}
+		</div>
+	</article>
+}
 
 @code {
 	[Parameter]
 	public required Article Article { get; set; }
 	[Parameter]
 	public RenderFragment<Article>? Action { get; set; }
+	[Parameter]
+	public bool HasArticleLink { get; set; } = true;
 }
