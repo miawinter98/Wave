@@ -128,7 +128,8 @@
 
 	protected override async Task OnInitializedAsync() {
 		await using var context = await ContextFactory.CreateDbContextAsync();
-		Categories = await context.Set<Category>().IgnoreQueryFilters().OrderBy(c => c.Color).ToListAsync();
+		if (Categories.Count < 1)
+			Categories = await context.Set<Category>().IgnoreQueryFilters().OrderBy(c => c.Color).ToListAsync();
 
 		Article? article = null;
 		if (Id is not null) {

@@ -6,6 +6,7 @@
 @using System.Security.Claims
 
 @rendermode @(new InteractiveServerRenderMode(true))
+@attribute [Authorize(Policy = "ArticleEditPermissions")]
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IStringLocalizer<ArticleEditor> Localizer
@@ -36,18 +37,22 @@
 	[CascadingParameter(Name = "TitlePostfix")]
 	private string TitlePostfix { get; set; } = default!;
 	[CascadingParameter]
-	private Task<AuthenticationState>? AuthenticationState { get; set; }
+	private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
 
 	[Parameter]
 	public Guid? Id { get; set; }
 	private ApplicationUser? User { get; set; }
 	private ClaimsPrincipal? ClaimsUser { get; set; }
-	
-	protected override async Task OnInitializedAsync() {
-		if (AuthenticationState is null) throw new ApplicationException("???");
-		var state = await AuthenticationState;
-		ClaimsUser = state.User;
-		var user = await UserManager.GetUserAsync(state.User);
-		User = user ?? throw new ApplicationException("???2");
+
+	protected override async Task OnAfterRenderAsync(bool firstRender) {
+		if (firstRender) {
+			if (User is not null) return;
+			var state = await AuthenticationState;
+			ClaimsUser = state.User;
+			var user = await UserManager.GetUserAsync(state.User);
+			User = user ?? throw new ApplicationException("???2");
+			await InvokeAsync(StateHasChanged);
+		}
 	}
+
 }
