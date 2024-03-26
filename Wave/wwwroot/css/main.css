@@ -36,7 +36,7 @@
     input.narrow-reading-toggle {
         display: none;
     }
-    input.narrow-reading-toggle:checked ~ .reading-toggle-target {
+    body:has(label[for=narrow-reading-toggle]) input.narrow-reading-toggle:checked + .reading-toggle-target {
         @apply max-w-3xl;
     }
 

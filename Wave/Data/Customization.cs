@@ -6,6 +6,7 @@ public class Customization {
     public string AppUrl { get; set; } = "http://localhost";
     public string DefaultTheme { get; set; } = "";
     public string DefaultLanguage { get; set; } = "";
+    public bool DefaultNarrowReader { get; set; } = false;
     public string LogoLink { get; set; } = "";
     public string Footer { get; set; } = "";
 }
