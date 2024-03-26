@@ -140,57 +140,6 @@
   <data name="ViewArticle_Label" xml:space="preserve">
     <value>Öffnen</value>
   </data>
-    <data name="Tools_H1_Label" xml:space="preserve">
-        <value>Ü1</value>
-    </data>
-    <data name="Tools_H1_Tooltip" xml:space="preserve">
-        <value>Primärüberschrift</value>
-    </data>
-    <data name="Tools_H2_Label" xml:space="preserve">
-        <value>Ü2</value>
-    </data>
-    <data name="Tools_H2_Tooltip" xml:space="preserve">
-        <value>Sekundärüberschrift</value>
-    </data>
-    <data name="Tools_H3_Label" xml:space="preserve">
-        <value>Ü3</value>
-    </data>
-    <data name="Tools_H3_Tooltip" xml:space="preserve">
-        <value>Level 3 Überschrift</value>
-    </data>
-    <data name="Tools_H4_Label" xml:space="preserve">
-        <value>Ü4</value>
-    </data>
-    <data name="Tools_H4_Tooltip" xml:space="preserve">
-        <value>Level 4 Überschrift</value>
-    </data>
-    <data name="Tools_StrikeThrough_Tooltip" xml:space="preserve">
-        <value>Text durchstreichen</value>
-    </data>
-    <data name="Tools_Cite_Label" xml:space="preserve">
-        <value>Zitat</value>
-    </data>
-    <data name="Tools_Italic_Tooltip" xml:space="preserve">
-        <value>Text kursiv stellen</value>
-    </data>
-    <data name="Tools_Cite_Tooltip" xml:space="preserve">
-        <value>Text als Zitat formattieren</value>
-    </data>
-    <data name="Tools_Bold_Tooltip" xml:space="preserve">
-        <value>Text hervorheben</value>
-    </data>
-    <data name="Tools_CodeLine_Tooltip" xml:space="preserve">
-        <value>Selektierten text als programmcode markieren</value>
-    </data>
-    <data name="Tools_CodeBlock_Tooltip" xml:space="preserve">
-        <value>Programmierblock einfügen</value>
-    </data>
-  <data name="Tools_Underline_Tooltip" xml:space="preserve">
-    <value>Text unterstreichen</value>
-  </data>
-  <data name="Tools_Mark_Tooltip" xml:space="preserve">
-    <value>Den selektierten Text markieren</value>
-  </data>
     <data name="Categories_Label" xml:space="preserve">
         <value>Kategorie</value>
     </data>

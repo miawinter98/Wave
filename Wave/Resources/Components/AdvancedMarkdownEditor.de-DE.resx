@@ -98,73 +98,55 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
-  <data name="PageTitle_New" xml:space="preserve">
-    <value>New Article</value>
-  </data>
-  <data name="PageTitle_Edit" xml:space="preserve">
-    <value>Edit</value>
-  </data>
-  <data name="EditorTitle" xml:space="preserve">
-    <value>Article Editor</value>
-  </data>
-  <data name="Title_Label" xml:space="preserve">
-    <value>Title</value>
-  </data>
-  <data name="Title_Placeholder" xml:space="preserve">
-    <value>My new cheese cake recipe</value>
-  </data>
-  <data name="PublishDate_Label" xml:space="preserve">
-    <value>Publish Date</value>
-  </data>
-  <data name="PublishDate_Placeholder" xml:space="preserve">
-    <value>When to release this Article after approval</value>
-  </data>
-  <data name="Body_Label" xml:space="preserve">
-    <value>Content</value>
-  </data>
-  <data name="Body_Placeholder" xml:space="preserve">
-    <value>First you preheat the oven...</value>
-  </data>
-  <data name="EditorSubmit" xml:space="preserve">
-    <value>Save</value>
-  </data>
-  <data name="Draft" xml:space="preserve">
-    <value>Draft</value>
-  </data>
-  <data name="InReview" xml:space="preserve">
-    <value>In Review</value>
-  </data>
-  <data name="Published" xml:space="preserve">
-    <value>Published</value>
-  </data>
-  <data name="ViewArticle_Label" xml:space="preserve">
-    <value>Open</value>
-  </data>
-    <data name="Categories_Label" xml:space="preserve">
-        <value>Category</value>
+    <data name="Tools_Bold_Tooltip" xml:space="preserve">
+        <value>Text hervorheben</value>
     </data>
-    <data name="Image_Add_Label" xml:space="preserve">
-        <value>Upload Image</value>
+    <data name="Tools_Cite_Label" xml:space="preserve">
+        <value>Zitat</value>
     </data>
-    <data name="Image_Description_Label" xml:space="preserve">
-        <value>Image Description</value>
+    <data name="Tools_Cite_Tooltip" xml:space="preserve">
+        <value>Text als Zitat formattieren</value>
     </data>
-    <data name="Image_Description_Placeholder" xml:space="preserve">
-        <value>A picture of a cheesecake</value>
+    <data name="Tools_CodeBlock_Tooltip" xml:space="preserve">
+        <value>Programmierblock einfügen</value>
     </data>
-    <data name="Image_Add_Submit" xml:space="preserve">
-        <value>Add</value>
+    <data name="Tools_CodeLine_Tooltip" xml:space="preserve">
+        <value>Selektierten text als programmcode markieren</value>
     </data>
-    <data name="Image_Add_Abort" xml:space="preserve">
-        <value>Close</value>
+    <data name="Tools_H1_Label" xml:space="preserve">
+        <value>Ü1</value>
     </data>
-    <data name="Save_Success" xml:space="preserve">
-        <value>Article Saved</value>
+    <data name="Tools_H1_Tooltip" xml:space="preserve">
+        <value>Primärüberschrift</value>
     </data>
-    <data name="Save_Error" xml:space="preserve">
-        <value>Unknown error saving article</value>
+    <data name="Tools_H2_Label" xml:space="preserve">
+        <value>Ü2</value>
     </data>
-    <data name="Image_CopyLink" xml:space="preserve">
-        <value>Copy Link</value>
+    <data name="Tools_H2_Tooltip" xml:space="preserve">
+        <value>Sekundärüberschrift</value>
     </data>
+    <data name="Tools_H3_Label" xml:space="preserve">
+        <value>Ü3</value>
+    </data>
+    <data name="Tools_H3_Tooltip" xml:space="preserve">
+        <value>Level 3 Überschrift</value>
+    </data>
+    <data name="Tools_H4_Label" xml:space="preserve">
+        <value>Ü4</value>
+    </data>
+    <data name="Tools_H4_Tooltip" xml:space="preserve">
+        <value>Level 4 Überschrift</value>
+    </data>
+    <data name="Tools_Italic_Tooltip" xml:space="preserve">
+        <value>Text kursiv stellen</value>
+    </data>
+    <data name="Tools_Mark_Tooltip" xml:space="preserve">
+    <value>Den selektierten Text markieren</value>
+  </data>
+    <data name="Tools_StrikeThrough_Tooltip" xml:space="preserve">
+        <value>Text durchstreichen</value>
+    </data>
+    <data name="Tools_Underline_Tooltip" xml:space="preserve">
+    <value>Text unterstreichen</value>
+  </data>
 </root>
