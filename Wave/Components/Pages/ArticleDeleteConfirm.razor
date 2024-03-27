@@ -1,8 +1,7 @@
 ﻿@page "/article/{id:guid}/delete"
 @using Microsoft.EntityFrameworkCore
 @using Wave.Data
-
-@attribute [Authorize(Policy = "ArticleDeletePermissions")]
+@using Wave.Utilities
 
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject NavigationManager Navigation
@@ -36,6 +35,8 @@
 @code {
 	[CascadingParameter(Name = "TitlePostfix")]
 	private string TitlePostfix { get; set; } = default!;
+	[CascadingParameter]
+	public HttpContext HttpContext { get; set; } = default!;
 
 	[Parameter]
 	public Guid Id { get; set; }
@@ -45,15 +46,16 @@
 	protected override async Task OnInitializedAsync() {
 		await using var context = await ContextFactory.CreateDbContextAsync();
 
-		Article = await context.Set<Article>().IgnoreQueryFilters()
+		var article = await context.Set<Article>().IgnoreQueryFilters()
 			.Where(a => !a.IsDeleted).FirstOrDefaultAsync(a => a.Id == Id);
+		if (article.AllowedToDelete(HttpContext.User)) Article = article;
 	}
 
 	private async Task Delete() {
-		if (Article is null) return;
+		if (Article.AllowedToDelete(HttpContext.User)) return;
 
 		var context = await ContextFactory.CreateDbContextAsync();
-		Article.IsDeleted = true;
+		Article!.IsDeleted = true;
 		context.Entry(Article).State = EntityState.Modified;
 		await context.SaveChangesAsync();
 
