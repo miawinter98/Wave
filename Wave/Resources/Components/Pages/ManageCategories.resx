@@ -143,4 +143,13 @@
     <data name="Category_Delete_Error" xml:space="preserve">
         <value>Could not delete Category, is it still used?</value>
     </data>
+    <data name="Delete_Label" xml:space="preserve">
+        <value>Delete category</value>
+    </data>
+    <data name="Name" xml:space="preserve">
+        <value>Name of Category</value>
+    </data>
+    <data name="Type" xml:space="preserve">
+        <value>Type of Category</value>
+    </data>
 </root>
