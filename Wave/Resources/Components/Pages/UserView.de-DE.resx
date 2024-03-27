@@ -119,4 +119,10 @@
   <data name="ProfileNotPublic_Message" xml:space="preserve">
     <value>Ihr Profil ist momentan nicht öffentlich einsehbar. </value>
   </data>
+    <data name="Meta_Description" xml:space="preserve">
+        <value>Authorenprofil von {0} auf {1}</value>
+    </data>
+    <data name="Meta_OpenGraph_Title" xml:space="preserve">
+        <value>{0} auf {1}</value>
+    </data>
 </root>
