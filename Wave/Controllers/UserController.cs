@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
@@ -34,24 +33,5 @@ public class UserController(ImageService imageService, IDbContextFactory<Applica
 
 		if (size < 800) return File(await ImageService.GetResized(path, size), ImageService.ImageMimeType);
 		return File(System.IO.File.OpenRead(path), ImageService.ImageMimeType);
-	}
-	
-	[HttpPost("link/{linkId:int}")]
-	[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-	public async Task<IActionResult> DeleteUserLink(int linkId, [FromServices] UserManager<ApplicationUser> userManager) {
-		if (!string.Equals(Request.Form["_method"], "delete", StringComparison.InvariantCultureIgnoreCase))
-			return BadRequest();
-
-		string returnUrl = Request.Form["ReturnUrl"].FirstOrDefault() ?? string.Empty;
-
-		var user = await userManager.GetUserAsync(User);
-		if (user is null) return Unauthorized();
-
-		var link = user.Links.FirstOrDefault(l => l.Id == linkId);
-		if (link is null) return NotFound();
-
-		user.Links.Remove(link);
-		await userManager.UpdateAsync(user);
-		return LocalRedirect(string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl);
 	}
 }
