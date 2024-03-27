@@ -128,4 +128,7 @@
     <data name="Delete_Error" xml:space="preserve">
         <value>Unerwarteter Fehler beim Versuch einen API-Schlüssel zu löschen</value>
     </data>
+    <data name="Key_Label" xml:space="preserve">
+        <value>API-Schlüssel erstellen</value>
+    </data>
 </root>

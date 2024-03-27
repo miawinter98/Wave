@@ -131,4 +131,7 @@
     <data name="Delete_Success" xml:space="preserve">
         <value>API Key has been deleted</value>
     </data>
+    <data name="Key_Label" xml:space="preserve">
+        <value>Create API Key</value>
+    </data>
 </root>
