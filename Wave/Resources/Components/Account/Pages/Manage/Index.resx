@@ -201,4 +201,7 @@ I started cooking at the young age of 7...</value>
   <data name="Contact_Error" xml:space="preserve">
     <value>Error updated contact information</value>
   </data>
+    <data name="Links_Label" xml:space="preserve">
+        <value>Add Link</value>
+    </data>
 </root>

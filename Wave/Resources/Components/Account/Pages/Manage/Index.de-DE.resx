@@ -201,4 +201,7 @@ Ich koche seit dem jungen Alter von 7...</value>
   <data name="Contact_Phone_Placeholder" xml:space="preserve">
     <value>+49 555 5555 555</value>
   </data>
+    <data name="Links_Label" xml:space="preserve">
+        <value>Link Hinzufügen</value>
+    </data>
 </root>
