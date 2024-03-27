@@ -1,11 +1,15 @@
-name: Create Release
+name: GitHub Release
 
 on:
   push:
     tags: [ v* ]
+  workflow_run:
+    workflows: ["Docker Release"]
+    types: [completed]
 
 jobs:
   build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     permissions:
