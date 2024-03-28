@@ -187,8 +187,8 @@ if (emailConfig?.Smtp.Count > 0) {
 	}
 
 	foreach (var smtp in emailConfig.Smtp) {
-		builder.Services.AddKeyedScoped<IEmailService, LiveEmailService>(smtp.Key.ToLower(), (provider, key) => 
-			ActivatorUtilities.CreateInstance<LiveEmailService>(provider, 
+		builder.Services.AddKeyedScoped<IEmailService, SmtpEmailService>(smtp.Key.ToLower(), (provider, key) => 
+			ActivatorUtilities.CreateInstance<SmtpEmailService>(provider, 
 				provider.GetRequiredService<IOptions<EmailConfiguration>>().Value.Smtp[(string)key]));
 	}
 

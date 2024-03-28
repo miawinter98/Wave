@@ -6,8 +6,8 @@ using Wave.Data;
 
 namespace Wave.Services;
 
-public class LiveEmailService(ILogger<LiveEmailService> logger, IOptions<EmailConfiguration> emailConfiguration, SmtpConfiguration configuration) : IEmailService {
-	private ILogger<LiveEmailService> Logger { get; } = logger;
+public class SmtpEmailService(ILogger<SmtpEmailService> logger, IOptions<EmailConfiguration> emailConfiguration, SmtpConfiguration configuration) : IEmailService {
+	private ILogger<SmtpEmailService> Logger { get; } = logger;
 	private EmailConfiguration EmailConfiguration { get; } = emailConfiguration.Value;
 	private SmtpConfiguration Configuration { get; } = configuration;
 
@@ -44,35 +44,40 @@ public class LiveEmailService(ILogger<LiveEmailService> logger, IOptions<EmailCo
 	}
 
 	public async ValueTask SendEmailAsync(IEmail email) {
-		try {
-			if (Client is null) throw new ApplicationException("Not connected.");
-
-			var message = new MimeMessage {
-				From = { new MailboxAddress(EmailConfiguration.SenderName, EmailConfiguration.SenderEmail) },
-				To = { new MailboxAddress(email.ReceiverName, email.ReceiverEmail) },
-				Subject = email.Subject
-			};
-			var builder = new BodyBuilder {
-				HtmlBody = email.ContentHtml,
-				TextBody = email.ContentPlain
-			};
-			message.Body = builder.ToMessageBody();
-			foreach ((string id, string value) in email.Headers) {
-				if (id == HeaderId.ListUnsubscribe.ToHeaderName()) {
-					message.Headers.Add(HeaderId.ListId, $"<mailto:{EmailConfiguration.ServiceEmail ?? EmailConfiguration.SenderEmail}>");
-				}
-				message.Headers.Add(id, value);
+		if (Client is null) throw new ApplicationException("Not connected.");
+		
+		var message = new MimeMessage {
+			From = { new MailboxAddress(EmailConfiguration.SenderName, EmailConfiguration.SenderEmail) },
+			To = { new MailboxAddress(email.ReceiverName, email.ReceiverEmail) },
+			Subject = email.Subject
+		};
+		var builder = new BodyBuilder {
+			HtmlBody = email.ContentHtml,
+			TextBody = email.ContentPlain
+		};
+		message.Body = builder.ToMessageBody();
+		foreach ((string id, string value) in email.Headers) {
+			if (id == HeaderId.ListUnsubscribe.ToHeaderName()) {
+				message.Headers.Add(HeaderId.ListId, $"<mailto:{EmailConfiguration.ServiceEmail ?? EmailConfiguration.SenderEmail}>");
 			}
+			message.Headers.Add(id, value);
+		}
 
+		int retryCount = 0;
+		while (retryCount < 3) {
 			try {
 				await Client.SendAsync(message);
 				Logger.LogInformation("Successfully send mail to {email} (subject: {subject}).",
 					email.ReceiverEmail, email.Subject);
+				return;
 			} catch (Exception ex) {
-				throw new EmailNotSendException("Failed Email send.", ex);
+				retryCount++;
+				Logger.LogWarning(ex, "Error sending E-Mail to {email}. Try: {RetryCount}.", 
+					email.ReceiverEmail, retryCount);
 			}
-		} catch (Exception ex) {
-			Logger.LogError(ex, "Error sending E-Mail");
 		}
+		// TODO enqueue for re-sending or throw exception if applicable and handle hard bounce
+		// throw new EmailNotSendException();
+		Logger.LogError("Giving up");
 	}
 }
