@@ -52,7 +52,7 @@
 	}
 
 	private async Task Delete() {
-		if (Article.AllowedToDelete(HttpContext.User)) return;
+		if (!Article.AllowedToDelete(HttpContext.User)) return;
 
 		var context = await ContextFactory.CreateDbContextAsync();
 		Article!.IsDeleted = true;
