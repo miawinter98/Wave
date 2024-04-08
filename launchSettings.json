@@ -4,7 +4,19 @@
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
       "serviceActions": {
-        "web": "StartDebugging"
+        "web": "StartDebugging",
+        "database": "StartWithoutDebugging",
+        "mailhog": "DoNotStart",
+        "redis": "StartWithoutDebugging"
+      }
+    },
+    "SMTP Debugging": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "composeProfile": {
+        "includes": [
+          "smtp-debug"
+        ]
       }
     }
   }

@@ -43,6 +43,15 @@ services:
     networks:
       - wave
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - 8080:8025
+    profiles: ["smtp-debug"]
+    networks:
+      - wave
+
 volumes:
   wave-files:
   wave-config:
