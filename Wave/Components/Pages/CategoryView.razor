@@ -42,10 +42,22 @@
 	protected override async Task OnInitializedAsync() {
 		await using var context = await ContextFactory.CreateDbContextAsync();
 		string category = WebUtility.UrlDecode(CategoryName);
-		await context.Set<Category>().LoadAsync();
+		var now = DateTimeOffset.UtcNow;
+		// First load Category with simple chain and manual filters, as to minimize 
+		// filter redundancy and query complexity (category -> Articles -> Author is linear)
 		Category = await context.Set<Category>()
-			.Include(c => c.Articles).ThenInclude(a => a.Author)
-			.Include(c => c.Articles).ThenInclude(a => a.Categories)
+			.IgnoreAutoIncludes().IgnoreQueryFilters()
+			.Include(c => c.Articles.Where(a => !a.IsDeleted && a.PublishDate <= now))
+			.ThenInclude(a => a.Author)
 			.FirstOrDefaultAsync(c => c.Name == category);
+		// Load all the other categories missing on the articles, by loading all relevant 
+		// articles ID with their categories, so EF can map them to the already loaded entries 
+		// (again manual filter to minimize redundancy)
+		await context.Set<Article>()
+			.IgnoreAutoIncludes().IgnoreQueryFilters()
+			.Where(a => !a.IsDeleted && a.PublishDate <= now && a.Categories.Contains(Category!))
+			.Select(a => new {
+				a.Id, a.Categories
+			}).LoadAsync();
 	}
 }

@@ -164,25 +164,22 @@
 	}
 
 	protected override void OnInitialized() {
+		using var context = ContextFactory.CreateDbContext();
+		var query = context.Set<Article>()
+			.IgnoreQueryFilters().Where(a => !a.IsDeleted)
+			.Include(a => a.Author)
+			.Include(a => a.Reviewer)
+			.Include(a => a.Categories);
+
 		// We need blocking calls here, bc otherwise Blazor will execute Render in parallel,
 		// running into a null pointer on the Article property and panicking
 		if (Id is not null) {
-			using var context = ContextFactory.CreateDbContext();
-			Article = context.Set<Article>()
-				.IgnoreQueryFilters().Where(a => !a.IsDeleted)
-				.Include(a => a.Author)
-				.Include(a => a.Reviewer)
-				.Include(a => a.Categories)
-				.FirstOrDefault(a => a.Id == Id);
+			Article = query.AsSingleQuery().FirstOrDefault(a => a.Id == Id);
 		} else if (Date is { } date && Title is { } title) {
-			using var context = ContextFactory.CreateDbContext();
 			string? slug = TitleEncoded == null ? null : Uri.EscapeDataString(TitleEncoded);
-			Article ??= context.Set<Article>()
-				.IgnoreQueryFilters().Where(a => !a.IsDeleted)
-				.Include(a => a.Author)
-				.Include(a => a.Reviewer)
-				.Include(a => a.Categories)
-				.FirstOrDefault(a => a.PublishDate.Date == date.Date && (slug != null && a.Slug == slug || a.Title.ToLower() == title));
+			Article = query.AsSingleQuery().FirstOrDefault(a =>
+				a.PublishDate.Date == date.Date 
+				&& (slug != null && a.Slug == slug || a.Title.ToLower() == title));
 		}
 	}
 

@@ -93,13 +93,20 @@
 
 		// Find user
 		if (Id is not null) {
-			User = await context.Users.Include(u => u.Articles)
-				.ThenInclude(a => a.Categories)
+			var now = DateTimeOffset.UtcNow;
+			User = await context.Users
+				.IgnoreAutoIncludes().IgnoreQueryFilters()
+				.Include(u => u.Articles.Where(a => !a.IsDeleted && a.PublishDate <= now))
 				.FirstOrDefaultAsync(u => u.Id == Id.ToString());
+			await context.Set<Article>()
+				.Where(a => a.Author.Id == Id.ToString())
+				.Select(a => new { 
+					a.Id, a.Categories
+				}).LoadAsync();
 		}
 
 		// Validate access to user
-		if (User is not null && User.Articles.Count > 0) {
+		if (User is not null && (User.Articles.Count > 0 || HttpContext.User.IsInRole("Admin"))) {
 		} else if (User is not null && HttpContext.User.FindFirst("Id")?.Value == User.Id) {
 			Message.ShowWarning(Localizer["ProfileNotPublic_Message"]);
 		} else {

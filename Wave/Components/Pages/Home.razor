@@ -161,11 +161,14 @@
 		try {
 			await using var context = await ContextFactory.CreateDbContextAsync();
 
-			var query = context.Set<Article>()
-				.Include(a => a.Author).Include(a => a.Categories)
-				.OrderByDescending(a => a.PublishDate).ThenBy(a => a.Id);
+			var query = context.Set<Article>();
 
-			Featured = await query.FirstOrDefaultAsync();
+			Featured = await query
+				.Include(a => a.Author)
+				.Include(a => a.Categories)
+				.OrderByDescending(a => a.PublishDate).ThenBy(a => a.Id)
+				.AsSplitQuery()
+				.FirstOrDefaultAsync();
 			TotalPages = (int) Math.Max(Math.Ceiling((await query.CountAsync() - 1) / 10.0), 1);
 		} catch {
 			Message.ShowError(Localizer["Articles_Load_Error"]);
@@ -178,6 +181,7 @@
 			return await context.Set<Article>()
 				.Include(a => a.Author).Include(a => a.Categories)
 				.OrderByDescending(a => a.PublishDate).ThenBy(a => a.Id)
+				.AsSplitQuery()
 				.Skip(page + 1).Take(count).ToListAsync();
 		} catch {
 			Message.ShowError(Localizer["Articles_Load_Error"]);
