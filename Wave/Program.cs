@@ -19,15 +19,27 @@ using Wave.Data;
 using Wave.Services;
 using Wave.Utilities;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.Grafana.Loki;
+
+#region Version Information
 
 string humanReadableVersion = Assembly.GetEntryAssembly()?
 	.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
 	.InformationalVersion.Split("+", 2)[0] ?? "unknown";
-Console.WriteLine(@"Starting Wave " + humanReadableVersion);
 
-var logMessages = new List<string>();
+#endregion
 
 var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+	.Enrich.FromLogContext()
+	.WriteTo.Console()
+	.CreateBootstrapLogger();
+var logger = Log.Logger.ForContext<Program>();
+logger.Information("Starting Wave {WaveVersion}", humanReadableVersion);
+builder.Services.AddCascadingValue("Version", _ => humanReadableVersion);
+
 builder.Configuration
 	.AddJsonFile(Path.Combine(FileSystemService.ConfigurationDirectory, "config.json"), true, false)
 	.AddYamlFile(Path.Combine(FileSystemService.ConfigurationDirectory, "config.yml"), true, false)
@@ -35,7 +47,28 @@ builder.Configuration
 	.AddIniFile( Path.Combine(FileSystemService.ConfigurationDirectory, "config.ini"), true, false)
 	.AddXmlFile( Path.Combine(FileSystemService.ConfigurationDirectory, "config.xml"), true, false)
 	.AddEnvironmentVariables("WAVE_");
-builder.Services.AddCascadingValue("Version", _ => humanReadableVersion);
+
+#region Logging
+
+builder.Services.AddSerilog((services, configuration) => {
+	configuration
+		.MinimumLevel.Verbose()
+		.ReadFrom.Services(services)
+		.Enrich.WithProperty("Application", "Wave")
+		.Enrich.WithProperty("WaveVersion", humanReadableVersion)
+		.Enrich.WithProperty("AppName", 
+			builder.Configuration.GetSection(nameof(Customization))[nameof(Customization.AppName)])
+		.Enrich.FromLogContext();
+	if (builder.Configuration["loki"] is {} lokiConfiguration) { 
+		configuration.WriteTo.GrafanaLoki(lokiConfiguration, null, [
+			"Application", "WaveVersion", "AppName", "level", "SourceContext", "RequestId", "RequestPath"
+		], restrictedToMinimumLevel:LogEventLevel.Debug);
+	} else {
+		configuration.WriteTo.Console(restrictedToMinimumLevel:LogEventLevel.Information);
+	}
+});
+
+#endregion
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers(options => {
@@ -63,12 +96,12 @@ if (builder.Configuration.GetConnectionString("Redis") is { } redisUri) {
 	});
 } else {
 	builder.Services.AddDataProtection()
-		.UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration() {
+		.UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration {
 			EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
 			ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
 		});
 	builder.Services.AddDistributedMemoryCache();
-	logMessages.Add("No Redis connection string found.");
+	logger.Warning("No Redis connection string found, running in-memory.");
 }
 
 #endregion
@@ -197,7 +230,7 @@ if (emailConfig?.Smtp.Count > 0) {
 		builder.Services.AddScoped<IEmailSender<ApplicationUser>, IdentityEmailSender>();
 	} else {
 		builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-		logMessages.Add("No 'live' email provider configured.");
+		logger.Warning("No 'live' email provider configured.");
 	}
 
 	if (emailConfig.Smtp.Keys.Any(k => k.Equals("bulk", StringComparison.CurrentCultureIgnoreCase))) {
@@ -211,13 +244,16 @@ if (emailConfig?.Smtp.Count > 0) {
 } else {
 	builder.Services.AddSingleton<IEmailService, NoOpEmailService>();
 	builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-	logMessages.Add("No email provider configured.");
+	logger.Warning("No email provider configured.");
 }
 
 builder.Services.AddSingleton<IMessageDisplay, MessageService>();
 builder.Services.AddSingleton<FileSystemService>();
 
+
 #endregion
+
+#region Localization
 
 var customization = builder.Configuration.GetSection(nameof(Customization)).Get<Customization>();
 string[] cultures = ["en-US", "en-GB", "de-DE"];
@@ -232,6 +268,8 @@ builder.Services.Configure<RequestLocalizationOptions>(options => {
 		.AddSupportedUICultures(cultures);
 });
 
+#endregion
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -241,6 +279,7 @@ if (app.Environment.IsDevelopment()) {
 	app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
 
+app.UseSerilogRequestLogging();
 
 app.UseStaticFiles(new StaticFileOptions {
 	ContentTypeProvider = new FileExtensionContentTypeProvider {
@@ -263,10 +302,6 @@ app.UseOutputCache();
 
 app.UseRequestLocalization();
 
-foreach (string message in logMessages) {
-	app.Logger.LogInformation("{message}", message);
-}
-
 {
 	using var scope = app.Services.CreateScope();
 	await using var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -276,13 +311,13 @@ foreach (string message in logMessages) {
 	if (userManager.GetUsersInRoleAsync("Admin").Result.Any() is false) {
 		var cache = app.Services.GetRequiredService<IDistributedCache>();
 
-		// Check first wheter the password exists already
+		// Check first whether the password exists already
 		string? admin = await cache.GetStringAsync("admin_promote_key");
 
 		// If it does not exist, create a new one and save it to redis
 		if (string.IsNullOrWhiteSpace(admin)){
 			admin = Guid.NewGuid().ToString("N")[..16];
-			await cache.SetAsync("admin_promote_key", Encoding.UTF8.GetBytes(admin), new DistributedCacheEntryOptions{});
+			await cache.SetAsync("admin_promote_key", Encoding.UTF8.GetBytes(admin), new DistributedCacheEntryOptions());
 		}
 
 		app.Logger.LogWarning("There is currently no user in your installation with the admin role, " +

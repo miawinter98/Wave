@@ -16,13 +16,15 @@ services:
       - "TZ=Europe/Berlin"
       - "WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development; Include Error Detail=true"
       - "WAVE_ConnectionStrings__Redis=redis,password=development"
+      - "WAVE_Loki=http://loki:3100"
     volumes:
       - wave-files:/app/files
       - wave-config:/configuration
-    networks:
-      - wave
     depends_on:
-      - database
+      database:
+        condition: service_started
+      loki:
+        condition: service_healthy
   database:
     image: postgres:16.1-alpine
     restart: unless-stopped
@@ -32,16 +34,36 @@ services:
       - "POSTGRES_PASSWORD=development"
     volumes:
       -  wave-db:/var/lib/postgresql/data
-    networks:
-      - wave 
   redis:
     image: redis:7-alpine
     restart: unless-stopped
     command: redis-server --requirepass development --save 60 1 --loglevel warning
     volumes:
       - wave-redis:/data
-    networks:
-      - wave
+
+  loki:
+    image: grafana/loki:master
+    ports:
+      - 3100:3100
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:3100/ready 
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+  grafana:
+    image: grafana/grafana:master
+    ports:
+      - 3000:3000
+    volumes:
+      - ./provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    depends_on:
+      loki:
+        condition: service_healthy
 
   mailhog:
     image: mailhog/mailhog:latest
@@ -49,13 +71,9 @@ services:
     ports:
       - 8080:8025
     profiles: ["smtp-debug"]
-    networks:
-      - wave
 
 volumes:
   wave-files:
   wave-config:
   wave-db:
   wave-redis:
-networks:
-  wave:
