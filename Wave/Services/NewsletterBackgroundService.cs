@@ -13,7 +13,7 @@ public class NewsletterBackgroundService(ILogger<NewsletterBackgroundService> lo
 
 	public async ValueTask DoWork(CancellationToken cancellationToken) {
 		try {
-			Logger.LogInformation("Checking Articles...");
+			Logger.LogDebug("Checking Articles...");
 
 			await using var context = await ContextFactory.CreateDbContextAsync(cancellationToken);
 			var now = DateTimeOffset.UtcNow;
