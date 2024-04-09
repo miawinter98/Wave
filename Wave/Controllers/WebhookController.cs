@@ -16,9 +16,13 @@ public class WebhookController(ILogger<WebhookController> logger, ApplicationDbC
 		foreach (var webhookEvent in webhook.Events) {
 			var subscriber = await context.Set<EmailSubscriber>().FirstOrDefaultAsync(s => s.Email == webhookEvent.Email);
 
+			logger.LogDebug("Received Webhook event {EventType} for {email}", 
+				webhookEvent.Type, webhookEvent.Email);
+
 			if (subscriber is null) {
 				logger.LogWarning(
-					"Received webhook event from mailtrap of type {type}, but failed to find subscriber with E-Mail {email}.", 
+					"Received webhook event from mailtrap of type {EventType}, " +
+					"but failed to find subscriber with E-Mail {email}.", 
 					webhookEvent.Type, webhookEvent.Email);
 				continue;
 			}
@@ -51,12 +55,16 @@ public class WebhookController(ILogger<WebhookController> logger, ApplicationDbC
 					subscriber.Unsubscribed = true;
 					subscriber.UnsubscribeReason ??= webhookEvent.Reason?.Humanize().Titleize() ?? "Rejected";
 					break;
+				case WebhookEventType.SoftBounce:
+				case WebhookEventType.Click:
 				default:
-					logger.LogInformation("Received unsupported event {EventType}. Skipping.", webhookEvent.Type);
+					logger.LogInformation("Received unsupported event {EventType} for {email}. Skipping.", webhookEvent.Type, webhookEvent.Email);
 					return Ok();
 			}
 
 			await context.SaveChangesAsync();
+			logger.LogDebug("Webhook event {EventType} for {email} processed successfully.",
+				webhookEvent.Type, webhookEvent.Email);
 		}
 
 
