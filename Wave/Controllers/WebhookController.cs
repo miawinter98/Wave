@@ -13,7 +13,6 @@ public class WebhookController(ILogger<WebhookController> logger, ApplicationDbC
 	[HttpPost("mailtrap/{apiKey}")]
 	[Authorize("EmailApi", AuthenticationSchemes = "ApiKeyInRoute")]
 	public async Task<IActionResult> Mailtrap(Webhook webhook, string apiKey) {
-		Console.WriteLine(apiKey);
 		foreach (var webhookEvent in webhook.Events) {
 			var subscriber = await context.Set<EmailSubscriber>().FirstOrDefaultAsync(s => s.Email == webhookEvent.Email);
 
@@ -52,6 +51,9 @@ public class WebhookController(ILogger<WebhookController> logger, ApplicationDbC
 					subscriber.Unsubscribed = true;
 					subscriber.UnsubscribeReason ??= webhookEvent.Reason?.Humanize().Titleize() ?? "Rejected";
 					break;
+				default:
+					logger.LogInformation("Received unsupported event {EventType}. Skipping.", webhookEvent.Type);
+					return Ok();
 			}
 
 			await context.SaveChangesAsync();
