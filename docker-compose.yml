@@ -17,6 +17,7 @@ services:
       - "WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development; Include Error Detail=true"
       - "WAVE_ConnectionStrings__Redis=redis,password=development"
       - "WAVE_Loki=http://loki:3100"
+      - "WAVE_Features__Telemetry=true"
     volumes:
       - wave-files:/app/files
       - wave-config:/configuration
@@ -64,6 +65,13 @@ services:
     depends_on:
       loki:
         condition: service_healthy
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    restart: unless-stopped
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus:/etc/prometheus
 
   mailhog:
     image: mailhog/mailhog:latest

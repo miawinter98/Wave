@@ -19,6 +19,10 @@ using Wave.Data;
 using Wave.Services;
 using Wave.Utilities;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Grafana.Loki;
@@ -48,6 +52,8 @@ builder.Configuration
 	.AddXmlFile( Path.Combine(FileSystemService.ConfigurationDirectory, "config.xml"), true, false)
 	.AddEnvironmentVariables("WAVE_");
 
+var customizations = builder.Configuration.GetSection(nameof(Customization)).Get<Customization>();
+
 #region Logging
 
 builder.Services.AddSerilog((services, configuration) => {
@@ -56,8 +62,7 @@ builder.Services.AddSerilog((services, configuration) => {
 		.ReadFrom.Services(services)
 		.Enrich.WithProperty("Application", "Wave")
 		.Enrich.WithProperty("WaveVersion", humanReadableVersion)
-		.Enrich.WithProperty("AppName", 
-			builder.Configuration.GetSection(nameof(Customization))[nameof(Customization.AppName)])
+		.Enrich.WithProperty("AppName", customizations?.AppName)
 		.Enrich.FromLogContext();
 	if (builder.Configuration["loki"] is {} lokiConfiguration) { 
 		configuration.WriteTo.GrafanaLoki(lokiConfiguration, null, [
@@ -270,6 +275,38 @@ builder.Services.Configure<RequestLocalizationOptions>(options => {
 
 #endregion
 
+#region Open Telemetry
+
+var features = builder.Configuration.GetSection(nameof(Features)).Get<Features>();
+if (features?.Telemetry is true) {
+	var otel = builder.Services.AddOpenTelemetry();
+
+	otel.ConfigureResource(resource => resource.AddService(serviceName:customization?.AppName ?? "Wave"));
+
+	// Prometheus
+	otel.WithMetrics(metrics => metrics
+		.AddAspNetCoreInstrumentation()
+		.AddHttpClientInstrumentation()
+		.AddMeter("Microsoft.AspNetCore.Hosting")
+		.AddMeter("Microsoft.AspNetCore.Server.Kestrel")
+		.AddMeter("Microsoft.AspNetCore.Http.Connections")
+		.AddMeter("Microsoft.AspNetCore.Http.Routing")
+		.AddMeter("Microsoft.AspNetCore.Diagnostics")
+		
+		.AddPrometheusExporter());
+	
+	// Jaeger etc.
+	if (builder.Configuration["OTLP_ENDPOINT_URL"] is {} otlpUrl) {
+		otel.WithTracing(tracing => {
+			tracing.AddAspNetCoreInstrumentation();
+			tracing.AddHttpClientInstrumentation();
+			tracing.AddOtlpExporter(options => options.Endpoint = new Uri(otlpUrl));
+		});
+	}
+}
+
+#endregion
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -277,6 +314,10 @@ if (app.Environment.IsDevelopment()) {
 	app.UseMigrationsEndPoint();
 } else {
 	app.UseExceptionHandler("/Error", createScopeForErrors: true);
+}
+
+if (features?.Telemetry is true) {
+	app.UseOpenTelemetryPrometheusScrapingEndpoint();
 }
 
 app.UseSerilogRequestLogging();

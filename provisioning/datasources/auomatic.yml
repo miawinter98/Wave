@@ -5,7 +5,7 @@ deleteDatasources:
     orgId: 1
 
 datasources:
-  - name: Wave
+  - name: Wave Logs
     type: loki
     isDefault: true
     orgId: 1
@@ -15,3 +15,9 @@ datasources:
     jsonData:
       timeout: 60
       maxLines: 1000
+  - name: Wave Metrics
+    type: prometheus
+    ordId: 1
+    access: proxy
+    url: http://prometheus:9090
+    editable: true
