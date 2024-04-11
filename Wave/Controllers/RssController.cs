@@ -6,12 +6,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Wave.Data;
 using Wave.Utilities;
+using Wave.Utilities.Metrics;
 
 namespace Wave.Controllers;
 
 [ApiController]
 [Route("/[controller]")]
-public class RssController(IOptions<Customization> customizations, ApplicationDbContext context, IOptions<Features> features) : ControllerBase {
+public class RssController(IOptions<Customization> customizations, ApplicationDbContext context, IOptions<Features> features, RssMetrics metrics) : ControllerBase {
 	private ApplicationDbContext Context { get; } = context;
 	private IOptions<Customization> Customizations { get; } = customizations;
 	private IOptions<Features> Features { get; } = features;
@@ -21,6 +22,8 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 	[ResponseCache(Duration = 60*15, Location = ResponseCacheLocation.Any)]
 	public async Task<IActionResult> GetRssFeedAsync(string? category = null, Guid? author = null) {
 		if (!Features.Value.Rss) return new JsonResult("RSS is disabled") {StatusCode = StatusCodes.Status401Unauthorized};
+
+		metrics.RssRequestReceived("application/rss+xml", category, author?.ToString());
 
 		if (category is not null || author.HasValue)
 			Response.Headers.Append("x-robots-tag", "noindex");
@@ -36,6 +39,8 @@ public class RssController(IOptions<Customization> customizations, ApplicationDb
 	public async Task<IActionResult> GetAtomFeedAsync(string? category = null, Guid? author = null) {
 		if (!Features.Value.Rss) return new JsonResult("RSS is disabled") {StatusCode = StatusCodes.Status401Unauthorized};
 		
+		metrics.RssRequestReceived("application/atom+xml", category, author?.ToString());
+
 		if (category is not null || author.HasValue)
 			Response.Headers.Append("x-robots-tag", "noindex");
 

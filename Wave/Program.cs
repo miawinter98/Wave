@@ -294,6 +294,7 @@ if (features?.Telemetry is true) {
 		.AddMeter("Microsoft.AspNetCore.Http.Routing")
 		.AddMeter("Microsoft.AspNetCore.Diagnostics")
 		.AddMeter("Wave.Api")
+		.AddMeter("Wave.Rss")
 		.AddPrometheusExporter());
 	
 	// Jaeger etc.
@@ -305,6 +306,7 @@ if (features?.Telemetry is true) {
 		});
 	}
 
+	builder.Services.AddSingleton<RssMetrics>();
 	builder.Services.AddSingleton<ApiMetrics>();
 }
 
