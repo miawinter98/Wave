@@ -26,6 +26,7 @@ using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Grafana.Loki;
+using Wave.Utilities.Metrics;
 
 #region Version Information
 
@@ -275,7 +276,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options => {
 
 #endregion
 
-#region Open Telemetry
+#region Open Telemetry & Metrics
 
 var features = builder.Configuration.GetSection(nameof(Features)).Get<Features>();
 if (features?.Telemetry is true) {
@@ -292,7 +293,7 @@ if (features?.Telemetry is true) {
 		.AddMeter("Microsoft.AspNetCore.Http.Connections")
 		.AddMeter("Microsoft.AspNetCore.Http.Routing")
 		.AddMeter("Microsoft.AspNetCore.Diagnostics")
-		
+		.AddMeter("Wave.Api")
 		.AddPrometheusExporter());
 	
 	// Jaeger etc.
@@ -303,6 +304,8 @@ if (features?.Telemetry is true) {
 			tracing.AddOtlpExporter(options => options.Endpoint = new Uri(otlpUrl));
 		});
 	}
+
+	builder.Services.AddSingleton<ApiMetrics>();
 }
 
 #endregion

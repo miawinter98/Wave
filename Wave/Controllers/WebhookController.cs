@@ -4,16 +4,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Wave.Data;
 using Wave.Data.Api.Mailtrap;
+using Wave.Utilities.Metrics;
 
 namespace Wave.Controllers;
 
 [ApiController]
 [Route("/api/[controller]")]
-public class WebhookController(ILogger<WebhookController> logger, ApplicationDbContext context) : ControllerBase {
+public class WebhookController(ILogger<WebhookController> logger, ApplicationDbContext context, ApiMetrics metrics) 
+		: ControllerBase {
 	[HttpPost("mailtrap/{apiKey}")]
 	[Authorize("EmailApi", AuthenticationSchemes = "ApiKeyInRoute")]
 	public async Task<IActionResult> Mailtrap(Webhook webhook, string apiKey) {
 		foreach (var webhookEvent in webhook.Events) {
+			metrics.WebhookEventReceived("Mailtrap", webhookEvent.Type.ToString());
 			var subscriber = await context.Set<EmailSubscriber>().FirstOrDefaultAsync(s => s.Email == webhookEvent.Email);
 
 			logger.LogDebug("Received Webhook event {EventType} for {email}", 
@@ -24,6 +27,7 @@ public class WebhookController(ILogger<WebhookController> logger, ApplicationDbC
 					"Received webhook event from mailtrap of type {EventType}, " +
 					"but failed to find subscriber with E-Mail {email}.", 
 					webhookEvent.Type, webhookEvent.Email);
+				metrics.WebhookEventError("Mailtrap", webhookEvent.Type.ToString(), "unknown email");
 				continue;
 			}
 
@@ -59,6 +63,7 @@ public class WebhookController(ILogger<WebhookController> logger, ApplicationDbC
 				case WebhookEventType.Click:
 				default:
 					logger.LogInformation("Received unsupported event {EventType} for {email}. Skipping.", webhookEvent.Type, webhookEvent.Email);
+					metrics.WebhookEventError("Mailtrap", webhookEvent.Type.ToString(), "unknown type");
 					return Ok();
 			}
 
