@@ -8,5 +8,6 @@ public class Customization {
     public string DefaultLanguage { get; set; } = "";
     public bool DefaultNarrowReader { get; set; } = false;
     public string LogoLink { get; set; } = "";
+    public string IconLink { get; set; } = "";
     public string Footer { get; set; } = "";
 }
