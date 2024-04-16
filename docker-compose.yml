@@ -24,8 +24,6 @@ services:
     depends_on:
       database:
         condition: service_started
-      loki:
-        condition: service_healthy
   database:
     image: postgres:16.1-alpine
     restart: unless-stopped
