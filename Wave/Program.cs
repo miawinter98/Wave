@@ -253,7 +253,7 @@ if (emailConfig?.Smtp.Count > 0) {
 	logger.Warning("No email provider configured.");
 }
 
-builder.Services.AddSingleton<IMessageDisplay, MessageService>();
+builder.Services.AddScoped<IMessageDisplay, MessageService>();
 builder.Services.AddSingleton<FileSystemService>();
 
 
