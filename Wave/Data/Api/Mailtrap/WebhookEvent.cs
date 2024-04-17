@@ -35,7 +35,7 @@ public record WebhookEvent(
 	int? ResponseCode) {
 
 	public WebhookEventType Type => Enum.Parse<WebhookEventType>(EventTypeString.Replace("_", ""), true);
-	public DateTimeOffset EventDateTime => DateTimeOffset.FromUnixTimeMilliseconds(Timestamp);
+	public DateTimeOffset EventDateTime => DateTimeOffset.FromUnixTimeSeconds(Timestamp);
 }
 
 public record Webhook {
