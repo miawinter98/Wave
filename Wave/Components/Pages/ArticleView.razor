@@ -4,6 +4,7 @@
 @using Wave.Data
 @using System.Security.Claims
 @using System.Globalization
+@using System.Net
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Options
 @using Wave.Services
@@ -180,6 +181,10 @@
 			Article = query.AsSingleQuery().FirstOrDefault(a =>
 				a.PublishDate.Date == date.Date 
 				&& (slug != null && a.Slug == slug || a.Title.ToLower() == title));
+		}
+
+		if (Article is null) {
+			HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
 		}
 	}
 
