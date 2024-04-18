@@ -7,6 +7,7 @@ public class Customization {
     public string DefaultTheme { get; set; } = "";
     public string DefaultLanguage { get; set; } = "";
     public bool DefaultNarrowReader { get; set; } = false;
+    public bool HideVersion { get; set; } = false;
     public string LogoLink { get; set; } = "";
     public string IconLink { get; set; } = "";
     public string Footer { get; set; } = "";
