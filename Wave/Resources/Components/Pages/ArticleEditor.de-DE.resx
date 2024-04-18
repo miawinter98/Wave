@@ -167,4 +167,10 @@
     <data name="Image_CopyLink" xml:space="preserve">
         <value>Link Kopieren</value>
     </data>
+    <data name="Slug_Label" xml:space="preserve">
+        <value>Artikel URL (autogeneriert)</value>
+    </data>
+    <data name="Slug_Placeholder" xml:space="preserve">
+        <value>mein-neues-kaesekuchenrezept</value>
+    </data>
 </root>

@@ -3,7 +3,7 @@
 @using System.ComponentModel
 @using System.ComponentModel.DataAnnotations
 
-<label class="form-control w-full">
+<label class="form-control w-full" @attributes="AdditionalAttributes">
     <div class="label">
         @if (Label is not null) {
             @Label
@@ -32,6 +32,8 @@
     public required RenderFragment ChildContent { get; set; }
     [Parameter] 
     public Expression<Func<object?>>? For { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     private string GetDisplayName() {
         if (For is null) return string.Empty;

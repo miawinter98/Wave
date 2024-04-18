@@ -3,6 +3,7 @@
 @using System.Diagnostics.CodeAnalysis
 @using System.Net
 @using System.Security.Claims
+@using Humanizer
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using Wave.Services
@@ -34,6 +35,18 @@
 			           @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off"/>
 		</InputLabelComponent>
 		
+		<InputLabelComponent class="row-span-3" LabelText="@Localizer["Categories_Label"]" For="() => Model.Categories">
+			<InputSelect class="select select-bordered w-full" @bind-Value="@Model.Categories" multiple size="10">
+				@foreach (var group in Categories.GroupBy(c => c.Color)) {
+					<optgroup class="font-bold not-italic my-3" label="@group.Key.Humanize()">
+						@foreach (var category in group) {
+							<option value="@category.Id" selected="@Model.Categories?.Contains(category.Id)">@category.Name</option>
+						}
+					</optgroup>
+				}
+			</InputSelect>
+		</InputLabelComponent>
+		
 		<InputLabelComponent LabelText="@Localizer["Slug_Label"]" For="() => Model.Slug">
 			@if (Article.Status is not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow) {
 				<InputText class="input input-bordered w-full" maxlength="64"
@@ -52,13 +65,6 @@
 				<input class="input input-bordered w-full"
 				       type="datetime-local" readonly value="@Article.PublishDate.ToString("yyyy-MM-dd\\THH:mm:ss")"/>
 			}
-		</InputLabelComponent>
-		<InputLabelComponent LabelText="@Localizer["Categories_Label"]" For="() => Model.Categories">
-			<select class="select select-bordered w-full h-32" @onchange="CategorySelectionChanged" multiple>
-				@foreach (var category in Categories) {
-					<option value="@category.Id" selected="@Model.Categories?.Contains(category.Id)">@category.Name</option>
-				}
-			</select>
 		</InputLabelComponent>
 	</div>
 
@@ -156,7 +162,9 @@
 			Model.Slug ??= article.Slug;
 			Model.Body ??= article.Body;
 			Model.PublishDate ??= article.PublishDate.LocalDateTime;
-			Model.Categories ??= article.Categories.Select(c => c.Id).ToArray();
+			if (Model.Categories?.Length < 1) {
+				Model.Categories = article.Categories.Select(c => c.Id).ToArray();
+			}
 			Article = article;
 			await InvokeAsync(StateHasChanged);
 		}
@@ -210,7 +218,6 @@
 			await context.Set<ArticleCategory>().IgnoreQueryFilters().IgnoreAutoIncludes()
 				.Where(ac => ac.Article.Id == Article.Id).LoadAsync();
 
-			Model.Categories ??= [];
 			context.Update(Article);
 
 			var existingImages = await context.Set<Article>()
@@ -280,12 +287,7 @@
 
 		throw new ApplicationException("You do not have permissions to edit this article");
 	}
-
-	private void CategorySelectionChanged(ChangeEventArgs args) {
-		string[]? selected = (string[]?) args.Value;
-		Model.Categories = selected?.Select(Guid.Parse).ToArray();
-	}
-
+	
 	private async Task ImageAdded(ArticleImage image) {
 		Article.Images.Add(image);
 		await InvokeAsync(StateHasChanged);
@@ -306,7 +308,7 @@
 		[Required(AllowEmptyStrings = false)] 
 		public string? Body { get; set; }
 
-		public Guid[]? Categories { get; set; }
+		public Guid[]? Categories { get; set; } = [];
 		public DateTimeOffset? PublishDate { get; set; }
 	}
 
