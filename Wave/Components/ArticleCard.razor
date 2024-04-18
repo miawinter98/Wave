@@ -10,6 +10,7 @@
 			<div class="card-body">
 				<h2 class="card-title line-clamp-1">@Article.Title</h2>
 				<small>
+					@Article.Author.Name 
 					@Article.PublishDate.ToString("d")
 					@if (Article.Status is not ArticleStatus.Published) {
 						<span class="badge badge-sm badge-warning ml-2">@Article.Status.Humanize()</span>
