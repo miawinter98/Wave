@@ -152,4 +152,10 @@
     <data name="Review_Reviewer_Any" xml:space="preserve">
         <value>Anyone</value>
     </data>
+    <data name="AboutAuthor_Title" xml:space="preserve">
+        <value>About the Author</value>
+    </data>
+    <data name="Recommendations_Title" xml:space="preserve">
+        <value>This might also interest you</value>
+    </data>
 </root>

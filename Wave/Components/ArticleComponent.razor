@@ -59,7 +59,7 @@
 				<img class="sm:max-h-56" src="/api/user/pfp/@Article.Author.Id?size=400" alt="" width="400" loading="async">
 			</figure>
 			<div class="card-body sm:border-l-2 border-current">
-				<h2 class="card-title">About The Author</h2>
+				<h2 class="card-title">@Localizer["AboutAuthor_Title"]</h2>
 				<h3><strong>@Article.Author.Name</strong></h3>
 				<p>
 					@Article.Author.AboutTheAuthor
@@ -89,6 +89,8 @@
 		<ProfilePill Profile="Article.Reviewer" RoleTag="@Localizer["Reviewer"]" DisableProfileLink="true" />
 	}
 </div>
+
+@AdditionalContent
 
 <template id="copyButtonTemplate">
 	<button class="btn btn-sm btn-accent btn-square absolute top-2 right-2" title="copy">
@@ -120,4 +122,6 @@
     [Parameter]
     public required Article Article { get; set; }
     private MarkupString Content => new(Article.BodyHtml);
+	[Parameter]
+	public RenderFragment? AdditionalContent { get; set; }
 }

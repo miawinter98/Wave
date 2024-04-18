@@ -98,15 +98,15 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
-  <data name="Author" xml:space="preserve">
-    <value>Autor*in</value>
-  </data>
+    <data name="Author" xml:space="preserve">
+        <value>Autor:in</value>
+    </data>
   <data name="ModifiedOn" xml:space="preserve">
     <value>Geändert</value>
   </data>
-  <data name="Reviewer" xml:space="preserve">
-    <value>Rezensent*in</value>
-  </data>
+    <data name="Reviewer" xml:space="preserve">
+        <value>Rezensent:in</value>
+    </data>
   <data name="NotFound_Title" xml:space="preserve">
     <value>Artikel nicht gefunden</value>
   </data>
@@ -151,5 +151,11 @@
     </data>
     <data name="Review_Reviewer_Any" xml:space="preserve">
         <value>Jeder</value>
+    </data>
+    <data name="AboutAuthor_Title" xml:space="preserve">
+        <value>Über die verfassende Person</value>
+    </data>
+    <data name="Recommendations_Title" xml:space="preserve">
+        <value>Das könnte Sie auch interessieren</value>
     </data>
 </root>

@@ -54,7 +54,15 @@
 <ErrorBoundary>
 	<ChildContent>
 		@if (GetArticle(HttpContext.User) is {} article) {
-			<ArticleComponent Article="@article"/>
+			<ArticleComponent Article="@article">
+				<AdditionalContent>
+					@if (Recommendations.Count > 0) {
+						<h2 class="text-3xl my-6">@Localizer["Recommendations_Title"]</h2>
+						<ArticleCardList Articles="Recommendations" />
+					}
+				</AdditionalContent>
+			</ArticleComponent>
+
 			
 			<div class="flex gap-2 mt-3 flex-wrap">
 				@if (article.AllowedToEdit(HttpContext.User)) {
@@ -157,6 +165,7 @@
 	public HttpContext HttpContext { get; set; } = default!;
 
 	private List<ApplicationUser> Reviewers { get; } = [];
+	private List<Article> Recommendations { get; } = [];
 
 	private Article GetArticle(ClaimsPrincipal principal) {
 		if (Article.AllowedToRead(principal)) return Article!;
@@ -189,10 +198,46 @@
 	}
 
 	protected override async Task OnInitializedAsync() {
-		Reviewers.AddRange([
-			.. await UserManager.GetUsersInRoleAsync("Reviewer"),
-			.. await UserManager.GetUsersInRoleAsync("Admin")
-		]);
+		if (Article is null) return;
+		
+		if (Article.Status != ArticleStatus.Published) {
+			Reviewers.AddRange([
+				.. await UserManager.GetUsersInRoleAsync("Reviewer"),
+				.. await UserManager.GetUsersInRoleAsync("Admin")
+			]);
+		} else {
+			var primaryCategories = Article.Categories.Where(c => c.Color == CategoryColors.Primary).ToArray();
+
+			await using var context = await ContextFactory.CreateDbContextAsync();
+			const int featuredArticleCount = 3;
+			
+			// See if we can find 3 articles with the same primary category
+			if (primaryCategories.Length > 0) {
+				foreach (var category in primaryCategories) {
+					Recommendations.AddRange(await context.Set<Article>()
+						.Include(a => a.Author)
+						.Include(a => a.Categories)
+						.OrderByDescending(a => a.PublishDate).ThenBy(a => a.Id)
+						.Where(a => a.Categories.Contains(category) && a.Id != Article.Id)
+						.Take(featuredArticleCount - Recommendations.Count)
+						.ToListAsync());
+
+					if (Recommendations.Count >= featuredArticleCount) break;
+				}
+			}
+
+			// Fill up with the newest articles of possible 
+			if (Recommendations.Count < featuredArticleCount) {
+				Recommendations.AddRange(await context.Set<Article>()
+					.Include(a => a.Author)
+					.Include(a => a.Categories)
+					.OrderByDescending(a => a.PublishDate).ThenBy(a => a.Id)
+					.Where(a => a.Id != Article.Id)
+					.Take(featuredArticleCount - Recommendations.Count).ToListAsync());
+			}
+
+			Recommendations.Sort((a1, a2) => a2.PublishDate.CompareTo(a1.PublishDate));
+		}
 	}
 
 	private async Task SubmitForReview() {
