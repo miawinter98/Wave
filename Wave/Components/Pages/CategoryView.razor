@@ -27,8 +27,8 @@
 	<a class="btn btn-primary" href="/">@Localizer["NotFound_BackToHome_Label"]</a>
 } else {
 	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"] - @Category.Name</h1>
-	
-	<ArticleCardList Articles="Category.Articles" />
+
+	<ArticleCardList Articles="Category.Articles.Where(a => !a.IsDeleted && a.PublishDate <= DateTimeOffset.Now).ToList()" />
 }
 
 @code {
@@ -42,22 +42,13 @@
 	protected override async Task OnInitializedAsync() {
 		await using var context = await ContextFactory.CreateDbContextAsync();
 		string category = WebUtility.UrlDecode(CategoryName);
-		var now = DateTimeOffset.UtcNow;
-		// First load Category with simple chain and manual filters, as to minimize 
-		// filter redundancy and query complexity (category -> Articles -> Author is linear)
+		if (Category != null) return;
+
 		Category = await context.Set<Category>()
 			.IgnoreAutoIncludes().IgnoreQueryFilters()
-			.Include(c => c.Articles.Where(a => !a.IsDeleted && a.PublishDate <= now))
-			.ThenInclude(a => a.Author)
+			.Include(c => c.Articles).ThenInclude(a => a.Categories)
+			.Include(c => c.Articles).ThenInclude(a => a.Author)
+			.AsSplitQuery()
 			.FirstOrDefaultAsync(c => c.Name == category);
-		// Load all the other categories missing on the articles, by loading all relevant 
-		// articles ID with their categories, so EF can map them to the already loaded entries 
-		// (again manual filter to minimize redundancy)
-		await context.Set<Article>()
-			.IgnoreAutoIncludes().IgnoreQueryFilters()
-			.Where(a => !a.IsDeleted && a.PublishDate <= now && a.Categories.Contains(Category!))
-			.Select(a => new {
-				a.Id, a.Categories
-			}).LoadAsync();
 	}
 }
