@@ -40,7 +40,7 @@
     private async Task ProfilePictureChanged(string tempFilePath) {
         if (User is null) return;
 
-        var guid = await ImageService.StoreImageAsync(tempFilePath);
+        var guid = await ImageService.StoreImageAsync(tempFilePath, enforceSize:true);
         if (!guid.HasValue) throw new ApplicationException("Processing Image failed.");
 
         Guid? imageToDelete = null;
