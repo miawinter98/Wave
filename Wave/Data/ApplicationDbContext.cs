@@ -55,7 +55,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			
 			article.Property(a => a.BodyPlain).HasDefaultValue("");
 
-			article.HasQueryFilter(a => !a.IsDeleted && a.Status >= ArticleStatus.Published && a.PublishDate <= DateTimeOffset.UtcNow);
+			article.Property(a => a.CanBePublic)
+				.HasComputedColumnSql(
+					$"\"{nameof(Article.IsDeleted)}\" = false AND \"{nameof(Article.Status)}\" = {(int)ArticleStatus.Published}", true);
+
+			article.HasQueryFilter(a => a.CanBePublic && a.PublishDate <= DateTimeOffset.UtcNow);
 			article.ToTable("Articles");
 		});
 
@@ -74,7 +78,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 					articleCategory => {
 						articleCategory.HasKey(ac => ac.Id);
 						articleCategory.ToTable("ArticleCategories");
-						articleCategory.HasQueryFilter(ac => !ac.Article.IsDeleted);
+						articleCategory.HasQueryFilter(ac => 
+							ac.Article.CanBePublic && ac.Article.PublishDate <= DateTimeOffset.UtcNow);
 					});
 			
 			category.ToTable("Categories");
@@ -95,7 +100,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			newsletter.Property(a => a.DistributionDateTime)
 				.HasConversion(dateTimeOffsetUtcConverter);
 
-			newsletter.HasQueryFilter(n => !n.Article.IsDeleted);
+			newsletter.HasQueryFilter(n => n.Article.CanBePublic && n.Article.PublishDate <= DateTimeOffset.UtcNow);
 			newsletter.ToTable("Newsletter");
 		});
 		builder.Entity<EmailSubscriber>(subscriber => {

@@ -94,14 +94,10 @@
 
 		// Find user
 		if (Id is not null) {
-			var now = DateTimeOffset.UtcNow;
 			User = await context.Users
-				.IgnoreAutoIncludes().IgnoreQueryFilters()
-				.Include(u => u.Articles
-					.Where(a => !a.IsDeleted && 
-					            a.Status == ArticleStatus.Published && 
-					            a.PublishDate <= now))
-				.ThenInclude(a => a.Categories)
+				.IgnoreAutoIncludes()
+				.Include(u => u.Links)
+				.Include(u => u.Articles).ThenInclude(a => a.Categories)
 				.AsSplitQuery()
 				.FirstOrDefaultAsync(u => u.Id == Id.ToString());
 		}
