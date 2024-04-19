@@ -89,6 +89,7 @@
 	private ApplicationUser? User { get; set; }
 
 	protected override async Task OnInitializedAsync() {
+		if (User is not null) return;
 		await using var context = await ContextFactory.CreateDbContextAsync();
 
 		// Find user
@@ -96,13 +97,13 @@
 			var now = DateTimeOffset.UtcNow;
 			User = await context.Users
 				.IgnoreAutoIncludes().IgnoreQueryFilters()
-				.Include(u => u.Articles.Where(a => !a.IsDeleted && a.PublishDate <= now))
+				.Include(u => u.Articles
+					.Where(a => !a.IsDeleted && 
+					            a.Status == ArticleStatus.Published && 
+					            a.PublishDate <= now))
+				.ThenInclude(a => a.Categories)
+				.AsSplitQuery()
 				.FirstOrDefaultAsync(u => u.Id == Id.ToString());
-			await context.Set<Article>()
-				.Where(a => a.Author.Id == Id.ToString())
-				.Select(a => new { 
-					a.Id, a.Categories
-				}).LoadAsync();
 		}
 
 		// Validate access to user
