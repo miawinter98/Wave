@@ -134,4 +134,7 @@
     <data name="Deleted_Label" xml:space="preserve">
         <value>Gelöscht</value>
     </data>
+    <data name="Subscribers_Label" xml:space="preserve">
+        <value>Abonnenten</value>
+    </data>
 </root>

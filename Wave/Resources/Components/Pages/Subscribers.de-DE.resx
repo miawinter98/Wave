@@ -98,46 +98,37 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
-    <data name="Home_Label" xml:space="preserve">
-        <value>Startpage</value>
+    <data name="Title" xml:space="preserve">
+        <value>Abonnenten</value>
     </data>
-    <data name="ArticleNew_Label" xml:space="preserve">
-        <value>New Article</value>
+    <data name="Paging_Next" xml:space="preserve">
+        <value>Nächste Seite</value>
     </data>
-    <data name="Drafts_Label" xml:space="preserve">
-        <value>Drafts</value>
+    <data name="Paging_Page" xml:space="preserve">
+        <value>Seite</value>
     </data>
-    <data name="Review_Label" xml:space="preserve">
-        <value>In Review</value>
+    <data name="Paging_Previous" xml:space="preserve">
+        <value>Vorherige Seite</value>
     </data>
-    <data name="ManageUsers_Label" xml:space="preserve">
-        <value>Manage Users</value>
+    <data name="Subscriber_Load_Error" xml:space="preserve">
+        <value>Unerwarteter Fehler beim laden der Abonnenten</value>
     </data>
-    <data name="Logout_Label" xml:space="preserve">
-        <value>Log Out</value>
+    <data name="Header_Email" xml:space="preserve">
+        <value>E-Mail</value>
     </data>
-    <data name="Login_Label" xml:space="preserve">
-        <value>Log In</value>
+    <data name="Header_UnsubscribeReason" xml:space="preserve">
+        <value>Notiz</value>
     </data>
-    <data name="SignUp_Label" xml:space="preserve">
-        <value>Sign Up</value>
+    <data name="Header_Subscribed" xml:space="preserve">
+        <value>Angemeldet</value>
     </data>
-  <data name="Future_Label" xml:space="preserve">
-    <value>Publishing</value>
-  </data>
-    <data name="ManageCategories_Label" xml:space="preserve">
-        <value>Manage Categories</value>
+    <data name="Header_LastReceived" xml:space="preserve">
+        <value>Zuletzt Zugestellt</value>
     </data>
-    <data name="Newsletter_Label" xml:space="preserve">
-        <value>Newsletter</value>
+    <data name="Header_LastOpen" xml:space="preserve">
+        <value>Zuletzt Geöffnet</value>
     </data>
-    <data name="ManageApi_Label" xml:space="preserve">
-        <value>Manage API</value>
-    </data>
-    <data name="Deleted_Label" xml:space="preserve">
-        <value>Deleted</value>
-    </data>
-    <data name="Subscribers_Label" xml:space="preserve">
-        <value>Subscribers</value>
+    <data name="Newsletter_Footer_Timezone" xml:space="preserve">
+        <value>Alle Uhrzeiten sind in der folgenden Zeitzone:</value>
     </data>
 </root>

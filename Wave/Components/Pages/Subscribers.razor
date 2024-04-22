@@ -1,0 +1,114 @@
+﻿@page "/Subscribers"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Options
+@using Wave.Data
+@using Wave.Utilities
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IStringLocalizer<Subscribers> Localizer
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject ILogger<Subscribers> Logger
+@inject IMessageDisplay Message
+@inject IOptions<Features> Features
+
+<PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
+
+<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
+
+<section>
+	
+	<div class="overflow-x-auto">
+		<table class="table table-zebra">
+			<thead>
+				<tr>
+					<th>@Localizer["Header_Email"]</th>
+					<th>@Localizer["Header_Name"]</th>
+					<th>@Localizer["Header_LastReceived"]</th>
+					<th>@Localizer["Header_LastOpen"]</th>
+					<th>@Localizer["Header_UnsubscribeReason"]</th>
+					<th>@Localizer["Header_Subscribed"]</th>
+				</tr>
+			</thead>
+			<tbody>
+			<PageComponent Page="@Page" LoadCallback="LoadSubscribers" ItemsPerPage="ItemsPerPage">
+				<tr>
+					<td>@context.Email</td>
+					<td>@context.Name</td>
+					<td>@context.LastMailReceived?.ToString("g")</td>
+					<td>@context.LastMailOpened?.ToString("g")</td>
+					<td>@context.UnsubscribeReason</td>
+					<td><input type="checkbox" class="checkbox" checked="@(!context.Unsubscribed)"/></td>
+				</tr>
+			</PageComponent>
+			</tbody>
+			<tfoot>
+			<tr>
+				<td colspan="3">@Localizer["Newsletter_Footer_Timezone"] @TimeZoneInfo.Local</td>
+			</tr>
+			</tfoot>
+		</table>
+	</div>
+	
+	<div class="grid place-content-center my-3">
+		<div class="join">
+			@if (Page < 1) {
+				<button class="join-item btn" disabled title="@Localizer["Paging_Previous"]">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+						<path fill-rule="evenodd" d="M7.72 12.53a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 1 1 1.06 1.06L9.31 12l6.97 6.97a.75.75 0 1 1-1.06 1.06l-7.5-7.5Z" clip-rule="evenodd" />
+					</svg>
+				</button>
+			} else {
+				<a class="join-item btn" target="_top" href="@(Page < 2 ? "/subscribers" : $"/subscribers?page={Page - 1}")" title="@Localizer["Paging_Previous"]">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+						<path fill-rule="evenodd" d="M7.72 12.53a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 1 1 1.06 1.06L9.31 12l6.97 6.97a.75.75 0 1 1-1.06 1.06l-7.5-7.5Z" clip-rule="evenodd"/>
+					</svg>
+				</a>
+			}
+			<button class="join-item btn md:btn-wide no-animation">@Localizer["Paging_Page"] @(Page + 1)</button>
+			@if (Page >= TotalPages - 1) {
+				<button class="join-item btn" disabled title="@Localizer["Paging_Next"]">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+						<path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"/>
+					</svg>
+				</button>
+			} else {
+				<a class="join-item btn" target="_top" href="/subscribers?page=@(Page + 1)" title="@Localizer["Paging_Next"]">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+						<path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"/>
+					</svg>
+				</a>
+			}
+		</div>
+	</div>
+</section>
+
+@code {
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
+	[SupplyParameterFromQuery]
+	public int Page { get; set; } = 0;
+
+	private const int ItemsPerPage = 10;
+	private int TotalPages { get; set; }
+
+	protected override async Task OnInitializedAsync() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+		var query = context.Set<EmailSubscriber>();
+		TotalPages = (int)Math.Max(Math.Ceiling((await query.CountAsync() - 1) / (double)ItemsPerPage), 1);
+	}
+
+	private async ValueTask<IEnumerable<EmailSubscriber>> LoadSubscribers(int page, int count) {
+		try {
+			await using var context = await ContextFactory.CreateDbContextAsync();
+			return await context.Set<EmailSubscriber>()
+				.IgnoreAutoIncludes().IgnoreQueryFilters()
+				.OrderBy(s => s.Email).ThenBy(s => s.Id)
+				.Skip(page + 1).Take(count).ToListAsync();
+		} catch (Exception ex) {
+			Logger.LogError(ex, "Failed to load subscribers on page {Page} with count {Count}.", page, count);
+			Message.ShowError(Localizer["Subscriber_Load_Error"]);
+			return [];
+		}
+	}
+}
