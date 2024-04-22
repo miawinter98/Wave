@@ -9,6 +9,7 @@ namespace Wave.Utilities;
 public static class Permissions {
 	public static bool AllowedToRead(this Article? article, ClaimsPrincipal principal) {
 		if (article is null || article.IsDeleted) return false;
+		if (article.Author is null) throw new ArgumentException("Checking permissions without loading related Author.");
 		
 		// The Article is publicly available
 		if (article.Status >= ArticleStatus.Published && article.PublishDate <= DateTimeOffset.UtcNow) {
@@ -35,6 +36,7 @@ public static class Permissions {
 
 	public static bool AllowedToEdit(this Article? article, ClaimsPrincipal principal) {
 		if (article is null || article.IsDeleted) return false;
+		if (article.Author is null) throw new ArgumentException("Checking permissions without loading related Author.");
 
 		// Admins always can edit articles
 		if (principal.IsInRole("Admin")) {
@@ -69,6 +71,7 @@ public static class Permissions {
 
 	public static bool AllowedToSubmitForReview(this Article? article, ClaimsPrincipal principal) {
 		if (article is null || article.IsDeleted) return false;
+		if (article.Author is null) throw new ArgumentException("Checking permissions without loading related Author.");
 
 		// Draft articles can be submitted by their authors (admins can publish them anyway, no need to submit)
 		if (article.Status is ArticleStatus.Draft && article.Author.Id == principal.FindFirst("Id")!.Value) {
@@ -80,6 +83,7 @@ public static class Permissions {
 
 	public static bool AllowedToPublish(this Article? article, ClaimsPrincipal principal) {
 		if (article is null || article.IsDeleted) return false;
+		if (article.Author is null) throw new ArgumentException("Checking permissions without loading related Author.");
 		
 		// Admins can skip review and directly publish draft articles
 		if (article.Status is ArticleStatus.Draft && principal.IsInRole("Admin")) {
@@ -102,6 +106,7 @@ public static class Permissions {
 
 	public static bool AllowedToDelete(this Article? article, ClaimsPrincipal principal) {
 		if (article is null || article.IsDeleted) return false;
+		if (article.Author is null) throw new ArgumentException("Checking permissions without loading related Author.");
 
 		// Admins can delete articles whenever
 		if (principal.IsInRole("Admin")) {

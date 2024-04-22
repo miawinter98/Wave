@@ -47,6 +47,7 @@
 		await using var context = await ContextFactory.CreateDbContextAsync();
 
 		var article = await context.Set<Article>().IgnoreQueryFilters()
+			.Include(a => a.Author).Include(a => a.Reviewer)
 			.Where(a => !a.IsDeleted).FirstOrDefaultAsync(a => a.Id == Id);
 		if (article.AllowedToDelete(HttpContext.User)) Article = article;
 	}
