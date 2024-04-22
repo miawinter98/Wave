@@ -3,6 +3,9 @@
 @using Microsoft.Extensions.Options
 @using Wave.Data
 @using Wave.Utilities
+@using CsvHelper.Configuration
+@using System.Globalization
+@using CsvHelper
 
 @attribute [Authorize(Roles = "Admin")]
 
@@ -12,12 +15,40 @@
 @inject IMessageDisplay Message
 @inject IOptions<Features> Features
 
+<ModalComponent Id="@ModalId">
+	<ChildContent>
+		<form id="AddSubscribers" method="post" @formname="AddSubscribers" @onsubmit="AddSubscribers">
+			<AntiforgeryToken/>
+			
+			<h2 class="text-xl">@Localizer["AddSubscribers_Label"]</h2>
+			<span class="my-3"><small>Format: Email;[Name];[Exclusion Reason];</small></span>
+			<InputLabelComponent LabelText="@Localizer["AddSubscribers_Input_Label"]">
+				<InputTextArea class="textarea textarea-bordered" rows="12"
+				               @bind-Value="@SubscribersInput"
+				               placeholder="@Localizer["AddSubscribers_Input_Placeholder"]"
+				               required aria-required max="8096"
+				               autocomplete="off"/>
+			</InputLabelComponent>
+		</form>
+	</ChildContent>
+	<Actions>
+		<button type="submit" form="AddSubscribers" class="btn btn-primary">
+			@Localizer["Submit"]
+		</button>
+	</Actions>
+</ModalComponent>
+
 <PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
 
 <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
 
+<div class="flex gap-2 mb-3">
+	<button class="btn btn-sm btn-primary" onclick="@(ModalId).showModal()">
+		@Localizer["AddSubscribers_Label"]
+	</button>
+</div>
+
 <section>
-	
 	<div class="overflow-x-auto">
 		<table class="table table-zebra">
 			<thead>
@@ -92,6 +123,10 @@
 	private const int ItemsPerPage = 10;
 	private int TotalPages { get; set; }
 
+	[SupplyParameterFromForm(FormName = "AddSubscribers")]
+	private string SubscribersInput { get; set; } = string.Empty;
+	private static string ModalId => "AddSubscribersDialog";
+
 	protected override async Task OnInitializedAsync() {
 		await using var context = await ContextFactory.CreateDbContextAsync();
 		var query = context.Set<EmailSubscriber>();
@@ -110,5 +145,51 @@
 			Message.ShowError(Localizer["Subscriber_Load_Error"]);
 			return [];
 		}
+	}
+
+	private async Task AddSubscribers() {
+		var config = new CsvConfiguration(CultureInfo.CurrentCulture) {
+			NewLine = Environment.NewLine,
+			HasHeaderRecord = false
+		};
+
+		List<SubscriberModel> list;
+		try {
+			using var reader = new CsvReader(new StringReader(SubscribersInput), config);
+			list = reader.GetRecords<SubscriberModel>().ToList();
+		} catch (Exception ex) {
+			Message.ShowError(string.Format(Localizer["AddSubscribers_Parse_Error"], ex.Message));
+			return;
+		}
+		if (list.Count < 1) return;
+
+		try {
+			var emailSubscribers = new List<EmailSubscriber>();
+			foreach (var input in list) {
+				emailSubscribers.Add(new EmailSubscriber {
+					Email = input.Email,
+					Name = input.Name,
+					Unsubscribed = !string.IsNullOrWhiteSpace(input.UnsubscribeReason),
+					UnsubscribeReason = input.UnsubscribeReason,
+					Language = "en-US"
+				});
+			}
+
+			await using var context = await ContextFactory.CreateDbContextAsync();
+			context.AddRange(emailSubscribers);
+			await context.SaveChangesAsync();
+			SubscribersInput = string.Empty;
+		} catch (Exception ex) {
+			Message.ShowError(string.Format(Localizer["AddSubscribers_Save_Error"], ex.InnerException?.Message ?? ex.Message));
+		}
+	}
+
+	internal sealed class SubscriberModel {
+		[CsvHelper.Configuration.Attributes.Index(0)]
+		public string Email { get; set; } = string.Empty;
+		[CsvHelper.Configuration.Attributes.Index(1)]
+		public string? Name { get; set; }
+		[CsvHelper.Configuration.Attributes.Index(2)]
+		public string? UnsubscribeReason { get; set; }
 	}
 }

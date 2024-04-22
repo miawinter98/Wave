@@ -134,4 +134,20 @@
     <data name="Newsletter_Footer_Timezone" xml:space="preserve">
         <value>All times are using this timezone:</value>
     </data>
+    <data name="AddSubscribers_Parse_Error" xml:space="preserve">
+        <value>Failed to parse subscriber(s): {0}</value>
+    </data>
+    <data name="AddSubscribers_Save_Error" xml:space="preserve">
+        <value>Failed to save subscriber(s): {0}</value>
+    </data>
+    <data name="AddSubscribers_Label" xml:space="preserve">
+        <value>Add Subscriber(s)</value>
+    </data>
+    <data name="AddSubscribers_Input_Label" xml:space="preserve">
+        <value>Subscriber(s) [CSV]</value>
+    </data>
+    <data name="AddSubscribers_Input_Placeholder" xml:space="preserve">
+        <value>john.smith@example.com; John Smith; Spam;
+jay.smith@example.com;;;</value>
+    </data>
 </root>

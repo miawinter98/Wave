@@ -131,4 +131,20 @@
     <data name="Newsletter_Footer_Timezone" xml:space="preserve">
         <value>Alle Uhrzeiten sind in der folgenden Zeitzone:</value>
     </data>
+    <data name="AddSubscribers_Parse_Error" xml:space="preserve">
+        <value>Fehler beim einlesen von Abonennent(en): {0}</value>
+    </data>
+    <data name="AddSubscribers_Save_Error" xml:space="preserve">
+        <value>Fehler beim speichern von Abonennent(en): {0}</value>
+    </data>
+    <data name="AddSubscribers_Label" xml:space="preserve">
+        <value>Abonnent(en) Hinzufügen</value>
+    </data>
+    <data name="AddSubscribers_Input_Label" xml:space="preserve">
+        <value>Abonnent(en) [CSV]</value>
+    </data>
+    <data name="AddSubscribers_Input_Placeholder" xml:space="preserve">
+        <value>anna.muster@example.de; Anna Muster; Spam;
+peter.muster@example.de;;;</value>
+    </data>
 </root>
