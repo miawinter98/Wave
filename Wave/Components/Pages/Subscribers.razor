@@ -130,7 +130,7 @@
 	protected override async Task OnInitializedAsync() {
 		await using var context = await ContextFactory.CreateDbContextAsync();
 		var query = context.Set<EmailSubscriber>();
-		TotalPages = (int)Math.Max(Math.Ceiling((await query.CountAsync() - 1) / (double)ItemsPerPage), 1);
+		TotalPages = (int)Math.Max(Math.Ceiling(await query.CountAsync() / (double)ItemsPerPage), 1);
 	}
 
 	private async ValueTask<IEnumerable<EmailSubscriber>> LoadSubscribers(int page, int count) {
@@ -139,7 +139,7 @@
 			return await context.Set<EmailSubscriber>()
 				.IgnoreAutoIncludes().IgnoreQueryFilters()
 				.OrderBy(s => s.Email).ThenBy(s => s.Id)
-				.Skip(page + 1).Take(count).ToListAsync();
+				.Skip(page).Take(count).ToListAsync();
 		} catch (Exception ex) {
 			Logger.LogError(ex, "Failed to load subscribers on page {Page} with count {Count}.", page, count);
 			Message.ShowError(Localizer["Subscriber_Load_Error"]);
