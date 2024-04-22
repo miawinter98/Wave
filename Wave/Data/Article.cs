@@ -16,6 +16,9 @@ public class Article : ISoftDelete {
     public Guid Id { get; set; }
     public bool IsDeleted { get; set; }
 
+    // Computed 
+    public bool CanBePublic { get; set; }
+
     [MaxLength(256)]
     public required string Title { get; set; }
     public required string Body { get; set; }

@@ -45,7 +45,7 @@
 		if (Category != null) return;
 
 		Category = await context.Set<Category>()
-			.IgnoreAutoIncludes().IgnoreQueryFilters()
+			.IgnoreAutoIncludes()
 			.Include(c => c.Articles).ThenInclude(a => a.Categories)
 			.Include(c => c.Articles).ThenInclude(a => a.Author)
 			.AsSplitQuery()
