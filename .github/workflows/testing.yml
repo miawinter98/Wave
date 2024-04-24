@@ -34,9 +34,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget
     - name: Install dependencies
-      run: dotnet restore
-
-    - name: Build
-      run: dotnet build
+      run: dotnet restore ${{ env.TEST_PROJECT }}
+      
     - name: Test with the dotnet CLI
       run: dotnet test ${{ env.TEST_PROJECT }}
