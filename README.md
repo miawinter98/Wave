@@ -3,6 +3,8 @@
 # Wave - The Collaborative Open-Source Blogging Engine
 ## Stay afloat in a current of Information
 
+[![NUnit Tests](https://github.com/miawinter98/Wave/actions/workflows/testing.yml/badge.svg?branch=main)](https://github.com/miawinter98/Wave/actions/workflows/testing.yml)
+
 ![Wave License](https://img.shields.io/github/license/miawinter98/Wave?color=green&style=for-the-badge)
 ![GitHub Forks](https://img.shields.io/github/forks/miawinter98/Wave?label=github%20forks&logo=github&style=for-the-badge)
 ![GitHub Stars](https://img.shields.io/github/stars/miawinter98/Wave?label=github%20stars&color=yellow&logo=github&style=for-the-badge)
