@@ -280,7 +280,7 @@
 		}
 
 		// published articles may only be edited my admins or moderators
-		if (article.Status is ArticleStatus.Published && roles.Any(r => r is "Admin" or "Reviewer")) {
+		if (article.Status is ArticleStatus.Published && roles.Any(r => r is "Admin" or "Moderator")) {
 			article.Reviewer = me; // TODO replace with editor or something?
 			return;
 		}
