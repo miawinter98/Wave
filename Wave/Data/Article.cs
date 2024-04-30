@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 using Wave.Utilities;
 
 namespace Wave.Data;
@@ -57,13 +58,21 @@ public class Article : ISoftDelete {
 		string baseSlug = potentialNewSlug ?? Title;
 		baseSlug = baseSlug.ToLowerInvariant()[..Math.Min(64, baseSlug.Length)];
 		string slug = Uri.EscapeDataString(baseSlug).Replace("-", "+").Replace("%20", "-");
-		// if our escaping increases the slug length, there is a chance it ends with an escape 
-		// character, so if this overshoot is not divisible by 3, then we risk cutting of the 
-		// escape character, so we need to remove it in it's entirely if that's the case
+		
+		// I hate my life
 		int escapeTrimOvershoot = 0;
-		if (slug.Length > 64) escapeTrimOvershoot = slug[62..64].Contains('%') ? 1 : 0;
-		// if the slug already fits 64 character, there will be no cutoff in the next operation anyway,
-		// so we don't need to fix what is described in the previous comment
+		if (slug.Length > 64) {
+			// Escape sequences come with a % and two hex digits, there may be up to 3 of such sequences
+			// per character escaping ('?' has %3F, but € has %E2%82%AC), so we need to find the last group
+			// of such an escape parade and see if it's going over by less than 9, because then we need to 
+			// remove more characters in the truncation, or we end up with a partial escape sequence.. parade
+			escapeTrimOvershoot = 64 - Regex.Match(slug,
+					@"(?<escape>(%[a-fA-F\d][a-fA-F\d])+)",
+					RegexOptions.None | RegexOptions.ExplicitCapture)
+				.Groups.Values.Last(g => g.Index < 64).Index;
+			if (escapeTrimOvershoot > 9) escapeTrimOvershoot = 0;
+		}
+
 		Slug = slug[..Math.Min(slug.Length, 64 - escapeTrimOvershoot)];
 		if (Slug.EndsWith("%")) Slug = Slug[..^1];
 	}

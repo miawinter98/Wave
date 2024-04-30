@@ -34,10 +34,31 @@ public class ArticleTest {
 	}
 	
 	[Test]
+	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterEscapeSize3AtPosition55() {
+		Article.Title = "Auto generating slugs was a mistake I hate this ______ €";
+		Article.UpdateSlug();
+		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-______-%E2%82%AC"));
+	}
+
+	[Test]
+	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterEscapeSize3AtPosition56() {
+		Article.Title = "Auto generating slugs was a mistake I hate this _______ €";
+		Article.UpdateSlug();
+		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-_______-"));
+	}
+
+	[Test]
+	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterEscapeSize3AtPosition57() {
+		Article.Title = "Auto generating slugs was a mistake I hate this ________ €";
+		Article.UpdateSlug();
+		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-________-"));
+	}
+
+	[Test]
 	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterAtPosition61() {
 		Article.Title = "Article that ends with a special character and need special cäre";
 		Article.UpdateSlug();
-		Assert.That(Article.Slug, Is.EqualTo("article-that-ends-with-a-special-character-and-need-special-c%C3"));
+		Assert.That(Article.Slug, Is.EqualTo("article-that-ends-with-a-special-character-and-need-special-c"));
 	}
 	
 	[Test]
