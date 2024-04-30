@@ -152,7 +152,7 @@
 	protected override async Task OnInitializedAsync() {
 		if (Items < 1) Items = 10;
 		await using var context = await ContextFactory.CreateDbContextAsync();
-		var query = context.Set<EmailSubscriber>();
+		var query = context.Set<EmailSubscriber>().IgnoreQueryFilters();
 		TotalPages = (int)Math.Max(Math.Ceiling(await query.CountAsync() / (double)Items), 1);
 	}
 
