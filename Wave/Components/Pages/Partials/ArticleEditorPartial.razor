@@ -262,6 +262,10 @@
 				}
 			}
 			Message.ShowSuccess(Localizer["Save_Success"]);
+
+			if (Navigation.Uri.EndsWith("/article/new")) {
+				Navigation.NavigateTo($"/article/{Article.Id}/edit", false, true);
+			}
 		} catch (Exception ex) {
 			Message.ShowError(Localizer["Save_Error"]);
 			Logger.LogError(ex, "Failed to save article.");
