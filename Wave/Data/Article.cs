@@ -46,20 +46,26 @@ public class Article : ISoftDelete {
 	public IList<Category> Categories { get; } = [];
 	public IList<ArticleImage> Images { get; } = [];
 
-	public void UpdateSlug(string? potentialNewSlug) {
+	public void UpdateSlug(string? potentialNewSlug = null) {
+		if (!string.IsNullOrWhiteSpace(potentialNewSlug) && Uri.IsWellFormedUriString(potentialNewSlug, UriKind.Relative)) {
+			Slug = potentialNewSlug;
+			return;
+		}
+
 		if (string.IsNullOrWhiteSpace(potentialNewSlug) && !string.IsNullOrWhiteSpace(Slug)) return;
-		
+
 		string baseSlug = potentialNewSlug ?? Title;
 		baseSlug = baseSlug.ToLowerInvariant()[..Math.Min(64, baseSlug.Length)];
 		string slug = Uri.EscapeDataString(baseSlug).Replace("-", "+").Replace("%20", "-");
 		// if our escaping increases the slug length, there is a chance it ends with an escape 
 		// character, so if this overshoot is not divisible by 3, then we risk cutting of the 
 		// escape character, so we need to remove it in it's entirely if that's the case
-		int escapeTrimOvershoot = Math.Max(0, 3 - (slug.Length - baseSlug.Length) % 3);
+		int escapeTrimOvershoot = 0;
+		if (slug.Length > 64) escapeTrimOvershoot = slug[62..64].Contains('%') ? 1 : 0;
 		// if the slug already fits 64 character, there will be no cutoff in the next operation anyway,
 		// so we don't need to fix what is described in the previous comment
-		if (slug.Length <= 64) escapeTrimOvershoot = 0;
 		Slug = slug[..Math.Min(slug.Length, 64 - escapeTrimOvershoot)];
+		if (Slug.EndsWith("%")) Slug = Slug[..^1];
 	}
 
 	public void UpdateBody() {
