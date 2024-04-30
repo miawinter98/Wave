@@ -186,7 +186,7 @@
 		if (Id is not null) {
 			Article = query.AsSingleQuery().FirstOrDefault(a => a.Id == Id);
 		} else if (Date is { } date && Title is { } title) {
-			string? slug = TitleEncoded == null ? null : Uri.EscapeDataString(TitleEncoded);
+			string? slug = TitleEncoded == null ? null : Uri.EscapeDataString(TitleEncoded.Replace("-", " ")).Replace("%20", "-");
 			Article = query.AsSingleQuery().FirstOrDefault(a =>
 				a.PublishDate.Date == date.Date 
 				&& (slug != null && a.Slug == slug || a.Title.ToLower() == title));
