@@ -1,5 +1,6 @@
 ﻿using ColorCode.Styling;
 using Markdig;
+using Markdig.Extensions.AutoIdentifiers;
 using Markdig.Extensions.MediaLinks;
 using Microsoft.AspNetCore.Components;
 using Markdown.ColorCode;
@@ -10,7 +11,8 @@ namespace Wave.Utilities;
 public static class MarkdownUtilities {
     public static string Parse(string markdown) {
         var pipeline = new MarkdownPipelineBuilder()
-            .UsePipeTables()
+	        .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
+	        .UsePipeTables()
             .UseEmphasisExtras()
             .UseListExtras()
             .UseSoftlineBreakAsHardlineBreak()

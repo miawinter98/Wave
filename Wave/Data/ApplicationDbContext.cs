@@ -43,6 +43,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 				.IsRequired().OnDelete(DeleteBehavior.Cascade);
 			article.HasOne(a => a.Reviewer).WithMany()
 				.IsRequired(false).OnDelete(DeleteBehavior.SetNull);
+			article.OwnsMany(a => a.Headings);
 
 			article.Property(a => a.CreationDate)
 				.IsRequired().HasDefaultValueSql("now()")

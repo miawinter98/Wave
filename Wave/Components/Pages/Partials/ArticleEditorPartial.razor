@@ -194,7 +194,6 @@
 			}
 
 			Article.LastModified = DateTimeOffset.UtcNow;
-			Article.UpdateBody();
 			
 			await using var context = await ContextFactory.CreateDbContextAsync();
 
@@ -213,6 +212,8 @@
 				.Where(ac => ac.Article.Id == Article.Id).LoadAsync();
 
 			context.Update(Article);
+			context.RemoveRange(Article.Headings);
+			Article.UpdateBody();
 
 			var existingImages = await context.Set<Article>()
 				.IgnoreQueryFilters().Where(a => a.Id == Article.Id)

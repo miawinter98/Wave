@@ -10,10 +10,20 @@ public enum ArticleStatus {
 	Published = 2
 }
 
+public class ArticleHeading {
+	[Key]
+	public int Id { get; set; }
+	public required int Order { get; set; }
+	[MaxLength(128)]
+	public required string Label { get; set; }
+	[MaxLength(256)]
+	public required string Anchor { get; set; }
+}
+
 // TODO:: Add tags for MVP ?
 // TODO:: Archive System (Notice / Redirect to new content?) (Deprecation date?)
 
-public class Article : ISoftDelete {
+public partial class Article : ISoftDelete {
 	[Key]
 	public Guid Id { get; set; }
 	public bool IsDeleted { get; set; }
@@ -46,6 +56,7 @@ public class Article : ISoftDelete {
 
 	public IList<Category> Categories { get; } = [];
 	public IList<ArticleImage> Images { get; } = [];
+	public IList<ArticleHeading> Headings { get; } = [];
 
 	public void UpdateSlug(string? potentialNewSlug = null) {
 		if (!string.IsNullOrWhiteSpace(potentialNewSlug) && Uri.IsWellFormedUriString(potentialNewSlug, UriKind.Relative)) {
@@ -74,11 +85,27 @@ public class Article : ISoftDelete {
 		}
 
 		Slug = slug[..Math.Min(slug.Length, 64 - escapeTrimOvershoot)];
-		if (Slug.EndsWith("%")) Slug = Slug[..^1];
 	}
 
 	public void UpdateBody() {
 		BodyHtml = MarkdownUtilities.Parse(Body).Trim();
 		BodyPlain = HtmlUtilities.GetPlainText(BodyHtml).Trim();
+		
+		Headings.Clear();
+		var headings = HeadingsRegex().Matches(BodyHtml);
+		foreach(Match match in headings) {
+			string label = match.Groups["Label"].Value;
+			string anchor = match.Groups["Anchor"].Value;
+
+			var h = new ArticleHeading {
+				Order = match.Index * 10 + int.Parse(match.Groups["Level"].Value),
+				Label = label[..Math.Min(128, label.Length)],
+				Anchor = anchor[..Math.Min(256, anchor.Length)]
+			};
+			Headings.Add(h);
+		}
 	}
+
+	[GeneratedRegex("<h(?<Level>[1-6]).*id=\"(?<Anchor>.+)\".*>(?<Label>.+)</h[1-6]>")]
+	private static partial Regex HeadingsRegex();
 }

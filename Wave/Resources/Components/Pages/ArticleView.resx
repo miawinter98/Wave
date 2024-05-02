@@ -158,4 +158,7 @@
     <data name="Recommendations_Title" xml:space="preserve">
         <value>This might also interest you</value>
     </data>
+    <data name="TableOfContents" xml:space="preserve">
+        <value>Table of Content</value>
+    </data>
 </root>

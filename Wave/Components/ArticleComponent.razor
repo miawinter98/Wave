@@ -2,10 +2,11 @@
 @using Humanizer
 @using Wave.Utilities
 
+@inject NavigationManager Navigation
 @inject IStringLocalizer<Pages.ArticleView> Localizer
 
 <SectionContent SectionName="GlobalHeader">
-	<header class="bg-secondary text-secondary-content border-b-2 border-current py-6 px-4 md:px-12">
+	<header class="bg-secondary text-secondary-content border-b-2 border-current py-6 px-4 md:px-12" data-nosnippet>
 		<h1 class="text-3xl lg:text-5xl font-light">
 			@Article.Title
 		</h1>
@@ -45,6 +46,39 @@
 		</div>
 	</header>
 </SectionContent>
+
+@if (Article.Headings.Count > 0) {
+	<section class="mb-3 p-2 bg-base-200 rounded-box w-80 float-start mr-2 mb-2" data-nosnippet>
+		<h2 class="text-xl font-bold mb-3">@Localizer["TableOfContents"]</h2>
+		<ul class="menu p-0 [&_li>*]:rounded-none">
+			@{
+				int level = 1;
+				foreach (var heading in Article.Headings.OrderBy(h => h.Order)) {
+					int headingLevel = heading.Order % 10;
+
+					while (headingLevel < level) {
+						level--;
+						@(new MarkupString("</ul></li>"))
+					}
+
+					while (headingLevel > level) {
+						level++;
+						@(new MarkupString("<li><ul>"))
+					}
+
+					<li>
+						<a href="/@Navigation.ToBaseRelativePath(Navigation.Uri)#@heading.Anchor">@heading.Label</a>
+					</li>
+				}
+
+				while (level > 1) {
+					level--;
+					@(new MarkupString("<li><ul>"))
+				}
+			}
+		</ul>
+	</section>
+}
 
 <article class="mb-6">
 	<div class="prose prose-neutral max-w-none hyphens-auto text-justify">
