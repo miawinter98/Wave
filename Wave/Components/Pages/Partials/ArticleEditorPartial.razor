@@ -31,7 +31,7 @@
 
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8">
 		<InputLabelComponent LabelText="@Localizer["Title_Label"]" For="() => Model.Title">
-			<InputText class="input input-bordered w-full" maxlength="256" required aria-required
+			<InputText class="input input-bordered w-full" maxlength="256" required aria-required oninput="charactersLeft_onInput(this)"
 			           @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off"/>
 		</InputLabelComponent>
 		
@@ -49,7 +49,7 @@
 		
 		<InputLabelComponent LabelText="@Localizer["Slug_Label"]" For="() => Model.Slug">
 			@if (Article.Status is not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow) {
-				<InputText class="input input-bordered w-full" maxlength="64"
+				<InputText class="input input-bordered w-full" maxlength="64" oninput="charactersLeft_onInput(this)"
 				           @bind-Value="@Model.Slug" placeholder="@Localizer["Slug_Placeholder"]" autocomplete="off"/>
 			} else {
 				<input class="input input-bordered w-full" readonly value="@Model.Slug"

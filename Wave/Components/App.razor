@@ -47,6 +47,24 @@
 	<script src="_framework/blazor.web.js" defer></script>
 	<SectionOutlet SectionName="scripts" />
 	<script>
+		charactersLeft_onInput = function(input) {
+			const maxLength = input.maxLength;
+			const currentLength = input.value.length;
+
+			const newLeft = maxLength - currentLength;
+
+			let elem = input.parentNode.querySelector(".characters-left");
+			if (elem) {
+				elem.innerText = newLeft;
+			} else {
+				input.parentNode.classList.add("relative");
+				elem = document.createElement("span");
+				elem.classList.add("characters-left");
+				elem.innerText = newLeft;
+				input.parentNode.appendChild(elem);
+			}
+		}
+
 		window.insertBeforeSelection = function (markdown, startOfLine = false) {
 			const target = document.getElementById("tool-target");
 

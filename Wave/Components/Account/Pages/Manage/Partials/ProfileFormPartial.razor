@@ -12,7 +12,7 @@
 		<div class="label">
 			<span class="label-text">@Localizer["FullName_Label"]</span>
 		</div>
-		<InputText class="input input-bordered w-full" maxlength="64" autocomplete="name"
+		<InputText class="input input-bordered w-full" maxlength="64" autocomplete="name" oninput="charactersLeft_onInput(this)"
 		           @bind-Value="@Model.FullName" placeholder="@Localizer["FullName_Placeholder"]" />
 		<div class="label">
 			<span class="label-text-alt text-error">

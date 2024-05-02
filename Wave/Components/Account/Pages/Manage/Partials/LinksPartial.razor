@@ -13,7 +13,8 @@
 		<form id="add-user-link" @formname="add-user-link" @onsubmit="Add" method="post">
 			<AntiforgeryToken />
 			<InputLabelComponent LabelText="@Localizer["Links_Url_Label"]">
-				<input class="input input-bordered" maxlength="1024" autocomplete="off" type="url"
+				<input class="input input-bordered" maxlength="512" autocomplete="off" type="url" 
+				       oninput="charactersLeft_onInput(this)"
 					   name="link-url" value="@Url" placeholder="@Localizer["Links_Url_Placeholder"]" />
 			</InputLabelComponent>
 		</form>
@@ -50,7 +51,7 @@
 	public required ApplicationUser User { get; set; }
 	
 	// Create
-	[SupplyParameterFromForm(FormName = "add-user-link", Name = "link-url")]
+	[SupplyParameterFromForm(FormName = "add-user-link", Name = "link-url"), MaxLength(512)]
 	private string Url { get; set; } = string.Empty;
 
 	// Delete
@@ -62,7 +63,7 @@
 			Message.ShowError("Url is required.");
 			return;
 		}
-		if (Url.Length > 1024) {
+		if (Url.Length > 512) {
 			Message.ShowError("Url is too long.");
 			return;
 		}

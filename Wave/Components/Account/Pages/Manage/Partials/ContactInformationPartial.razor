@@ -13,19 +13,23 @@
 	<DataAnnotationsValidator />
 	
 	<InputLabelComponent For="() => Model.ContactEmail" LabelText="@Localizer["Contact_Email_Label"]">
-		<InputText class="input input-bordered w-full" maxlength="128" type="email" autocomplete="email"
+		<InputText class="input input-bordered w-full" maxlength="128" type="email" autocomplete="email" 
+		           oninput="charactersLeft_onInput(this)"
 		           @bind-Value="@Model.ContactEmail" placeholder="@Localizer["Contact_Email_Placeholder"]" />
 	</InputLabelComponent>
 	<InputLabelComponent For="() => Model.ContactPhone" LabelText="@Localizer["Contact_Phone_Label"]">
-		<InputText class="input input-bordered w-full" maxlength="64" type="tel" autocomplete="tel"
+		<InputText class="input input-bordered w-full" maxlength="64" type="tel" autocomplete="tel" 
+		           oninput="charactersLeft_onInput(this)"
 				   @bind-Value="@Model.ContactPhone" placeholder="@Localizer["Contact_Phone_Placeholder"]" />
 	</InputLabelComponent>
 	<InputLabelComponent For="() => Model.ContactPhoneBusiness" LabelText="@Localizer["Contact_PhoneBusiness_Label"]">
-		<InputText class="input input-bordered w-full" maxlength="64" type="tel" autocomplete="tel"
+		<InputText class="input input-bordered w-full" maxlength="64" type="tel" autocomplete="tel" 
+		           oninput="charactersLeft_onInput(this)"
 				   @bind-Value="@Model.ContactPhoneBusiness" placeholder="@Localizer["Contact_PhoneBusiness_Placeholder"]" />
 	</InputLabelComponent>
 	<InputLabelComponent For="() => Model.ContactWebsite" LabelText="@Localizer["Contact_Website_Label"]">
-		<InputText class="input input-bordered w-full" maxlength="128" type="url" autocomplete="url"
+		<InputText class="input input-bordered w-full" maxlength="128" type="url" autocomplete="url" 
+		           oninput="charactersLeft_onInput(this)"
 				   @bind-Value="@Model.ContactWebsite" placeholder="@Localizer["Contact_Website_Placeholder"]" />
 	</InputLabelComponent>
 	

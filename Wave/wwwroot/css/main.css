@@ -51,4 +51,8 @@
     .prose pre:has(code) {
         @apply border-2 border-current;
     }
+
+    .characters-left {
+        @apply absolute right-6 bottom-6 select-none pointer-events-none;
+    }
 }
