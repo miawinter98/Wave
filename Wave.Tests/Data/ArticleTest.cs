@@ -1,5 +1,4 @@
 ﻿using Wave.Data;
-using Wave.Data.Migrations.postgres;
 
 namespace Wave.Tests.Data;
 
@@ -32,12 +31,19 @@ public class ArticleTest {
 		Article.UpdateSlug();
 		Assert.That(Article.Slug, Is.EqualTo("article-title-that-is-longer-than-the-sixty-four-character-limit"));
 	}
-	
+
 	[Test]
 	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterEscapeSize3AtPosition55() {
 		Article.Title = "Auto generating slugs was a mistake I hate this ______ €";
 		Article.UpdateSlug();
 		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-______-%E2%82%AC"));
+	}
+	
+	[Test]
+	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterEscapeSize2AtPosition56() {
+		Article.Title = "Auto generating slugs was a mistake I hate this _______ üa";
+		Article.UpdateSlug();
+		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-_______-%C3%BCa"));
 	}
 
 	[Test]
@@ -45,6 +51,13 @@ public class ArticleTest {
 		Article.Title = "Auto generating slugs was a mistake I hate this _______ €";
 		Article.UpdateSlug();
 		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-_______-"));
+	}
+	
+	[Test]
+	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterEscapeSize2AtPosition57() {
+		Article.Title = "Auto generating slugs was a mistake I hate this ________ üa";
+		Article.UpdateSlug();
+		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-________-%C3%BCa"));
 	}
 
 	[Test]
