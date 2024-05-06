@@ -66,20 +66,20 @@
 	</button>
 </div>
 
-<section>
-	<div class="overflow-x-auto">
-		<table class="table table-zebra">
+<section class="flex flex-col h-128">
+	<div class="flex-grow overflow-auto">
+		<table class="table relative">
 			<thead>
 				<tr>
-					<th class="text-center md:text-left md:w-48">@Localizer["Header_Email"]</th>
-					<th class="text-center md:text-left w-48 max-md:hidden">@Localizer["Header_Name"]</th>
-					<th class="text-center md:text-left w-24 max-md:hidden">@Localizer["Header_LastReceived"]</th>
-					<th class="text-center md:text-left w-24 max-md:hidden">@Localizer["Header_LastOpen"]</th>
-					<th class="text-center md:text-left w-24 max-md:hidden">@Localizer["Header_UnsubscribeReason"]</th>
-					<th class="text-center md:text-left md:w-8">@Localizer["Header_Subscribed"]</th>
+					<th class="bg-base-200 sticky top-0 text-center md:text-left md:w-48">@Localizer["Header_Email"]</th>
+					<th class="bg-base-200 sticky top-0 text-center md:text-left w-48 max-md:hidden">@Localizer["Header_Name"]</th>
+					<th class="bg-base-200 sticky top-0 text-center md:text-left w-24 max-md:hidden">@Localizer["Header_LastReceived"]</th>
+					<th class="bg-base-200 sticky top-0 text-center md:text-left w-24 max-md:hidden">@Localizer["Header_LastOpen"]</th>
+					<th class="bg-base-200 sticky top-0 text-center md:text-left w-24 max-md:hidden">@Localizer["Header_UnsubscribeReason"]</th>
+					<th class="bg-base-200 sticky top-0 text-center md:text-left md:w-8 z-10">@Localizer["Header_Subscribed"]</th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody class="divide-y">
 			<PageComponent Page="@Page" LoadCallback="LoadSubscribers" ItemsPerPage="@Items">
 				<tr>
 					<td>@context.Email</td>

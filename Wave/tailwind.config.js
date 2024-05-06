@@ -14,6 +14,9 @@ module.exports = {
                 '6xl': "2560px",
                 '8xl': "3072px"
             },
+            height: {
+                '128': "32rem"
+            },
             container: {
                 'max-width': {
                     '3xl': "1792px",
