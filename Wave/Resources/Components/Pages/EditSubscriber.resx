@@ -99,58 +99,27 @@
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
     <data name="Title" xml:space="preserve">
-        <value>Subscribers</value>
+        <value>Edit Subscriber</value>
     </data>
-    <data name="Paging_Next" xml:space="preserve">
-        <value>Next page</value>
+    <data name="Name_Label" xml:space="preserve">
+        <value>Name (optional)</value>
     </data>
-    <data name="Paging_Page" xml:space="preserve">
-        <value>Page</value>
+    <data name="Name_Placeholder" xml:space="preserve">
+        <value>John Smith</value>
     </data>
-    <data name="Paging_Previous" xml:space="preserve">
-        <value>Previous page</value>
+    <data name="Subscribed_Label" xml:space="preserve">
+        <value>Active (receives Emails)</value>
     </data>
-    <data name="Subscriber_Load_Error" xml:space="preserve">
-        <value>Unknown error loading subscribers</value>
+    <data name="Submit" xml:space="preserve">
+        <value>Save</value>
     </data>
-    <data name="Header_Email" xml:space="preserve">
-        <value>Email</value>
+    <data name="Error_NotFound" xml:space="preserve">
+        <value>Subscriber not Found (maybe it has been deleted?)</value>
     </data>
-    <data name="Header_Name" xml:space="preserve">
-        <value>Name</value>
+    <data name="Submit_Error" xml:space="preserve">
+        <value>Unexpected Error trying to save your changes.</value>
     </data>
-    <data name="Header_UnsubscribeReason" xml:space="preserve">
-        <value>Note</value>
-    </data>
-    <data name="Header_Subscribed" xml:space="preserve">
-        <value>Subscribed</value>
-    </data>
-    <data name="Header_LastReceived" xml:space="preserve">
-        <value>Last Received</value>
-    </data>
-    <data name="Header_LastOpen" xml:space="preserve">
-        <value>Last Open</value>
-    </data>
-    <data name="Newsletter_Footer_Timezone" xml:space="preserve">
-        <value>All times are using this timezone:</value>
-    </data>
-    <data name="AddSubscribers_Parse_Error" xml:space="preserve">
-        <value>Failed to parse subscriber(s): {0}</value>
-    </data>
-    <data name="AddSubscribers_Save_Error" xml:space="preserve">
-        <value>Failed to save subscriber(s): {0}</value>
-    </data>
-    <data name="AddSubscribers_Label" xml:space="preserve">
-        <value>Add Subscriber(s)</value>
-    </data>
-    <data name="AddSubscribers_Input_Label" xml:space="preserve">
-        <value>Subscriber(s) [CSV]</value>
-    </data>
-    <data name="AddSubscribers_Input_Placeholder" xml:space="preserve">
-        <value>john.smith@example.com; John Smith; Spam;
-jay.smith@example.com;;;</value>
-    </data>
-    <data name="Subscriber_Edit" xml:space="preserve">
-        <value>Edit</value>
+    <data name="Submit_Success" xml:space="preserve">
+        <value>Changes saved Successfully</value>
     </data>
 </root>

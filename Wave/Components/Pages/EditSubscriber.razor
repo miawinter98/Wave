@@ -1,0 +1,103 @@
+﻿@page "/Subscribers/edit/{id:guid}"
+@using Microsoft.EntityFrameworkCore
+@using Wave.Data
+@using Wave.Utilities
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject ILogger<EditSubscriber> Logger
+@inject IStringLocalizer<EditSubscriber> Localizer
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IMessageDisplay Message
+@inject NavigationManager Navigation
+
+<PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
+
+<BoardComponent CenterContent="true">
+	<BoardCardComponent>
+		@if (Model is null) {
+			<p>not found</p>
+		} else {
+			<EditForm FormName="EditSubscriber" Model="Model" method="post" OnValidSubmit="Submit">
+				<h1 class="text-3xl">@Localizer["Title"]</h1>
+				<p class="text-xl my-3">@Email</p>
+				<InputLabelComponent LabelText="@Localizer["Name_Label"]" For="() => Model.Name">
+					<InputText @bind-Value="Model.Name" class="input input-bordered w-full" autocomplete="off"
+					           placeholder="@Localizer["Name_Placeholder"]"/>
+				</InputLabelComponent>
+				<div class="form-control w-full mb-3">
+					<label class="label cursor-pointer">
+						<span class="label-text">@Localizer["Subscribed_Label"]</span>
+						<InputCheckbox @bind-Value="Model.Subscribed" class="checkbox"/>
+					</label>
+				</div>
+
+				<button type="submit" class="btn btn-primary w-full">@Localizer["Submit"]</button>
+			</EditForm>
+		}
+	</BoardCardComponent>
+</BoardComponent>
+
+@code {
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
+	[Parameter]
+	public Guid Id { get; set; }
+
+	[SupplyParameterFromForm(FormName = "EditSubscriber")]
+	private EditModel? Model { get; set; }
+
+	private string Email { get; set; } = string.Empty;
+
+	protected override async Task OnInitializedAsync() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+		var subscriber = await context.Set<EmailSubscriber>()
+			.IgnoreQueryFilters()
+			.IgnoreAutoIncludes()
+			.FirstOrDefaultAsync(s => s.Id == Id);
+
+		if (subscriber is null) {
+			Message.ShowError(Localizer["Error_NotFound"]);
+		} else if (Model is null) {
+			Email = subscriber.Email;
+			Model = new EditModel {
+				Name = subscriber.Name ?? string.Empty,
+				Subscribed = !subscriber.Unsubscribed
+			};
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+	private async Task Submit() {
+		if (Model is null) return;
+
+		try {
+			await using var context = await ContextFactory.CreateDbContextAsync();
+			var subscriber = await context.Set<EmailSubscriber>()
+				.IgnoreQueryFilters()
+				.IgnoreAutoIncludes()
+				.FirstOrDefaultAsync(s => s.Id == Id);
+
+			if (subscriber is null) {
+				Message.ShowError(Localizer["Error_NotFound"]);
+				return;
+			}
+
+			subscriber.Name = string.IsNullOrWhiteSpace(Model.Name) ? null : Model.Name;
+			subscriber.Unsubscribed = !Model.Subscribed;
+
+			context.Update(subscriber);
+			await context.SaveChangesAsync();
+		} catch (Exception ex) {
+			Logger.LogError(ex, "Failed to save changes to Email Subscriber {Email}.", Email);
+			Message.ShowError(Localizer["Submit_Error"]);
+		}
+		Message.ShowSuccess(Localizer["Submit_Success"]);
+
+		Navigation.NavigateTo("/subscribers");
+	}
+
+	private sealed class EditModel {
+		public string Name { get; set; } = string.Empty;
+		public bool Subscribed { get; set; } = false;
+	}
+}

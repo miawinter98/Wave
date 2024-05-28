@@ -147,4 +147,7 @@
         <value>anna.muster@example.de; Anna Muster; Spam;
 peter.muster@example.de;;;</value>
     </data>
+    <data name="Subscriber_Edit" xml:space="preserve">
+        <value>Bearbeiten</value>
+    </data>
 </root>

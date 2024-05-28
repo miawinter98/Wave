@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wave", "Wave\Wave.csproj", 
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{FE5DA24A-8490-4DCE-BDFB-49C9CF656F8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wave.Tests", "Wave.Tests\Wave.Tests.csproj", "{54BFBF0E-5918-4830-BCDD-135BAD702529}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wave.Tests", "Wave.Tests\Wave.Tests.csproj", "{54BFBF0E-5918-4830-BCDD-135BAD702529}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

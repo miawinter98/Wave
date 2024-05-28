@@ -13,7 +13,6 @@
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject ILogger<Subscribers> Logger
 @inject IMessageDisplay Message
-@inject IOptions<Features> Features
 
 <ModalComponent Id="@ModalId">
 	<ChildContent>
@@ -77,6 +76,7 @@
 					<th class="bg-base-200 sticky top-0 text-center md:text-left w-24 max-md:hidden">@Localizer["Header_LastOpen"]</th>
 					<th class="bg-base-200 sticky top-0 text-center md:text-left w-24 max-md:hidden">@Localizer["Header_UnsubscribeReason"]</th>
 					<th class="bg-base-200 sticky top-0 text-center md:text-left md:w-8 z-10">@Localizer["Header_Subscribed"]</th>
+					<td class="bg-base-200 sticky top-0 text-center md:text-left w-24"></td>
 				</tr>
 			</thead>
 			<tbody class="divide-y">
@@ -87,7 +87,14 @@
 					<td class="max-md:hidden">@context.LastMailReceived?.ToString("g")</td>
 					<td class="max-md:hidden">@context.LastMailOpened?.ToString("g")</td>
 					<td class="max-md:hidden">@context.UnsubscribeReason</td>
-					<td class="text-center md:text-left"><input type="checkbox" class="checkbox no-animation" checked="@(!context.Unsubscribed)" disabled /></td>
+					<td class="text-center md:text-left">
+						<input type="checkbox" class="checkbox no-animation" checked="@(!context.Unsubscribed)" disabled/>
+					</td>
+					<td>
+						<a class="btn btn-sm btn-info w-24" href="@($"/subscribers/edit/{context.Id}")">
+							@Localizer["Subscriber_Edit"]
+						</a>
+					</td>
 				</tr>
 			</PageComponent>
 			</tbody>
@@ -142,7 +149,6 @@
 	[SupplyParameterFromQuery]
 	public int Items { get; set; }
 
-	private const int ItemsPerPage = 10;
 	private int TotalPages { get; set; }
 
 	[SupplyParameterFromForm(FormName = "AddSubscribers")]
