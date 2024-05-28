@@ -137,4 +137,7 @@
   <data name="WelcomeEmailBody" xml:space="preserve">
     <value>Sie werden von nun an über neue Artikel informiert. Schauen Sie doch mal in der folgenden Sektion was Sie vielleicht verpasst haben. Sie können sich jeder Zeit in diesem oder zukünftigen E-Mails abmelden über den Link den Sie am ende finden.</value>
   </data>
+    <data name="Name_Label" xml:space="preserve">
+        <value>Name (Optional)</value>
+    </data>
 </root>
