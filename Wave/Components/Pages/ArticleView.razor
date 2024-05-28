@@ -74,6 +74,14 @@
 						@Localizer["Delete_Submit"]
 					</a>
 				}
+				@if (article.AllowedToRejectReview(HttpContext.User)) {
+					<form @formname="reject-review" method="post" @onsubmit="RejectReview" class="max-sm:w-full">
+						<AntiforgeryToken />
+						<button type="submit" class="btn btn-error w-full sm:btn-wide">
+							@Localizer["Review_Reject"]
+						</button>
+					</form>
+				}
 				@if (article.AllowedToSubmitForReview(HttpContext.User)) {
 					<form @formname="submit-for-review" method="post" @onsubmit="SubmitForReview" class="max-sm:w-full">
 						<AntiforgeryToken/>
@@ -295,6 +303,47 @@
 		Navigation.NavigateTo("/");
 	}
 
+	private async Task RejectReview() {
+		if (Article.AllowedToRejectReview(HttpContext.User) is false) return;
+
+		await using var context = await ContextFactory.CreateDbContextAsync();
+		Article!.Status = ArticleStatus.Draft;
+		string userId = HttpContext.User.FindFirst("Id")!.Value;
+		if (Article.Author.Id != userId) {
+			Article.Reviewer = await context.Users.FindAsync(userId);
+		}
+
+		context.Update(Article);
+		await context.SaveChangesAsync();
+
+		try {
+			var author = Article.Author;
+
+			string message = 
+				$"The Article '{Article.Title}' has been rejected by a Reviewer, you will find it in your drafts.\n" +
+				$"Please make appropriate changes before submitting it again.";
+			if (author.Id != HttpContext.User.FindFirst("Id")!.Value) {
+				await EmailService.ConnectAsync(CancellationToken.None);
+
+				var email = await Email.CreateDefaultEmail(
+					author.Email!,
+					author.Name,
+					"Review Rejected",
+					"Your Article has been reject",
+					$"<p>{message}</p>",
+					message);
+				// TODO check if they enabled email notifications (property currently not implemented)
+				await EmailService.SendEmailAsync(email);
+
+				await EmailService.DisconnectAsync(CancellationToken.None);
+			}
+		} catch (Exception ex) {
+			Logger.LogError(ex, "Failed to send mail to author about article '{title}' being rejected.", Article.Title);
+		}
+
+		Navigation.NavigateTo("/");
+	}
+
 	private async Task SubmitForPublish() {
 		if (Article.AllowedToPublish(HttpContext.User) is false) return;
 
@@ -352,5 +401,6 @@
 
 		Navigation.NavigateTo("/");
 	}
+
 
 }

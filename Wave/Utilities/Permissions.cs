@@ -69,6 +69,11 @@ public static class Permissions {
 		return false;
 	}
 
+	public static bool AllowedToRejectReview(this Article? article, ClaimsPrincipal principal) {
+		// if you can publish it, you can reject it
+		return article?.Status is ArticleStatus.InReview && article.AllowedToPublish(principal);
+	}
+
 	public static bool AllowedToSubmitForReview(this Article? article, ClaimsPrincipal principal) {
 		if (article is null || article.IsDeleted) return false;
 		if (article.Author is null) throw new ArgumentException("Checking permissions without loading related Author.");
