@@ -44,20 +44,20 @@ public class WebhookController(ILogger<WebhookController> logger, ApplicationDbC
 					subscriber.UnsubscribeReason = webhookEvent.Response;
 					break;
 				case WebhookEventType.Suspension:
-					subscriber.Unsubscribed = true;
-					subscriber.UnsubscribeReason ??= "unknown";
+					logger.LogWarning("Received Suspension event, you may have send from an unverifyied domain or exceeded your hourly rate.");
+					return Ok();
 					break;
 				case WebhookEventType.Unsubscribe:
 					subscriber.Unsubscribed = true;
-					subscriber.UnsubscribeReason ??= "User Unsubscribed";
+					subscriber.UnsubscribeReason = "User Unsubscribed";
 					break;
 				case WebhookEventType.SpamComplaint:
 					subscriber.Unsubscribed = true;
-					subscriber.UnsubscribeReason ??= "User reported as Spam";
+					subscriber.UnsubscribeReason = "User reported as Spam";
 					break;
 				case WebhookEventType.Reject:
 					subscriber.Unsubscribed = true;
-					subscriber.UnsubscribeReason ??= webhookEvent.Reason?.Humanize().Titleize() ?? "Rejected";
+					subscriber.UnsubscribeReason = webhookEvent.Reason?.Humanize().Titleize() ?? "Rejected";
 					break;
 				case WebhookEventType.SoftBounce:
 				case WebhookEventType.Click:
