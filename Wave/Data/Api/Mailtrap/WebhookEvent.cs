@@ -1,14 +1,18 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Wave.Data.Api.Mailtrap;
 
+[JsonConverter(typeof(JsonStringEnumConverter<WebhookEventType>))]
 public enum WebhookEventType {
 	Delivery,
+	[EnumMember(Value = "soft bounce")]
 	SoftBounce,
 	Bounce,
 	Suspension,
 	Unsubscribe,
 	Open,
+	[EnumMember(Value = "spam complaint")]
 	SpamComplaint,
 	Click,
 	Reject
@@ -34,7 +38,7 @@ public record WebhookEvent(
 	[property:JsonPropertyName("response_code")] 
 	int? ResponseCode) {
 
-	public WebhookEventType Type => Enum.Parse<WebhookEventType>(EventTypeString.Replace("_", ""), true);
+	public WebhookEventType Type => Enum.Parse<WebhookEventType>(EventTypeString.Replace("_", "").Replace(" ", ""), true);
 	public DateTimeOffset EventDateTime => DateTimeOffset.FromUnixTimeSeconds(Timestamp);
 }
 
