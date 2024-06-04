@@ -12,6 +12,27 @@
 
 <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
 
+<ModalComponent Id="@ModalId">
+	<ChildContent>
+		<form method="post" id="ConfirmDelete" @formname="ConfirmDelete" @onsubmit="DeleteAll">
+			<AntiforgeryToken />
+			<h2 class="text-xl">@Localizer["Confirm_Title"]</h2>
+			<p class="my-3">@Localizer["Confirm_Description"]</p>
+		</form>
+	</ChildContent>
+	<Actions>
+		<button type="submit" form="ConfirmDelete" class="btn btn-error">
+			@Localizer["Confirm_Submit"]
+		</button>
+	</Actions>
+</ModalComponent>
+
+<div class="flex gap-2 mb-3">
+	<button class="btn btn-sm btn-error" onclick="@(ModalId).showModal()">
+		@Localizer["Delete_Label"]
+	</button>
+</div>
+
 <ArticleCardList Articles="Articles" HasArticleLink="false">
 	<Action Context="article">
 		<form method="post" @formname="@article.Id.ToString()" @onsubmit="Restore" class="w-full">
@@ -25,6 +46,7 @@
 @code {
 	[CascadingParameter(Name = "TitlePostfix")]
 	private string TitlePostfix { get; set; } = default!;
+	private static string ModalId => "ConfirmDeleteDialog";
 
 	private List<Article> Articles { get; } = [];
 
@@ -53,6 +75,17 @@
 		article.IsDeleted = false;
 		await context.SaveChangesAsync();
 		Articles.RemoveAt(Articles.FindIndex(a => a.Id == article.Id));
+	}
+
+	private async Task DeleteAll() {
+		await using var context = await ContextFactory.CreateDbContextAsync();
+
+		context.RemoveRange(await context.Set<Article>()
+			.IgnoreQueryFilters().IgnoreAutoIncludes()
+			.Where(a => a.IsDeleted)
+			.ToListAsync());
+		await context.SaveChangesAsync();
+		Articles.Clear();
 	}
 
 }

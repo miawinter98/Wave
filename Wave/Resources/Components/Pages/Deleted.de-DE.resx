@@ -104,4 +104,16 @@
     <data name="Restore_Submit" xml:space="preserve">
         <value>Artikel Wiederherstellen</value>
     </data>
+    <data name="Delete_Label" xml:space="preserve">
+        <value>Artikel Löschen</value>
+    </data>
+    <data name="Confirm_Title" xml:space="preserve">
+        <value>Sind Sie sich sicher?</value>
+    </data>
+    <data name="Confirm_Submit" xml:space="preserve">
+        <value>Ja, Artikel unwiederruflich löschen</value>
+    </data>
+    <data name="Confirm_Description" xml:space="preserve">
+        <value>Diese Operation ist unwiederruflich</value>
+    </data>
 </root>

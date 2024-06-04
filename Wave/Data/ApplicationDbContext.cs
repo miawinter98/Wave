@@ -74,8 +74,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
 			category.HasMany(c => c.Articles).WithMany(a => a.Categories)
 				.UsingEntity<ArticleCategory>(
-					ac => ac.HasOne(a => a.Article).WithMany().OnDelete(DeleteBehavior.NoAction), 
-					ac => ac.HasOne(a => a.Category).WithMany().OnDelete(DeleteBehavior.NoAction), 
+					ac => ac.HasOne(a => a.Article).WithMany().OnDelete(DeleteBehavior.Cascade), 
+					ac => ac.HasOne(a => a.Category).WithMany().OnDelete(DeleteBehavior.Restrict), 
 					articleCategory => {
 						articleCategory.HasKey(ac => ac.Id);
 						articleCategory.ToTable("ArticleCategories");

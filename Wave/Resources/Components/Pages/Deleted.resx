@@ -104,4 +104,16 @@
     <data name="Restore_Submit" xml:space="preserve">
         <value>Restore Article</value>
     </data>
+    <data name="Delete_Label" xml:space="preserve">
+        <value>Delete Articles</value>
+    </data>
+    <data name="Confirm_Title" xml:space="preserve">
+        <value>Are you sure?</value>
+    </data>
+    <data name="Confirm_Description" xml:space="preserve">
+        <value>This action is irreversible.</value>
+    </data>
+    <data name="Confirm_Submit" xml:space="preserve">
+        <value>Yes, permanently delete articles</value>
+    </data>
 </root>
