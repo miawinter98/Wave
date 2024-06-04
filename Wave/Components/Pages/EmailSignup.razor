@@ -80,7 +80,7 @@
 			await Email.ClearToken(Id, Token);
 
 			var articles = await context.Set<EmailNewsletter>()
-				.IgnoreAutoIncludes().IgnoreQueryFilters().Where(n => n.IsSend)
+				.IgnoreAutoIncludes().IgnoreQueryFilters().Where(n => n.IsSend && !n.Article.IsDeleted)
 				.Include(a => a.Article).ThenInclude(a => a.Author)
 				.OrderByDescending(a => a.DistributionDateTime)
 				.Take(3)
