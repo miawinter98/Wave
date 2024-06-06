@@ -1,6 +1,7 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+ARG BASE=8.0
+FROM mcr.microsoft.com/dotnet/aspnet:$BASE AS base
 RUN mkdir -p /app/files && chown app /app/files
 RUN mkdir -p /configuration && chown app /configuration
 RUN apt-get update && apt-get install -y curl
