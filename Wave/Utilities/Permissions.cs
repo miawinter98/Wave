@@ -33,6 +33,20 @@ public static class Permissions {
 
 		return false;
 	}
+	
+	public static bool AllowedToCreate(ClaimsPrincipal principal) {
+		// Admins always get access
+		if (principal.IsInRole("Admin")) {
+			return true;
+		}
+
+		// Authors can author articles (duh)
+		if (principal.IsInRole("Author")) {
+			return true;
+		}
+
+		return false;
+	}
 
 	public static bool AllowedToEdit(this Article? article, ClaimsPrincipal principal) {
 		if (article is null || article.IsDeleted) return false;

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Wave.Data.Transactional;
 
 namespace Wave.Data;
 
@@ -130,5 +131,66 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			key.HasMany(k => k.ApiClaims).WithOne().OnDelete(DeleteBehavior.Cascade);
 			key.Ignore(k => k.Claims);
 		});
+	}
+
+	internal async ValueTask UpdateArticle(ArticleDto dto, Article article, 
+			CancellationToken cancellation) {
+		article.Title = dto.Title;
+		article.Body = dto.Body;
+		article.LastModified = DateTimeOffset.UtcNow;
+		article.UpdateBody();
+
+		if (article.CanBePublic is false || article.PublishDate > DateTimeOffset.UtcNow) {
+			// Update publish date, if it exists and article isn't public yet
+			if (dto.PublishDate is {} date) article.PublishDate = date;
+			// Can only change slugs when the article is not public
+			article.UpdateSlug(dto.Slug);
+		}
+
+		await UpdateCategories(dto, article, cancellation);
+		await UpdateImages(dto, article, cancellation);
+		await UpdateNewsletter(article, cancellation);
+	}
+	
+	private async ValueTask UpdateCategories(ArticleDto dto, Article article, CancellationToken cancellation) {
+		if (dto.Categories is null) return;
+		
+		// Retrieve all existing links between this article and categories
+		var relationships = await Set<ArticleCategory>()
+			.IgnoreAutoIncludes()
+			.Include(ac => ac.Category)
+			.Where(ac => ac.Article == article)
+			.ToListAsync(cancellation);
+		
+		// check which Category is not in the DTO and needs its relationship removed
+		var removed = relationships.Where(ac => !dto.Categories.Contains(ac.Category.Id)).ToList();
+		if(removed.Count > 0) RemoveRange(removed);
+		
+		// check which Category in the DTO is absent from the article's relationships, and add them
+		var added = dto.Categories.Where(cId => relationships.All(ac => ac.Category.Id != cId)).ToList();
+		if (added.Count > 0) {
+			var categories = await Set<Category>()
+				.IgnoreAutoIncludes().IgnoreQueryFilters()
+				.Where(c => added.Contains(c.Id))
+				.ToListAsync(cancellation);
+
+			await AddRangeAsync(categories.Select(c => new ArticleCategory {
+				Article = article, Category = c
+			}).ToList(), cancellation);
+		}
+	}
+
+	private async ValueTask UpdateImages(ArticleDto dto, Article article, CancellationToken cancellation) {
+		if (dto.Images is null) return;
+
+		// TODO:: implement
+	}
+
+	private async ValueTask UpdateNewsletter(Article article, CancellationToken cancellation) {
+		// Update Newsletter distribution if it exists
+		var newsletter = await Set<EmailNewsletter>()
+			.IgnoreQueryFilters().IgnoreAutoIncludes()
+			.FirstOrDefaultAsync(n => n.Article == article, cancellation);
+		if (newsletter is not null) newsletter.DistributionDateTime = article.PublishDate;
 	}
 }

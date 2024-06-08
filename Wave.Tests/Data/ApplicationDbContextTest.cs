@@ -1,34 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Testcontainers.PostgreSql;
 using Wave.Data;
+using Wave.Tests.TestUtilities;
 
 namespace Wave.Tests.Data;
 
 [TestFixture, FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 [TestOf(typeof(ApplicationDbContext))]
-public class ApplicationDbContextTest {
-	private PostgreSqlContainer PostgresContainer { get; } = new PostgreSqlBuilder().WithImage("postgres:16.1-alpine").Build();
-
-	[SetUp]
-	public async Task SetUp() {
-		await PostgresContainer.StartAsync();
-	}
-
-	[TearDown]
-	public async Task TearDown() {
-		await PostgresContainer.DisposeAsync();
-	}
-
-	private ApplicationDbContext GetContext() {
-		return new ApplicationDbContext(
-			new DbContextOptionsBuilder<ApplicationDbContext>()
-				.UseNpgsql(PostgresContainer.GetConnectionString())
-				.EnableSensitiveDataLogging()
-				.EnableDetailedErrors()
-				.EnableThreadSafetyChecks()
-				.Options);
-	}
-
+public class ApplicationDbContextTest : DbContextTest {
 	[Test]
 	public async Task Migration() {
 		await using var context = GetContext();
