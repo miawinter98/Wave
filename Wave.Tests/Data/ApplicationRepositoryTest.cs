@@ -202,5 +202,19 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 		});
 	}
 
+	[Test]
+	public async Task UpdateCategories_Success() {
+		var update = GetValidTestArticle() with { Categories = [SecondaryCategoryId] };
+		await Repository.UpdateArticle(update, AuthorPrincipal);
+
+		await using var context = GetContext();
+		Assert.Multiple(() => {
+			var article = context.Set<Article>().IgnoreQueryFilters()
+				.Include(a => a.Categories).First(a => a.Id == TestArticleId);
+			Assert.That(article.Categories, Has.Count.EqualTo(1));
+			Assert.That(article.Categories.First().Id, Is.EqualTo(SecondaryCategoryId));
+		});
+	}
+
 	#endregion
 }

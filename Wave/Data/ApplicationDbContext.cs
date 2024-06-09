@@ -162,14 +162,17 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 		
 		// Retrieve all existing links between this article and categories
 		var relationships = await Set<ArticleCategory>()
+			.IgnoreQueryFilters()
 			.IgnoreAutoIncludes()
 			.Include(ac => ac.Category)
 			.Where(ac => ac.Article == article)
 			.ToListAsync(cancellation);
 		
 		// check which Category is not in the DTO and needs its relationship removed
-		var removed = relationships.Where(ac => !dto.Categories.Contains(ac.Category.Id)).ToList();
-		if(removed.Count > 0) RemoveRange(removed);
+		foreach (var ac in relationships.Where(ac => !dto.Categories.Contains(ac.Category.Id))) {
+			article.Categories.Remove(ac.Category);
+			Remove(ac);
+		}
 		
 		// check which Category in the DTO is absent from the article's relationships, and add them
 		var added = dto.Categories.Where(cId => relationships.All(ac => ac.Category.Id != cId)).ToList();
