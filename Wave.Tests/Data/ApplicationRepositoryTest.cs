@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Wave.Data;
@@ -173,6 +174,14 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 
 	private ArticleUpdateDto GetValidTestArticle() => new(TestArticleId);
 
+	private static string StringOfLength(int length) {
+		var builder = new StringBuilder();
+		for (int i = 0; i < length; i++) {
+			builder.Append('_');
+		}
+		return builder.ToString();
+	}
+
 	protected override async ValueTask InitializeTestEntities(ApplicationDbContext context) {
 		var testArticle = new ArticleCreateDto(
 			"Test Article", 
@@ -255,6 +264,24 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 
 		Assert.ThrowsAsync<ArticleMissingPermissionsException>(
 			async () => await Repository.UpdateArticle(update, ReviewerPrincipal));
+	}
+
+	#endregion
+
+	#region Data Validation Tests
+
+	[Test]
+	public void SlugLength65_ThrowsMalformed() {
+		var update = GetValidTestArticle() with { Slug = StringOfLength(65) };
+		Assert.ThrowsAsync<ArticleMalformedException>(
+			async () => await Repository.UpdateArticle(update, AuthorPrincipal));
+	}
+	
+	[Test]
+	public void TitleLength257_ThrowsMalformed() {
+		var update = GetValidTestArticle() with { Slug = StringOfLength(257) };
+		Assert.ThrowsAsync<ArticleMalformedException>(
+			async () => await Repository.UpdateArticle(update, AuthorPrincipal));
 	}
 
 	#endregion
