@@ -91,6 +91,14 @@ public class ApplicationRepositoryTest : DbContextTest {
 	}
 
 	[Test]
+	public void CreateArticleWithIdNotNull_ThrowsArticleException() {
+		var article = GetValidTestArticle() with { Id = new Guid() };
+
+		Assert.ThrowsAsync<ArticleException>(
+			async () => await Repository.CreateArticle(article, AuthorPrincipal!));
+	}
+
+	[Test]
 	public async Task CreateArticle() {
 		var article = GetValidTestArticle();
 
@@ -110,11 +118,10 @@ public class ApplicationRepositoryTest : DbContextTest {
 	[Test]
 	public async Task CreateArticleWithCategories() {
 		Guid categoryId;
-		{
-			await using var c = GetContext();
+		await using (var c = GetContext()) {
 			categoryId = c.Set<Category>().First(cat => cat.Color == CategoryColors.Primary).Id;
 		}
-		var article = GetValidTestArticle([categoryId]);
+		var article = GetValidTestArticle() with {Categories = [categoryId]};
 		var view = await Repository.CreateArticle(article, AuthorPrincipal!);
 		
 		await using var context = GetContext();
@@ -126,11 +133,11 @@ public class ApplicationRepositoryTest : DbContextTest {
 		});
 	}
 
-	private static ArticleDto GetValidTestArticle(Guid[]? categories = null) {
+	private static ArticleDto GetValidTestArticle() {
 		return new ArticleDto(
 			null,
 			"Test Article",
 			"*Test* Body",
-			null, null, categories, null);
+			null, null, null, null);
 	}
 }
