@@ -9,9 +9,16 @@ public abstract class DbContextTest {
 	private PostgreSqlContainer PostgresContainer { get; } = new PostgreSqlBuilder().WithImage("postgres:16.1-alpine").Build();
 
 	[SetUp]
-	public virtual async Task SetUp() => await PostgresContainer.StartAsync();
+	public async Task SetUp() {
+		await PostgresContainer.StartAsync();
+		await AndThenSetUp();
+	}
+	protected virtual ValueTask AndThenSetUp() {
+		return ValueTask.CompletedTask;
+	}
+
 	[TearDown]
-	public virtual async Task TearDown() => await PostgresContainer.DisposeAsync();
+	public async Task TearDown() => await PostgresContainer.DisposeAsync();
 
 	protected ApplicationDbContext GetContext() =>
 		new(new DbContextOptionsBuilder<ApplicationDbContext>()
