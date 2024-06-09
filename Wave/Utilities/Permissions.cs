@@ -15,7 +15,9 @@ public static class Permissions {
 		if (article.Status >= ArticleStatus.Published && article.PublishDate <= DateTimeOffset.UtcNow) {
 			return true;
 		}
-		
+
+		if (principal.Identity?.IsAuthenticated is false) return false;
+
 		// Admins always get access
 		if (principal.IsInRole("Admin")) {
 			return true;
@@ -35,6 +37,8 @@ public static class Permissions {
 	}
 	
 	public static bool AllowedToCreate(ClaimsPrincipal principal) {
+		if (principal.Identity?.IsAuthenticated is false) return false;
+
 		// Admins always get access
 		if (principal.IsInRole("Admin")) {
 			return true;
@@ -50,6 +54,7 @@ public static class Permissions {
 
 	public static bool AllowedToEdit(this Article? article, ClaimsPrincipal principal) {
 		if (article is null || article.IsDeleted) return false;
+		if (principal.Identity?.IsAuthenticated is false) return false; // anon users can't edit ever
 		if (article.Author is null) throw new ArgumentException("Checking permissions without loading related Author.");
 
 		// Admins always can edit articles
@@ -84,12 +89,14 @@ public static class Permissions {
 	}
 
 	public static bool AllowedToRejectReview(this Article? article, ClaimsPrincipal principal) {
+		if (principal.Identity?.IsAuthenticated is false) return false; // anon users can't review ever
 		// if you can publish it, you can reject it
 		return article?.Status is ArticleStatus.InReview && article.AllowedToPublish(principal);
 	}
 
 	public static bool AllowedToSubmitForReview(this Article? article, ClaimsPrincipal principal) {
 		if (article is null || article.IsDeleted) return false;
+		if (principal.Identity?.IsAuthenticated is false) return false; // anon users can't edit ever
 		if (article.Author is null) throw new ArgumentException("Checking permissions without loading related Author.");
 
 		// Draft articles can be submitted by their authors (admins can publish them anyway, no need to submit)
@@ -102,6 +109,7 @@ public static class Permissions {
 
 	public static bool AllowedToPublish(this Article? article, ClaimsPrincipal principal) {
 		if (article is null || article.IsDeleted) return false;
+		if (principal.Identity?.IsAuthenticated is false) return false; // anon users can't publish ever
 		if (article.Author is null) throw new ArgumentException("Checking permissions without loading related Author.");
 		
 		// Admins can skip review and directly publish draft articles
@@ -125,6 +133,7 @@ public static class Permissions {
 
 	public static bool AllowedToDelete(this Article? article, ClaimsPrincipal principal) {
 		if (article is null || article.IsDeleted) return false;
+		if (principal.Identity?.IsAuthenticated is false) return false; // anon users can't delete ever
 		if (article.Author is null) throw new ArgumentException("Checking permissions without loading related Author.");
 
 		// Admins can delete articles whenever

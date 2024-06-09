@@ -13,10 +13,12 @@ public abstract class ApplicationRepositoryTests: DbContextTest {
 	
 	protected const string TestUserName = "testuser@example.com";
 	protected const string AuthorUserName = "author@example.com";
+	protected const string ReviewerUserName = "reviewer@example.com";
 	
 	protected ClaimsPrincipal AnonymousPrincipal { get; set; } = null!;
 	protected ClaimsPrincipal UserPrincipal { get; set; } = null!;
 	protected ClaimsPrincipal AuthorPrincipal { get; set; } = null!;
+	protected ClaimsPrincipal ReviewerPrincipal { get; set; } = null!;
 	
 	protected Guid PrimaryCategoryId { get; set; }
 	protected Guid SecondaryCategoryId { get; set; }
@@ -46,9 +48,12 @@ public abstract class ApplicationRepositoryTests: DbContextTest {
 		var author = new ApplicationUser() {
 			UserName = AuthorUserName
 		};
+		var reviewer = new ApplicationUser() {
+			UserName = ReviewerUserName
+		};
 		
 		context.AddRange(categories);
-		context.Users.AddRange([user, author]);
+		context.Users.AddRange([user, author, reviewer]);
 
 		await context.Database.EnsureCreatedAsync();
 		await context.SaveChangesAsync();
@@ -65,6 +70,14 @@ public abstract class ApplicationRepositoryTests: DbContextTest {
 			new Claim("Id", author.Id),
 			new Claim(ClaimTypes.Role, "Author"),
 		], "Mock Authentication"));
+		ReviewerPrincipal = new ClaimsPrincipal(new ClaimsIdentity([
+			new Claim(ClaimTypes.Name, reviewer.UserName),
+			new Claim(ClaimTypes.NameIdentifier, reviewer.Id),
+			new Claim("Id", reviewer.Id),
+			new Claim(ClaimTypes.Role, "Author"),
+			new Claim(ClaimTypes.Role, "Reviewer"),
+		], "Mock Authentication"));
+
 		PrimaryCategoryId = categories[0].Id;
 		SecondaryCategoryId = categories[1].Id;
 
@@ -214,6 +227,34 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 			Assert.That(article.Categories, Has.Count.EqualTo(1));
 			Assert.That(article.Categories.First().Id, Is.EqualTo(SecondaryCategoryId));
 		});
+	}
+
+	#endregion
+
+	#region Permission Tests
+	
+	[Test]
+	public void AnonymousUser_ThrowsMissingPermissions() {
+		var update = GetValidTestArticle();
+
+		Assert.ThrowsAsync<ArticleMissingPermissionsException>(
+			async () => await Repository.UpdateArticle(update, AnonymousPrincipal));
+	}
+
+	[Test]
+	public void RegularUser_ThrowsMissingPermissions() {
+		var update = GetValidTestArticle();
+
+		Assert.ThrowsAsync<ArticleMissingPermissionsException>(
+			async () => await Repository.UpdateArticle(update, UserPrincipal));
+	}
+	
+	[Test]
+	public void UnrelatedAuthor_ThrowsMissingPermissions() {
+		var update = GetValidTestArticle();
+
+		Assert.ThrowsAsync<ArticleMissingPermissionsException>(
+			async () => await Repository.UpdateArticle(update, ReviewerPrincipal));
 	}
 
 	#endregion
