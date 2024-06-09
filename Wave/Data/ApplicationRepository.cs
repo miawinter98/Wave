@@ -36,9 +36,7 @@ public class ApplicationRepository(IDbContextFactory<ApplicationDbContext> conte
 		throw new ArticleMissingPermissionsException();
 	}
 
-	public async ValueTask<Article> CreateArticle(ArticleDto dto, ClaimsPrincipal user, CancellationToken cancellation = default) {
-		if (dto.Id is not null)
-			throw new ArticleException();
+	public async ValueTask<Article> CreateArticle(ArticleCreateDto dto, ClaimsPrincipal user, CancellationToken cancellation = default) {
 		if (!Permissions.AllowedToCreate(user))
 			throw new ArticleMissingPermissionsException();
 
@@ -64,11 +62,8 @@ public class ApplicationRepository(IDbContextFactory<ApplicationDbContext> conte
 		return article;
 	}
 
-	public async ValueTask<Article> UpdateArticle(ArticleDto dto, ClaimsPrincipal user, 
+	public async ValueTask<Article> UpdateArticle(ArticleUpdateDto dto, ClaimsPrincipal user, 
 			CancellationToken cancellation = default) {
-		if (dto.Id is null)
-			throw new ArticleException();
-		
 		List<ValidationResult> results = [];
 		if (!Validator.TryValidateObject(dto, new ValidationContext(dto), results, true)) {
 			throw new ArticleMalformedException() {
@@ -78,6 +73,7 @@ public class ApplicationRepository(IDbContextFactory<ApplicationDbContext> conte
 		
 		await using var context = await ContextFactory.CreateDbContextAsync(cancellation);
 		var article = await context.Set<Article>()
+			.IgnoreQueryFilters()
 			.Include(a => a.Author)
 			.FirstOrDefaultAsync(a => a.Id == dto.Id, cancellation);
 		if (article is null)

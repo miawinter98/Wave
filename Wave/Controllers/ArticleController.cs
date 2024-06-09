@@ -1,8 +1,6 @@
-﻿using System.Linq;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Wave.Data;
 using Wave.Data.Transactional;
@@ -41,10 +39,7 @@ public class ArticleController(ILogger<ArticleController> logger, ApplicationRep
 			CreatedAtRoute<ArticleView>, 
 			BadRequest<string>, 
 			UnauthorizedHttpResult, 
-			ProblemHttpResult>> CreateArticle(ArticleDto input, CancellationToken cancellation = default) {
-		if (input.Id is not null) return TypedResults.BadRequest(
-			"You cannot provide an ID when creating an article, did you intend to update an existing one instead?");
-
+			ProblemHttpResult>> CreateArticle(ArticleCreateDto input, CancellationToken cancellation = default) {
 		try {
 			var article = new ArticleView(await repository.CreateArticle(input, User, cancellation));
 			return TypedResults.CreatedAtRoute(article, nameof(GetArticle), article.Id);
@@ -70,7 +65,7 @@ public class ArticleController(ILogger<ArticleController> logger, ApplicationRep
 			NotFound,
 			BadRequest<string>, 
 			UnauthorizedHttpResult,
-			ProblemHttpResult>> SaveArticle(ArticleDto input, CancellationToken cancellation = default) 
+			ProblemHttpResult>> UpdateArticle(ArticleUpdateDto input, CancellationToken cancellation = default) 
 	{
 		try {
 			return TypedResults.Ok(new ArticleView(await repository.UpdateArticle(input, User, cancellation)));

@@ -135,8 +135,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
 	internal async ValueTask UpdateArticle(ArticleDto dto, Article article, 
 			CancellationToken cancellation) {
-		article.Title = dto.Title;
-		article.Body = dto.Body;
+		if (dto is ArticleCreateDto cDto) {
+			article.Title = cDto.Title;
+			article.Body = cDto.Body;
+		} else if (dto is ArticleUpdateDto uDto) {
+			if (!string.IsNullOrWhiteSpace(uDto.Title)) article.Title = uDto.Title;
+			if (!string.IsNullOrWhiteSpace(uDto.Body)) article.Body = uDto.Body;
+		}
 		article.LastModified = DateTimeOffset.UtcNow;
 		article.UpdateBody();
 

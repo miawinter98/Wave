@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Wave.Data;
 using Wave.Data.Transactional;
 using Wave.Tests.TestUtilities;
@@ -78,9 +79,8 @@ public abstract class ApplicationRepositoryTests: DbContextTest {
 [TestFixture, FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 [TestOf(typeof(ApplicationRepository))]
 public class ApplicationRepositoryTest_CreateArticle : ApplicationRepositoryTests {
-	private static ArticleDto GetValidTestArticle() {
-		return new ArticleDto(
-			null,
+	private static ArticleCreateDto GetValidTestArticle() {
+		return new ArticleCreateDto(
 			"Test Article",
 			"*Test* Body",
 			null, null, null, null);
@@ -144,21 +144,9 @@ public class ApplicationRepositoryTest_CreateArticle : ApplicationRepositoryTest
 	
 	[Test]
 	public void MissingTitle_ThrowsMalformed() {
-		var article = new ArticleDto(null, 
-			null!, 
-			"*Test* Body", 
-			null, null, null, null);
+		var article = GetValidTestArticle() with { Title = null! };
 		
 		Assert.ThrowsAsync<ArticleMalformedException>(
-			async () => await Repository.CreateArticle(article, AuthorPrincipal));
-	}
-	
-
-	[Test]
-	public void WithIdNotNull_ThrowsArticleException() {
-		var article = GetValidTestArticle() with { Id = new Guid() };
-
-		Assert.ThrowsAsync<ArticleException>(
 			async () => await Repository.CreateArticle(article, AuthorPrincipal));
 	}
 
@@ -170,8 +158,10 @@ public class ApplicationRepositoryTest_CreateArticle : ApplicationRepositoryTest
 public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTests {
 	private Guid TestArticleId { get; set; }
 
+	private ArticleUpdateDto GetValidTestArticle() => new(TestArticleId);
+
 	protected override async ValueTask InitializeTestEntities(ApplicationDbContext context) {
-		var testArticle = new ArticleDto(null,
+		var testArticle = new ArticleCreateDto(
 			"Test Article", 
 			"Test **Article** with *formatting.", 
 			"test-article", 
@@ -182,5 +172,35 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 		TestArticleId = view.Id;
 	}
 
+	#region Success Tests
 
+	[Test]
+	public async Task UpdateTitle_Success() {
+		var update = GetValidTestArticle() with { Title = "New Title" };
+
+		await Repository.UpdateArticle(update, AuthorPrincipal);
+
+		await using var context = GetContext();
+		Assert.Multiple(() => {
+			Assert.That(context.Set<Article>().IgnoreQueryFilters().First(a => a.Id == TestArticleId).Title, Is.EqualTo("New Title"));
+		});
+	}
+
+	[Test]
+	public async Task UpdateBodyUpdatesHtmlAndPlain_Success() {
+		var update = GetValidTestArticle() with { Body = "Some *new* Body" };
+		const string expectedHtml = "<p>Some <em>new</em> Body</p>";
+		const string expectedPlain = "Some new Body";
+		
+		await Repository.UpdateArticle(update, AuthorPrincipal);
+
+		await using var context = GetContext();
+		Assert.Multiple(() => {
+			var article = context.Set<Article>().IgnoreQueryFilters().First(a => a.Id == TestArticleId);
+			Assert.That(article.BodyHtml, Is.EqualTo(expectedHtml));
+			Assert.That(article.BodyPlain, Is.EqualTo(expectedPlain));
+		});
+	}
+
+	#endregion
 }
