@@ -106,7 +106,7 @@ public class ApplicationRepositoryTest_CreateArticle : ApplicationRepositoryTest
 	public async Task MinimalArticle_Success() {
 		var article = GetValidTestArticle();
 
-		var view = await Repository.CreateArticle(article, AuthorPrincipal);
+		var view = await Repository.CreateArticleAsync(article, AuthorPrincipal);
 
 		await using var context = GetContext();
 		Assert.Multiple(() => {
@@ -121,7 +121,7 @@ public class ApplicationRepositoryTest_CreateArticle : ApplicationRepositoryTest
 	[Test]
 	public async Task WithCategories_Success() {
 		var article = GetValidTestArticle() with {Categories = [PrimaryCategoryId]};
-		var view = await Repository.CreateArticle(article, AuthorPrincipal);
+		var view = await Repository.CreateArticleAsync(article, AuthorPrincipal);
 		
 		await using var context = GetContext();
 		Assert.Multiple(() => {
@@ -141,7 +141,7 @@ public class ApplicationRepositoryTest_CreateArticle : ApplicationRepositoryTest
 		var article = GetValidTestArticle();
 
 		Assert.ThrowsAsync<ArticleMissingPermissionsException>(
-			async () => await Repository.CreateArticle(article, UserPrincipal));
+			async () => await Repository.CreateArticleAsync(article, UserPrincipal));
 	}
 
 	[Test]
@@ -149,7 +149,7 @@ public class ApplicationRepositoryTest_CreateArticle : ApplicationRepositoryTest
 		var article = GetValidTestArticle();
 
 		Assert.ThrowsAsync<ArticleMissingPermissionsException>(
-			async () => await Repository.CreateArticle(article, AnonymousPrincipal));
+			async () => await Repository.CreateArticleAsync(article, AnonymousPrincipal));
 	}
 
 	#endregion
@@ -161,7 +161,7 @@ public class ApplicationRepositoryTest_CreateArticle : ApplicationRepositoryTest
 		var article = GetValidTestArticle() with { Title = null! };
 		
 		Assert.ThrowsAsync<ArticleMalformedException>(
-			async () => await Repository.CreateArticle(article, AuthorPrincipal));
+			async () => await Repository.CreateArticleAsync(article, AuthorPrincipal));
 	}
 
 	#endregion
@@ -190,7 +190,7 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 			DateTimeOffset.Now.AddHours(-5),
 			[PrimaryCategoryId], null);
 
-		var view = await Repository.CreateArticle(testArticle, AuthorPrincipal);
+		var view = await Repository.CreateArticleAsync(testArticle, AuthorPrincipal);
 		TestArticleId = view.Id;
 	}
 
@@ -200,7 +200,7 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 	public async Task UpdateTitle_Success() {
 		var update = GetValidTestArticle() with { Title = "New Title" };
 
-		await Repository.UpdateArticle(update, AuthorPrincipal);
+		await Repository.UpdateArticleAsync(update, AuthorPrincipal);
 
 		await using var context = GetContext();
 		Assert.Multiple(() => {
@@ -214,7 +214,7 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 		const string expectedHtml = "<p>Some <em>new</em> Body</p>";
 		const string expectedPlain = "Some new Body";
 		
-		await Repository.UpdateArticle(update, AuthorPrincipal);
+		await Repository.UpdateArticleAsync(update, AuthorPrincipal);
 
 		await using var context = GetContext();
 		Assert.Multiple(() => {
@@ -227,7 +227,7 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 	[Test]
 	public async Task UpdateCategories_Success() {
 		var update = GetValidTestArticle() with { Categories = [SecondaryCategoryId] };
-		await Repository.UpdateArticle(update, AuthorPrincipal);
+		await Repository.UpdateArticleAsync(update, AuthorPrincipal);
 
 		await using var context = GetContext();
 		Assert.Multiple(() => {
@@ -247,7 +247,7 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 		var update = GetValidTestArticle();
 
 		Assert.ThrowsAsync<ArticleMissingPermissionsException>(
-			async () => await Repository.UpdateArticle(update, AnonymousPrincipal));
+			async () => await Repository.UpdateArticleAsync(update, AnonymousPrincipal));
 	}
 
 	[Test]
@@ -255,7 +255,7 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 		var update = GetValidTestArticle();
 
 		Assert.ThrowsAsync<ArticleMissingPermissionsException>(
-			async () => await Repository.UpdateArticle(update, UserPrincipal));
+			async () => await Repository.UpdateArticleAsync(update, UserPrincipal));
 	}
 	
 	[Test]
@@ -263,7 +263,7 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 		var update = GetValidTestArticle();
 
 		Assert.ThrowsAsync<ArticleMissingPermissionsException>(
-			async () => await Repository.UpdateArticle(update, ReviewerPrincipal));
+			async () => await Repository.UpdateArticleAsync(update, ReviewerPrincipal));
 	}
 
 	#endregion
@@ -274,14 +274,14 @@ public class ApplicationRepositoryTest_UpdateArticle : ApplicationRepositoryTest
 	public void SlugLength65_ThrowsMalformed() {
 		var update = GetValidTestArticle() with { Slug = StringOfLength(65) };
 		Assert.ThrowsAsync<ArticleMalformedException>(
-			async () => await Repository.UpdateArticle(update, AuthorPrincipal));
+			async () => await Repository.UpdateArticleAsync(update, AuthorPrincipal));
 	}
 	
 	[Test]
 	public void TitleLength257_ThrowsMalformed() {
 		var update = GetValidTestArticle() with { Slug = StringOfLength(257) };
 		Assert.ThrowsAsync<ArticleMalformedException>(
-			async () => await Repository.UpdateArticle(update, AuthorPrincipal));
+			async () => await Repository.UpdateArticleAsync(update, AuthorPrincipal));
 	}
 
 	#endregion

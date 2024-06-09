@@ -18,7 +18,7 @@ public class ArticleController(ILogger<ArticleController> logger, ApplicationRep
 			UnauthorizedHttpResult, 
 			ProblemHttpResult>> GetArticle(Guid id, CancellationToken cancellation = default) {
 		try {
-			return TypedResults.Ok(await repository.GetArticle(id, User, cancellation));
+			return TypedResults.Ok(await repository.GetArticleAsync(id, User, cancellation));
 		} catch (ArticleNotFoundException) {
 			logger.LogWarning("Failed to look up Article with Id {ArticleId}. Not Found", id);
 			return TypedResults.NotFound();
@@ -41,7 +41,7 @@ public class ArticleController(ILogger<ArticleController> logger, ApplicationRep
 			UnauthorizedHttpResult, 
 			ProblemHttpResult>> CreateArticle(ArticleCreateDto input, CancellationToken cancellation = default) {
 		try {
-			var article = new ArticleView(await repository.CreateArticle(input, User, cancellation));
+			var article = new ArticleView(await repository.CreateArticleAsync(input, User, cancellation));
 			return TypedResults.CreatedAtRoute(article, nameof(GetArticle), article.Id);
 		} catch (ArticleMissingPermissionsException) {
 			logger.LogWarning(
@@ -68,7 +68,7 @@ public class ArticleController(ILogger<ArticleController> logger, ApplicationRep
 			ProblemHttpResult>> UpdateArticle(ArticleUpdateDto input, CancellationToken cancellation = default) 
 	{
 		try {
-			return TypedResults.Ok(new ArticleView(await repository.UpdateArticle(input, User, cancellation)));
+			return TypedResults.Ok(new ArticleView(await repository.UpdateArticleAsync(input, User, cancellation)));
 		} catch (ArticleNotFoundException) {
 			return TypedResults.NotFound();
 		} catch (ArticleMalformedException ex) {

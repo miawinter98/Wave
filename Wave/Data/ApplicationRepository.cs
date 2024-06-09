@@ -20,7 +20,7 @@ public class ArticleMalformedException : ArticleException {
 public class ApplicationRepository(IDbContextFactory<ApplicationDbContext> contextFactory) {
 	private IDbContextFactory<ApplicationDbContext> ContextFactory { get; } = contextFactory;
 
-	public async ValueTask<Article?> GetArticle(Guid id, ClaimsPrincipal user, CancellationToken cancellation = default) {
+	public async ValueTask<Article?> GetArticleAsync(Guid id, ClaimsPrincipal user, CancellationToken cancellation = default) {
 		await using var context = await ContextFactory.CreateDbContextAsync(cancellation);
 		var article = await context.Set<Article>()
 			.Include(a => a.Author)
@@ -36,7 +36,8 @@ public class ApplicationRepository(IDbContextFactory<ApplicationDbContext> conte
 		throw new ArticleMissingPermissionsException();
 	}
 
-	public async ValueTask<Article> CreateArticle(ArticleCreateDto dto, ClaimsPrincipal user, CancellationToken cancellation = default) {
+	public async ValueTask<Article> CreateArticleAsync(ArticleCreateDto dto, ClaimsPrincipal user, 
+		CancellationToken cancellation = default) {
 		if (!Permissions.AllowedToCreate(user))
 			throw new ArticleMissingPermissionsException();
 
@@ -62,7 +63,7 @@ public class ApplicationRepository(IDbContextFactory<ApplicationDbContext> conte
 		return article;
 	}
 
-	public async ValueTask<Article> UpdateArticle(ArticleUpdateDto dto, ClaimsPrincipal user, 
+	public async ValueTask<Article> UpdateArticleAsync(ArticleUpdateDto dto, ClaimsPrincipal user, 
 			CancellationToken cancellation = default) {
 		List<ValidationResult> results = [];
 		if (!Validator.TryValidateObject(dto, new ValidationContext(dto), results, true)) {
