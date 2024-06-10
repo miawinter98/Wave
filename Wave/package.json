@@ -1,24 +1,30 @@
 {
-    "name": "wave",
-    "version": "0.0.1",
-    "type": "module",
-    "scripts": {
-        "dev": "vite",
-        "build": "vite build",
-        "preview": "vite preview"
-    },
-    "author": "Mia Rose Winter",
-    "license": "MIT",
-    "devDependencies": {
-        "@fontsource/noto-sans-display": "^5.0.20",
-        "@fontsource/nunito-sans": "^5.0.13",
-        "@tailwindcss/typography": "^0.5.10",
-        "autoprefixer": "^10.4.16",
-        "cssnano": "^6.0.3",
-        "daisyui": "^4.6.0",
-        "postcss": "^8.4.33",
-        "tailwindcss": "^3.4.1",
-        "typescript": "^5.4.5",
-        "vite": "^5.2.13"
-    }
+  "name": "wave",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "author": "Mia Rose Winter",
+  "license": "MIT",
+  "devDependencies": {
+    "@fontsource/noto-sans-display": "^5.0.20",
+    "@fontsource/nunito-sans": "^5.0.13",
+    "@tailwindcss/typography": "^0.5.10",
+    "@types/node": "^20.14.2",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react-swc": "^3.7.0",
+    "autoprefixer": "^10.4.16",
+    "cssnano": "^6.0.3",
+    "daisyui": "^4.6.0",
+    "postcss": "^8.4.33",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.13"
+  }
 }

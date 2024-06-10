@@ -4,7 +4,6 @@
 @using Vite.AspNetCore
 @using Wave.Data
 
-@inject IHostEnvironment Environment
 @inject IViteManifest ViteManifest
 @inject IOptions<Customization> Customizations
 
@@ -49,13 +48,6 @@
 <Routes />
 </CascadingValue>
 	<script src="_framework/blazor.web.js" defer></script>
-	@if (Environment.IsDevelopment()) {
-		<script type="module" src="http://localhost:5173/@@vite/client"></script>
-		<script type="module" src="/dist/app.ts"></script>
-	} else {
-	}
-	<!-- TODO fix development mode for proper... vite thing -->
-	<script type="module" src="/dist/@(ViteManifest["app.ts"]!.File)"></script>
 	<SectionOutlet SectionName="scripts" />
 	<script>
 		charactersLeft_onInput = function(input) {

@@ -3,20 +3,31 @@
 
 @using System.ComponentModel.DataAnnotations
 @using Humanizer
+@using Vite.AspNetCore
 @using Wave.Data
 @using Wave.Utilities
 
+@rendermode InteractiveServer
 @attribute [Authorize(Policy = "ArticleEditPermissions")]
 
 @inject ILogger<ArticleEditor> Logger
 @inject NavigationManager Navigation
 @inject IStringLocalizer<ArticleEditor> Localizer
 @inject IMessageDisplay Message
+@inject IViteManifest ViteManifest
+@inject IViteDevServerStatus ViteServer
+@inject IJSRuntime JS
 
 <PageTitle>@(Localizer["EditorTitle"] + TitlePostfix)</PageTitle>
 
+<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
+<div id="editor">
+	<div class="flex place-content-center">
+		<span class="loading loading-spinner loading-lg"></span>
+	</div>
+</div>
+
 @if (Article is null) {
-	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
 
 	<div class="flex place-content-center">
 		<span class="loading loading-spinner loading-lg"></span>
@@ -24,8 +35,6 @@
 } else {
 	<ErrorBoundary>
 		<ChildContent>
-			<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
-
 			<div class="w-full">
 				<ul class="steps w-full max-w-xs">
 					<li class="step @(Article.Status >= ArticleStatus.Draft ? "step-secondary" : "")">@Localizer["Draft"]</li>
@@ -112,9 +121,20 @@
 	private bool Saving { get; set; }
 
 	private IReadOnlyList<Category> Categories { get; } = [];
-	
+
+	private bool ReactImported { get; set; }
+
 	protected override async Task OnAfterRenderAsync(bool first) {
 		if (!first) return;
+
+		if (!ReactImported) {
+			ReactImported = true;
+			
+			string mainModule = ViteServer.IsEnabled
+				? $"{ViteServer.ServerUrlWithBasePath}/main.tsx"
+				: $"/dist/{ViteManifest["main.tsx"]!.File}";
+			await JS.InvokeAsync<IJSObjectReference>("import", mainModule);
+		}
 
 		Article = new(Guid.NewGuid(), "", "", "", "", ArticleStatus.Draft, DateTimeOffset.MaxValue);
 	}

@@ -1,19 +1,19 @@
 {
-    "compilerOptions": {
-        "target": "ES2020",
-        "useDefineForClassFields": true,
-        "lib": [ "ES2020", "DOM", "DOM.Iterable" ],
-        "module": "ESNext",
-        "skipLibCheck": true,
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": [ "ES2020", "DOM", "DOM.Iterable" ],
+    "module": "ESNext",
+    "skipLibCheck": true,
 
-        "moduleResolution": "bundler",
-        "allowImportingTsExtensions": true,
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "noEmit": true,
-        "jsx": "preserve",
-        "jsxImportSource": "solid-js",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": [ "vite" ],
 
-        "strict": true
-    }
+    "strict": true
+  }
 }
