@@ -15,27 +15,27 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<base href="/">
-	<link rel="stylesheet" href="@(ViteManifest["css/main.css"]?.File ?? "css/main.css")">
+	<link rel="stylesheet" href="/dist/@(ViteManifest["css/main.css"]?.File ?? "css/main.css")">
 
 	<!-- #region favicon + manifest -->
 	@if (!string.IsNullOrWhiteSpace(Customizations.Value.IconLink)) {
 		<link rel="icon" href="@Customizations.Value.IconLink">
 	} else {
-		<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-		<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-		<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-		<link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-		<link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-		<link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-		<link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-		<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-		<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-		<link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
-		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-		<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="57x57" href="/dist/apple-icon-57x57.png">
+		<link rel="apple-touch-icon" sizes="60x60" href="/dist/apple-icon-60x60.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="/dist/apple-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="76x76" href="/dist/apple-icon-76x76.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="/dist/apple-icon-114x114.png">
+		<link rel="apple-touch-icon" sizes="120x120" href="/dist/apple-icon-120x120.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="/dist/apple-icon-144x144.png">
+		<link rel="apple-touch-icon" sizes="152x152" href="/dist/apple-icon-152x152.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/dist/apple-icon-180x180.png">
+		<link rel="icon" type="image/png" sizes="192x192"  href="/dist/android-icon-192x192.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/dist/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="/dist/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/dist/favicon-16x16.png">
 	}
-	<link rel="manifest" href="/manifest.json">
+	<link rel="manifest" href="/dist/manifest.json">
 	<meta name="msapplication-TileColor" content="#ffffff">
 	<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 	<meta name="theme-color" content="#ffffff">
@@ -51,10 +51,11 @@
 	<script src="_framework/blazor.web.js" defer></script>
 	@if (Environment.IsDevelopment()) {
 		<script type="module" src="http://localhost:5173/@@vite/client"></script>
-		<script type="module" src="~/app.ts"></script>
+		<script type="module" src="/dist/app.ts"></script>
 	} else {
-		<script type="module" src="/@(ViteManifest["app.ts"]!.File)"></script>
 	}
+	<!-- TODO fix development mode for proper... vite thing -->
+	<script type="module" src="/dist/@(ViteManifest["app.ts"]!.File)"></script>
 	<SectionOutlet SectionName="scripts" />
 	<script>
 		charactersLeft_onInput = function(input) {

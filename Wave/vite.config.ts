@@ -4,18 +4,19 @@ import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
 
 export default defineConfig({
-	appType: 'custom',
-	root: 'Assets',
-	publicDir: 'public',
+	appType: "custom",
+	base: "/dist/",
+	root: "Assets",
+	publicDir: "public",
 	build: {
 		emptyOutDir: true,
 		manifest: true,
-		outDir: '../wwwroot',
-		assetsDir: '',
+		outDir: "../wwwroot/dist",
+		assetsDir: "",
 		rollupOptions: {
 			input: [
-				'Assets/css/main.css',
-				'Assets/app.ts'
+				"Assets/css/main.css",
+				"Assets/app.ts"
 			]
 		},
 	},

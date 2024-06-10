@@ -86,6 +86,7 @@ builder.Services.AddViteServices(options => {
 	options.Server.AutoRun = true;
 	options.Server.ScriptName = "dev";
 	options.Server.Https = false;
+	options.Base = "/dist/";
 });
 
 #region Data Protection & Redis
