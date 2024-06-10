@@ -1,5 +1,14 @@
-﻿@import "@fontsource/nunito-sans";
-@import "@fontsource/noto-sans-display";
+﻿@import "@fontsource/noto-sans-display";
+
+@font-face {
+    font-display: block;
+    font-family: 'Nunito Sans';
+    font-style: normal;
+    font-weight: 700;
+    src: 
+       url('@fontsource/nunito-sans/files/nunito-sans-latin-700-normal.woff') format('woff'),
+       url('@fontsource/nunito-sans/files/nunito-sans-latin-700-normal.woff2') format('woff2');
+}
 
 @tailwind base;
 @tailwind components;
