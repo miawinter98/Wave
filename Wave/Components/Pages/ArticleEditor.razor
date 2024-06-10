@@ -1,19 +1,21 @@
 ﻿@page "/article/new"
 @page "/article/{id:guid}/edit"
 
+@using System.ComponentModel.DataAnnotations
+@using Humanizer
 @using Wave.Data
-@using Microsoft.AspNetCore.Identity
-@using System.Security.Claims
+@using Wave.Utilities
 
-@rendermode @(new InteractiveServerRenderMode(true))
 @attribute [Authorize(Policy = "ArticleEditPermissions")]
 
-@inject UserManager<ApplicationUser> UserManager
+@inject ILogger<ArticleEditor> Logger
+@inject NavigationManager Navigation
 @inject IStringLocalizer<ArticleEditor> Localizer
+@inject IMessageDisplay Message
 
 <PageTitle>@(Localizer["EditorTitle"] + TitlePostfix)</PageTitle>
 
-@if (User is null) {
+@if (Article is null) {
 	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
 
 	<div class="flex place-content-center">
@@ -23,8 +25,75 @@
 	<ErrorBoundary>
 		<ChildContent>
 			<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
-			
-			<Wave.Components.Pages.Partials.ArticleEditorPartial Id="@Id" User="@User" ClaimsUser="@ClaimsUser" />
+
+			<div class="w-full">
+				<ul class="steps w-full max-w-xs">
+					<li class="step @(Article.Status >= ArticleStatus.Draft ? "step-secondary" : "")">@Localizer["Draft"]</li>
+					<li class="step @(Article.Status >= ArticleStatus.InReview ? "step-secondary" : "")">@Localizer["InReview"]</li>
+					<li class="step @(Article.Status >= ArticleStatus.Published ? "step-secondary" : "")">@Localizer["Published"]</li>
+				</ul>
+			</div>
+
+			<EditForm method="post" FormName="article-editor" Model="@Model" OnValidSubmit="OnValidSubmit">
+				<DataAnnotationsValidator />
+				<input type="hidden" @bind-value="@Model.Id" />
+
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8">
+					<InputLabelComponent LabelText="@Localizer["Title_Label"]" For="() => Model.Title">
+						<InputText class="input input-bordered w-full" maxlength="256" required aria-required oninput="charactersLeft_onInput(this)"
+								   @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off" />
+					</InputLabelComponent>
+
+					<InputLabelComponent class="row-span-3" LabelText="@Localizer["Categories_Label"]" For="() => Model.Categories">
+						<InputSelect class="select select-bordered w-full" @bind-Value="@Model.Categories" multiple size="10">
+							@foreach (var group in Categories.GroupBy(c => c.Color)) {
+								<optgroup class="font-bold not-italic my-3" label="@group.Key.Humanize()">
+									@foreach (var category in group) {
+										<option value="@category.Id" selected="@Model.Categories?.Contains(category.Id)">@category.Name</option>
+									}
+								</optgroup>
+							}
+						</InputSelect>
+					</InputLabelComponent>
+
+					<InputLabelComponent LabelText="@Localizer["Slug_Label"]" For="() => Model.Slug">
+						@if (Article.Status is not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow) {
+							<InputText class="input input-bordered w-full" maxlength="64" oninput="charactersLeft_onInput(this)"
+									   @bind-Value="@Model.Slug" placeholder="@Localizer["Slug_Placeholder"]" autocomplete="off" />
+						} else {
+							<input class="input input-bordered w-full" readonly value="@Model.Slug"
+								   placeholder="@Localizer["Slug_Placeholder"]" autocomplete="off" />
+						}
+					</InputLabelComponent>
+
+					<InputLabelComponent LabelText="@Localizer["PublishDate_Label"]" For="() => Model.PublishDate">
+						@if (Article.Status is not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow) {
+							<InputDate class="input input-bordered w-full" Type="InputDateType.DateTimeLocal"
+									   @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" autocomplete="off" />
+						} else {
+							<input class="input input-bordered w-full"
+								   type="datetime-local" readonly value="@Article.PublishDate.ToString("yyyy-MM-dd\\THH:mm:ss")" />
+						}
+					</InputLabelComponent>
+				</div>
+
+				<AdvancedMarkdownEditor Title="@Model.Title" MarkdownCallback="() => Model.Body">
+					<textarea id="tool-target" class="textarea textarea-bordered outline-none w-full flex-1 join-item"
+							  required aria-required placeholder="@Localizer["Body_Placeholder"]"
+							  @bind="@Model.Body" @bind:event="oninput" autocomplete="off"></textarea>
+				</AdvancedMarkdownEditor>
+
+				<div class="flex gap-2 flex-wrap mt-3">
+					<button type="submit" class="btn btn-primary w-full sm:btn-wide @(Saving ? "btn-loading" : "")" disabled="@Saving">
+						@Localizer["EditorSubmit"]
+					</button>
+					@if (Article.Id != Guid.Empty) {
+						<a class="btn w-full sm:btn-wide" href="@($"/article/{Article.Id}")">
+							@Localizer["ViewArticle_Label"]
+						</a>
+					}
+				</div>
+			</EditForm>
 		</ChildContent>
 		<ErrorContent>
 			<h1 class="text-3xl lg:text-5xl font-light mb-6">Not found</h1>
@@ -32,27 +101,58 @@
 	</ErrorBoundary>
 }
 
-
 @code {
 	[CascadingParameter(Name = "TitlePostfix")]
 	private string TitlePostfix { get; set; } = default!;
-	[CascadingParameter]
-	private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
-
 	[Parameter]
 	public Guid? Id { get; set; }
-	private ApplicationUser? User { get; set; }
-	private ClaimsPrincipal? ClaimsUser { get; set; }
+	private InputModel Model { get; set; } = new();
 
-	protected override async Task OnAfterRenderAsync(bool firstRender) {
-		if (firstRender) {
-			if (User is not null) return;
-			var state = await AuthenticationState;
-			ClaimsUser = state.User;
-			var user = await UserManager.GetUserAsync(state.User);
-			User = user ?? throw new ApplicationException("???2");
+	private Data.Transactional.ArticleView? Article { get; set; }
+	private bool Saving { get; set; }
+
+	private IReadOnlyList<Category> Categories { get; } = [];
+	
+	protected override async Task OnAfterRenderAsync(bool first) {
+		if (!first) return;
+
+		Article = new(Guid.NewGuid(), "", "", "", "", ArticleStatus.Draft, DateTimeOffset.MaxValue);
+	}
+
+	private async Task OnValidSubmit() {
+		try {
+			Saving = true;
+
+			if (false is false) {
+				Message.ShowError("Permission denied.");
+				return;
+			}
+
+			Message.ShowSuccess(Localizer["Save_Success"]);
+
+			if (Navigation.Uri.EndsWith("/article/new")) {
+				Navigation.NavigateTo($"/article/{Id!.Value}/edit", false, true);
+			}
+		} catch (Exception ex) {
+			Message.ShowError(Localizer["Save_Error"]);
+			Logger.LogError(ex, "Failed to save article.");
+		} finally {
+			Saving = false;
 			await InvokeAsync(StateHasChanged);
 		}
 	}
 
+	private sealed class InputModel {
+		public Guid? Id { get; set; }
+
+		[Required(AllowEmptyStrings = false), MaxLength(256)]
+		public string? Title { get; set; }
+		[MaxLength(64)]
+		public string? Slug { get; set; }
+		[Required(AllowEmptyStrings = false)]
+		public string? Body { get; set; }
+
+		public Guid[]? Categories { get; set; } = [];
+		public DateTimeOffset? PublishDate { get; set; }
+	}
 }
