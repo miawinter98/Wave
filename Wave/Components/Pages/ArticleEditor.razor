@@ -35,14 +35,6 @@
 } else {
 	<ErrorBoundary>
 		<ChildContent>
-			<div class="w-full">
-				<ul class="steps w-full max-w-xs">
-					<li class="step @(Article.Status >= ArticleStatus.Draft ? "step-secondary" : "")">@Localizer["Draft"]</li>
-					<li class="step @(Article.Status >= ArticleStatus.InReview ? "step-secondary" : "")">@Localizer["InReview"]</li>
-					<li class="step @(Article.Status >= ArticleStatus.Published ? "step-secondary" : "")">@Localizer["Published"]</li>
-				</ul>
-			</div>
-
 			<EditForm method="post" FormName="article-editor" Model="@Model" OnValidSubmit="OnValidSubmit">
 				<DataAnnotationsValidator />
 				<input type="hidden" @bind-value="@Model.Id" />
