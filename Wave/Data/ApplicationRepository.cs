@@ -20,19 +20,20 @@ public class ArticleMalformedException : ArticleException {
 public class ApplicationRepository(IDbContextFactory<ApplicationDbContext> contextFactory) {
 	private IDbContextFactory<ApplicationDbContext> ContextFactory { get; } = contextFactory;
 
-	public async ValueTask<Article?> GetArticleAsync(Guid id, ClaimsPrincipal user, CancellationToken cancellation = default) {
+	public async ValueTask<Article> GetArticleAsync(Guid id, ClaimsPrincipal user, CancellationToken cancellation = default) {
 		await using var context = await ContextFactory.CreateDbContextAsync(cancellation);
 		var article = await context.Set<Article>()
+			.IgnoreAutoIncludes()
 			.Include(a => a.Author)
 			.Include(a => a.Reviewer)
 			.Include(a => a.Categories)
 			.FirstOrDefaultAsync(a => a.Id == id, cancellation);
 		
+		if (article is null)
+			throw new ArticleNotFoundException();
 		if (article.AllowedToRead(user))
 			return article;
 		
-		if (article is null)
-			throw new ArticleNotFoundException();
 		throw new ArticleMissingPermissionsException();
 	}
 

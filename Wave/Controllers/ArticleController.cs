@@ -9,16 +9,16 @@ namespace Wave.Controllers;
 
 [ApiController]
 [Route("/api/[controller]")]
-public class ArticleController(ILogger<ArticleController> logger, ApplicationRepository repository) : ControllerBase {
+public partial class ArticleController(ILogger<ArticleController> logger, ApplicationRepository repository) : ControllerBase {
 	[HttpGet, AllowAnonymous]
 	[Produces("application/json")]
 	public async Task<Results<
-			Ok<Article>, 
+			Ok<ArticleView>, 
 			NotFound, 
 			UnauthorizedHttpResult, 
 			ProblemHttpResult>> GetArticle(Guid id, CancellationToken cancellation = default) {
 		try {
-			return TypedResults.Ok(await repository.GetArticleAsync(id, User, cancellation));
+			return TypedResults.Ok(new ArticleView(await repository.GetArticleAsync(id, User, cancellation)));
 		} catch (ArticleNotFoundException) {
 			logger.LogWarning("Failed to look up Article with Id {ArticleId}. Not Found", id);
 			return TypedResults.NotFound();
@@ -82,8 +82,5 @@ public class ArticleController(ILogger<ArticleController> logger, ApplicationRep
 			return TypedResults.Problem();
 		}
 	}
-	
-	public sealed record ArticleView(Guid Id, string Title, string Slug) {
-		public ArticleView(Article article) : this(article.Id, article.Title, article.Slug) {}
-	}
+
 }
