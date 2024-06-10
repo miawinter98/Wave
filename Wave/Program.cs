@@ -198,6 +198,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => {
 	.AddSignInManager()
 	.AddDefaultTokenProviders()
 	.AddClaimsPrincipalFactory<UserClaimsFactory>();
+builder.Services.AddScoped<ApplicationRepository>();
 
 #endregion
 
@@ -334,18 +335,17 @@ app.UseStaticFiles(new StaticFileOptions {
 		}
 	}
 });
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseAntiforgery();
 
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
-
-// Add additional endpoints required by the Identity /Account Razor components.
-app.MapAdditionalIdentityEndpoints();
-
 app.MapHealthChecks("/health");
-
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.MapAdditionalIdentityEndpoints();
 app.MapControllers();
-app.UseOutputCache();
 
+app.UseOutputCache();
 app.UseRequestLocalization();
 
 {
