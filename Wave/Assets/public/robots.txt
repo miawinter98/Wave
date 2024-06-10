@@ -1,0 +1,24 @@
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: CCBot
+User-agent: anthropic-ai
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: *
+Allow: /Account/Login
+Allow: /Account/Register
+Disallow: /Account
+Disallow: /Account/Manage
+Disallow: /Email/Confirm
+Disallow: /Email/Unsubscribe
+
+#  _______  ______    _______  __    _  _______    ______    ___   _______  __   __  _______  _______ 
+# |       ||    _ |  |   _   ||  |  | ||       |  |    _ |  |   | |       ||  | |  ||       ||       |
+# |_     _||   | ||  |  |_|  ||   |_| ||  _____|  |   | ||  |   | |    ___||  |_|  ||_     _||  _____|
+#   |   |  |   |_||_ |       ||       || |_____   |   |_||_ |   | |   | __ |       |  |   |  | |_____ 
+#   |   |  |    __  ||       ||  _    ||_____  |  |    __  ||   | |   ||  ||       |  |   |  |_____  |
+#   |   |  |   |  | ||   _   || | |   | _____| |  |   |  | ||   | |   |_| ||   _   |  |   |   _____| |
+#   |___|  |___|  |_||__| |__||_|  |__||_______|  |___|  |_||___| |_______||__| |__|  |___|  |_______|
+# 
+# http://www.patorjk.com/software/taag/#p=display&h=0&v=0&f=Modular&t=Trans%20Rights

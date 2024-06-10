@@ -1,17 +1,21 @@
 ﻿@using System.Globalization
 @using Microsoft.AspNetCore.Localization
 @using Microsoft.Extensions.Options
+@using Vite.AspNetCore
 @using Wave.Data
+
+@inject IHostEnvironment Environment
+@inject IViteManifest ViteManifest
 @inject IOptions<Customization> Customizations
+
 <!DOCTYPE html>
 <html lang="@CultureInfo.CurrentUICulture.ToString()" data-theme="@(UserTheme ?? Customizations.Value.DefaultTheme)">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="/">
-	<link rel="stylesheet" href="app.css">
-	<link rel="stylesheet" href="/css/main.min.css">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<base href="/">
+	<link rel="stylesheet" href="@(ViteManifest["css/main.css"]?.File ?? "css/main.css")">
 
 	<!-- #region favicon + manifest -->
 	@if (!string.IsNullOrWhiteSpace(Customizations.Value.IconLink)) {
@@ -45,6 +49,12 @@
 <Routes />
 </CascadingValue>
 	<script src="_framework/blazor.web.js" defer></script>
+	@if (Environment.IsDevelopment()) {
+		<script type="module" src="http://localhost:5173/@@vite/client"></script>
+		<script type="module" src="~/app.ts"></script>
+	} else {
+		<script type="module" src="/@(ViteManifest["app.ts"]!.File)"></script>
+	}
 	<SectionOutlet SectionName="scripts" />
 	<script>
 		charactersLeft_onInput = function(input) {
@@ -115,26 +125,26 @@
 </html>
 
 @code {
-    [CascadingParameter]
-    public HttpContext? HttpContext { get; set; }
+	[CascadingParameter]
+	public HttpContext? HttpContext { get; set; }
 
 	private string? UserTheme { get; set; }
-
-    protected override void OnInitialized() {
-        HttpContext?.Response.Cookies.Append(
-            CookieRequestCultureProvider.DefaultCookieName,
-            CookieRequestCultureProvider.MakeCookieValue(
-                new RequestCulture(
-                    CultureInfo.CurrentCulture,
-                    CultureInfo.CurrentUICulture)), new CookieOptions {
-	            Expires = DateTimeOffset.UtcNow.AddYears(1), 
+	
+	protected override void OnInitialized() {
+		HttpContext?.Response.Cookies.Append(
+			CookieRequestCultureProvider.DefaultCookieName,
+			CookieRequestCultureProvider.MakeCookieValue(
+				new RequestCulture(
+					CultureInfo.CurrentCulture,
+					CultureInfo.CurrentUICulture)), new CookieOptions {
+				Expires = DateTimeOffset.UtcNow.AddYears(1), 
 				IsEssential = true, 
 				SameSite = SameSiteMode.Strict
-            });
+			});
 
-        if (HttpContext?.Request.Cookies.ContainsKey(".Wave.Theme") is true) {
-	        HttpContext.Request.Cookies.TryGetValue(".Wave.Theme", out string? theme);
-	        UserTheme = theme;
-        }
-    }
+		if (HttpContext?.Request.Cookies.ContainsKey(".Wave.Theme") is true) {
+			HttpContext.Request.Cookies.TryGetValue(".Wave.Theme", out string? theme);
+			UserTheme = theme;
+		}
+	}
 }

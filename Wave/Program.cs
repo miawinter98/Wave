@@ -26,6 +26,7 @@ using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Grafana.Loki;
+using Vite.AspNetCore;
 using Wave.Utilities.Metrics;
 
 #region Version Information
@@ -81,6 +82,11 @@ builder.Services.AddControllers(options => {
 	options.OutputFormatters.Add(new SyndicationFeedFormatter());
 });
 builder.Services.AddOutputCache();
+builder.Services.AddViteServices(options => {
+	options.Server.AutoRun = true;
+	options.Server.ScriptName = "dev";
+	options.Server.Https = false;
+});
 
 #region Data Protection & Redis
 
@@ -344,6 +350,11 @@ app.MapHealthChecks("/health");
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapAdditionalIdentityEndpoints();
 app.MapControllers();
+
+if (app.Environment.IsDevelopment()) {
+	//app.UseWebSockets();
+	//app.UseViteDevelopmentServer(true);
+}
 
 app.UseOutputCache();
 app.UseRequestLocalization();
