@@ -10,6 +10,8 @@
     "author": "Mia Rose Winter",
     "license": "MIT",
     "devDependencies": {
+        "@fontsource/noto-sans-display": "^5.0.20",
+        "@fontsource/nunito-sans": "^5.0.13",
         "@tailwindcss/typography": "^0.5.10",
         "autoprefixer": "^10.4.16",
         "cssnano": "^6.0.3",
