@@ -83,9 +83,10 @@ builder.Services.AddControllers(options => {
 });
 builder.Services.AddOutputCache();
 builder.Services.AddViteServices(options => {
-	options.Server.AutoRun = true;
+	// options.Server.AutoRun = true;
 	options.Server.ScriptName = "dev";
 	options.Server.Https = false;
+	options.Server.UseReactRefresh = true;
 	options.Base = "/dist/";
 });
 
@@ -354,7 +355,7 @@ app.MapControllers();
 
 if (app.Environment.IsDevelopment()) {
 	//app.UseWebSockets();
-	//app.UseViteDevelopmentServer(true);
+	app.UseViteDevelopmentServer(true);
 }
 
 app.UseOutputCache();

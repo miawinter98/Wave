@@ -5,6 +5,7 @@
 @using Wave.Data
 
 @inject IViteManifest ViteManifest
+@inject IViteDevServerStatus ViteStatus
 @inject IOptions<Customization> Customizations
 
 <!DOCTYPE html>
@@ -14,7 +15,11 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<base href="/">
-	<link rel="stylesheet" href="/dist/@(ViteManifest["css/main.css"]?.File ?? "css/main.css")">
+	@if (ViteStatus.IsEnabled) {
+		<link rel="stylesheet" href="@($"{ViteStatus.ServerUrlWithBasePath}/css/main.css")">
+	} else {
+		<link rel="stylesheet" href="/dist/@(ViteManifest["css/main.css"]?.File ?? "css/main.css")">
+	}
 
 	<!-- #region favicon + manifest -->
 	@if (!string.IsNullOrWhiteSpace(Customizations.Value.IconLink)) {
@@ -47,6 +52,16 @@
 <CascadingValue Value="UserTheme" Name="UserTheme">
 <Routes />
 </CascadingValue>
+	@if (ViteStatus.IsEnabled) {
+		<script type="module">
+			import RefreshRuntime from 'http://localhost:5173/dist/@@react-refresh'
+			RefreshRuntime.injectIntoGlobalHook(window)
+			window.$RefreshReg$ = () => { }
+			window.$RefreshSig$ = () => (type) => type
+			window.__vite_plugin_react_preamble_installed__ = true
+		</script>
+		<script type="module" src="@(ViteStatus.ServerUrlWithBasePath + "/@vite/client")"></script>
+	}
 	<script src="_framework/blazor.web.js" defer></script>
 	<SectionOutlet SectionName="scripts" />
 	<script>

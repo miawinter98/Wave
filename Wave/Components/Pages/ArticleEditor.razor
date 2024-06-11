@@ -125,7 +125,7 @@
 			string mainModule = ViteServer.IsEnabled
 				? $"{ViteServer.ServerUrlWithBasePath}/main.tsx"
 				: $"/dist/{ViteManifest["main.tsx"]!.File}";
-			await JS.InvokeAsync<IJSObjectReference>("import", mainModule);
+			await JS.InvokeVoidAsync("import", mainModule);
 		}
 
 		Article = new(Guid.NewGuid(), "", "", "", "", ArticleStatus.Draft, DateTimeOffset.MaxValue);
