@@ -2,7 +2,6 @@
 @page "/article/{id:guid}/edit"
 
 @using System.ComponentModel.DataAnnotations
-@using Humanizer
 @using Vite.AspNetCore
 @using Wave.Data
 @using Wave.Utilities
@@ -23,91 +22,16 @@
 <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
 <div id="editor">
 	<div class="flex place-content-center">
+		<p>Loading Interactive Editor </p>
 		<span class="loading loading-spinner loading-lg"></span>
 	</div>
 </div>
-
-@if (Article is null) {
-
-	<div class="flex place-content-center">
-		<span class="loading loading-spinner loading-lg"></span>
-	</div>
-} else {
-	<ErrorBoundary>
-		<ChildContent>
-			<EditForm method="post" FormName="article-editor" Model="@Model" OnValidSubmit="OnValidSubmit">
-				<DataAnnotationsValidator />
-				<input type="hidden" @bind-value="@Model.Id" />
-
-				<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8">
-					<InputLabelComponent LabelText="@Localizer["Title_Label"]" For="() => Model.Title">
-						<InputText class="input input-bordered w-full" maxlength="256" required aria-required oninput="charactersLeft_onInput(this)"
-								   @bind-Value="@Model.Title" placeholder="@Localizer["Title_Placeholder"]" autocomplete="off" />
-					</InputLabelComponent>
-
-					<InputLabelComponent class="row-span-3" LabelText="@Localizer["Categories_Label"]" For="() => Model.Categories">
-						<InputSelect class="select select-bordered w-full" @bind-Value="@Model.Categories" multiple size="10">
-							@foreach (var group in Categories.GroupBy(c => c.Color)) {
-								<optgroup class="font-bold not-italic my-3" label="@group.Key.Humanize()">
-									@foreach (var category in group) {
-										<option value="@category.Id" selected="@Model.Categories?.Contains(category.Id)">@category.Name</option>
-									}
-								</optgroup>
-							}
-						</InputSelect>
-					</InputLabelComponent>
-
-					<InputLabelComponent LabelText="@Localizer["Slug_Label"]" For="() => Model.Slug">
-						@if (Article.Status is not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow) {
-							<InputText class="input input-bordered w-full" maxlength="64" oninput="charactersLeft_onInput(this)"
-									   @bind-Value="@Model.Slug" placeholder="@Localizer["Slug_Placeholder"]" autocomplete="off" />
-						} else {
-							<input class="input input-bordered w-full" readonly value="@Model.Slug"
-								   placeholder="@Localizer["Slug_Placeholder"]" autocomplete="off" />
-						}
-					</InputLabelComponent>
-
-					<InputLabelComponent LabelText="@Localizer["PublishDate_Label"]" For="() => Model.PublishDate">
-						@if (Article.Status is not ArticleStatus.Published || Article.PublishDate >= DateTimeOffset.UtcNow) {
-							<InputDate class="input input-bordered w-full" Type="InputDateType.DateTimeLocal"
-									   @bind-Value="@Model.PublishDate" placeholder="@Localizer["PublishDate_Placeholder"]" autocomplete="off" />
-						} else {
-							<input class="input input-bordered w-full"
-								   type="datetime-local" readonly value="@Article.PublishDate.ToString("yyyy-MM-dd\\THH:mm:ss")" />
-						}
-					</InputLabelComponent>
-				</div>
-
-				<AdvancedMarkdownEditor Title="@Model.Title" MarkdownCallback="() => Model.Body">
-					<textarea id="tool-target" class="textarea textarea-bordered outline-none w-full flex-1 join-item"
-							  required aria-required placeholder="@Localizer["Body_Placeholder"]"
-							  @bind="@Model.Body" @bind:event="oninput" autocomplete="off"></textarea>
-				</AdvancedMarkdownEditor>
-
-				<div class="flex gap-2 flex-wrap mt-3">
-					<button type="submit" class="btn btn-primary w-full sm:btn-wide @(Saving ? "btn-loading" : "")" disabled="@Saving">
-						@Localizer["EditorSubmit"]
-					</button>
-					@if (Article.Id != Guid.Empty) {
-						<a class="btn w-full sm:btn-wide" href="@($"/article/{Article.Id}")">
-							@Localizer["ViewArticle_Label"]
-						</a>
-					}
-				</div>
-			</EditForm>
-		</ChildContent>
-		<ErrorContent>
-			<h1 class="text-3xl lg:text-5xl font-light mb-6">Not found</h1>
-		</ErrorContent>
-	</ErrorBoundary>
-}
 
 @code {
 	[CascadingParameter(Name = "TitlePostfix")]
 	private string TitlePostfix { get; set; } = default!;
 	[Parameter]
 	public Guid? Id { get; set; }
-	private InputModel Model { get; set; } = new();
 
 	private Data.Transactional.ArticleView? Article { get; set; }
 	private bool Saving { get; set; }
@@ -152,19 +76,5 @@
 			Saving = false;
 			await InvokeAsync(StateHasChanged);
 		}
-	}
-
-	private sealed class InputModel {
-		public Guid? Id { get; set; }
-
-		[Required(AllowEmptyStrings = false), MaxLength(256)]
-		public string? Title { get; set; }
-		[MaxLength(64)]
-		public string? Slug { get; set; }
-		[Required(AllowEmptyStrings = false)]
-		public string? Body { get; set; }
-
-		public Guid[]? Categories { get; set; } = [];
-		public DateTimeOffset? PublishDate { get; set; }
 	}
 }
