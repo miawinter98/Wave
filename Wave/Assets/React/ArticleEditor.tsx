@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 /*
  TODO: load categories
@@ -13,16 +13,61 @@ import { useState } from "react";
 </InputSelect>
  */
 
+type ArticleView = {
+	id: string,
+	title: string,
+	slug: string,
+	markdown: string,
+	status: number,
+	publishDate: Date,
+}
+
+function get<T>(url: string): Promise<T> {
+	return fetch(url, {
+			method: "GET"
+		}).then((response : Response) => {
+			if (!response.ok) throw new Error(response.statusText);
+			
+			return response.json() as Promise<T>;
+		}).then(json => {
+			return json as T;
+		});
+}
+
 export default function Editor() {
-	const status = "draft";
+	const [notice, setNotice] = useState<string>("");
+	const [article, setArticle] = useState<ArticleView|null>(null);
+
+	useEffect(() => {
+		get<ArticleView>("/api/article/7e069358-9d9b-4e31-9d51-2828774f3eb5")
+			.then(result => {
+				setNotice("");
+				setArticle(result);
+				console.log("Article loaded");
+			})
+			.catch(error => {
+				setNotice(`Error loading Article: ${error.message}`);
+				console.log(`Error loading Article: ${error.message}`);
+				setArticle(null);
+				return null;
+			});
+	}, [setArticle, setNotice, console]);
 
 	return (
 		<>
+				{
+					notice.length < 1 ? 
+						null : 
+						<div role="alert" className="alert alert-error my-3">
+							<p>{notice}</p>
+						</div>
+				}
+				
 				<div className="w-full">
 				<ul className="steps steps-vertical md:steps-horizontal w-full lg:max-w-[40rem]">
-					<li className={`step ${status === "draft" ? "step-primary" : ""}`}>@Localizer["Draft"]</li>
-					<li className={`step ${status === "in_review" ? "step-primary" : ""}`}>@Localizer["InReview"]</li>
-					<li className={`step ${status === "published" ? "step-primary" : ""}`}>@Localizer["Published"]</li>
+					<li className={`step ${article?.status >= 0 ? "step-primary" : ""}`}>@Localizer["Draft"]</li>
+					<li className={`step ${article?.status >= 1 ? "step-primary" : ""}`}>@Localizer["InReview"]</li>
+					<li className={`step ${article?.status === 2 ? "step-primary" : ""}`}>@Localizer["Published"]</li>
 				</ul>
 
 				<form method="post">
@@ -31,8 +76,8 @@ export default function Editor() {
 							<div className="label">
 								@Localizer["Title_Label"]
 							</div>
-							<input className="input input-bordered w-full"
-							       maxlength="256" required aria-required autocomplete="off"
+							<input className="input input-bordered w-full" defaultValue={article?.title}
+							       maxLength={256} required aria-required autoComplete="off"
 							       oninput="charactersLeft_onInput(this)" placeholder='@Localizer["Title_Placeholder"]'>
 							</input>
 						</label>
@@ -40,7 +85,7 @@ export default function Editor() {
 							<div className="label">
 								@Localizer["Category_Label"]
 							</div>
-							<select className="select select-bordered w-full" size="10" multiple>
+							<select className="select select-bordered w-full" size={10} multiple>
 								<optgroup className="font-bold not-italic my-3" label="TODO">
 									<option>todo</option>
 								</optgroup>
@@ -51,7 +96,7 @@ export default function Editor() {
 								@Localizer["Slug_Label"]
 							</div>
 							<input className="input input-bordered w-full"
-							       maxlength="64" autocomplete="off"
+							       maxLength={64} autoComplete="off" defaultValue={article?.slug}
 							       oninput="charactersLeft_onInput(this)" placeholder='@Localizer["Slug_Placeholder"]'
 							       disabled={true} // TODO Article.Status is ArticleStatus.Published && Article.PublishDate < DateTimeOffset.UtcNow
 							       >
@@ -61,8 +106,8 @@ export default function Editor() {
 							<div className="label">
 								@Localizer["PublishDate_Label"]
 							</div>
-							<input className="input input-bordered w-full"
-							       type="datetime-local" autocomplete="off"
+							<input className="input input-bordered w-full" defaultValue={article?.publishDate}
+							       type="datetime-local" autoComplete="off"
 							       disabled={true} // TODO Article.Status is ArticleStatus.Published && Article.PublishDate < DateTimeOffset.UtcNow
 							       >
 							</input>
@@ -71,7 +116,7 @@ export default function Editor() {
 					
 					<section className="my-6 grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
 						<div className="join join-vertical min-h-96 h-full w-full">
-							<div className="flex flex-wrap gap-1 p-2 z-50 bg-base-200 sticky top-0" aria-role="toolbar">
+							<div className="flex flex-wrap gap-1 p-2 z-50 bg-base-200 sticky top-0" role="toolbar">
 								<div className="join join-horizontal">
 									<button type="button" className="btn btn-accent btn-sm outline-none font-normal join-item" 
 									        title='@Localizer["Tools_H1_Tooltip"]'
@@ -88,7 +133,7 @@ export default function Editor() {
 							</div>
 							<textarea id="tool-target" className="resize-none textarea textarea-bordered outline-none w-full flex-1 join-item" 
 							          required aria-required placeholder='@Localizer["Body_Placeholder"]'
-							          autocomplete="off"></textarea>
+							          autoComplete="off" defaultValue={article?.markdown}></textarea>
 						</div>
 						<div className="bg-base-200 p-2">
 							<h2 className="text-2xl lg:text-4xl font-bold mb-6 hyphens-auto">@Title</h2>

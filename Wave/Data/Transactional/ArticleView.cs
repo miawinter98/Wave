@@ -5,6 +5,7 @@ public sealed record ArticleView(
 	string Title, 
 	string Slug,
 	string Html, 
+	string Markdown, 
 	string Text,
 	ArticleStatus Status,
 	DateTimeOffset PublishDate) 
@@ -14,6 +15,7 @@ public sealed record ArticleView(
 		article.Title, 
 		article.Slug,
 		article.BodyHtml,
+		article.Body,
 		article.BodyPlain,
 		article.Status,
 		article.PublishDate) {}

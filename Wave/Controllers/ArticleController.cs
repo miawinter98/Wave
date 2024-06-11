@@ -10,7 +10,7 @@ namespace Wave.Controllers;
 [ApiController]
 [Route("/api/[controller]")]
 public partial class ArticleController(ILogger<ArticleController> logger, ApplicationRepository repository) : ControllerBase {
-	[HttpGet, AllowAnonymous]
+	[HttpGet("{id:guid}"), AllowAnonymous]
 	[Produces("application/json")]
 	public async Task<Results<
 			Ok<ArticleView>, 

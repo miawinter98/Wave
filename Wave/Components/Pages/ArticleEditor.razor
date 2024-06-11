@@ -52,7 +52,7 @@
 			await JS.InvokeVoidAsync("import", mainModule);
 		}
 
-		Article = new(Guid.NewGuid(), "", "", "", "", ArticleStatus.Draft, DateTimeOffset.MaxValue);
+		Article = new(Guid.NewGuid(), "", "", "", "", "", ArticleStatus.Draft, DateTimeOffset.MaxValue);
 	}
 
 	private async Task OnValidSubmit() {
