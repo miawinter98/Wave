@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { updateCharactersLeft, insertBeforeSelection, insertBeforeAndAfterSelection } from "../md_functions";
 
 /*
  TODO: load categories
@@ -37,9 +38,10 @@ function get<T>(url: string): Promise<T> {
 export default function Editor() {
 	const [notice, setNotice] = useState<string>("");
 	const [article, setArticle] = useState<ArticleView|null>(null);
+    const target = document.getElementById("tool-target");
 
 	useEffect(() => {
-		get<ArticleView>("/api/article/7e069358-9d9b-4e31-9d51-2828774f3eb5")
+		get<ArticleView>("/api/article/68490edb-4cfb-40bf-badf-d9a803cd46d4")
 			.then(result => {
 				setNotice("");
 				setArticle(result);
@@ -53,6 +55,7 @@ export default function Editor() {
 			});
 	}, ([setArticle, setNotice, console]) as any[]);
 
+    const markdownArea = useRef(null);
 	return (
 		<>
 				{
@@ -78,7 +81,7 @@ export default function Editor() {
 							</div>
 							<input className="input input-bordered w-full" defaultValue={article?.title}
 							       maxLength={256} required aria-required autoComplete="off"
-							       oninput="charactersLeft_onInput(this)" placeholder='@Localizer["Title_Placeholder"]'>
+								   onInput={(event: FormEvent<HTMLInputElement>) => updateCharactersLeft(event.target)} placeholder='@Localizer["Title_Placeholder"]'>
 							</input>
 						</label>
 						<label className="form-control w-full row-span-3 order-first md:order-none">
@@ -97,7 +100,8 @@ export default function Editor() {
 							</div>
 							<input className="input input-bordered w-full"
 							       maxLength={64} autoComplete="off" defaultValue={article?.slug}
-							       oninput="charactersLeft_onInput(this)" placeholder='@Localizer["Slug_Placeholder"]'
+                                   onInput={(event: FormEvent<HTMLInputElement>) => updateCharactersLeft(event.target)}
+                                   placeholder='@Localizer["Slug_Placeholder"]'
 							       disabled={true} // TODO Article.Status is ArticleStatus.Published && Article.PublishDate < DateTimeOffset.UtcNow
 							       >
 							</input>
@@ -118,11 +122,22 @@ export default function Editor() {
 						<div className="join join-vertical min-h-96 h-full w-full">
 							<div className="flex flex-wrap gap-1 p-2 z-50 bg-base-200 sticky top-0" role="toolbar">
 								<div className="join join-horizontal">
-									<button type="button" className="btn btn-accent btn-sm outline-none font-normal join-item" 
-									        title='@Localizer["Tools_H1_Tooltip"]'
-									        onclick="window.insertBeforeSelection('# ', true);">
-										<strong>@Localizer["Tools_H1_Label"]</strong>
-									</button>
+									<ToolBarButton title='@Localizer["Tools_H1_Tooltip"]' 
+									               onClick={() => insertBeforeSelection(markdownArea.current, "# ", true)}>
+                                        <strong>@Localizer["Tools_H1_Label"]</strong>
+									</ToolBarButton>
+                                    <ToolBarButton title='@Localizer["Tools_H1_Tooltip"]' 
+									               onClick={() => insertBeforeSelection(markdownArea.current, "## ", true)}>
+                                        <strong>@Localizer["Tools_H2_Label"]</strong>
+                                    </ToolBarButton>
+                                    <ToolBarButton title='@Localizer["Tools_H1_Tooltip"]' 
+                                                   onClick={() => insertBeforeSelection(markdownArea.current, "### ", true)}>
+                                        <strong>@Localizer["Tools_H3_Label"]</strong>
+                                    </ToolBarButton>
+                                    <ToolBarButton title='@Localizer["Tools_H1_Tooltip"]' 
+                                                   onClick={() => insertBeforeSelection(markdownArea.current, "#### ", true)}>
+                                        <strong>@Localizer["Tools_H4_Label"]</strong>
+                                    </ToolBarButton>
 								</div>
 								<div className="join join-horizontal">
 									
@@ -131,7 +146,7 @@ export default function Editor() {
 									
 								</div>
 							</div>
-							<textarea id="tool-target" className="resize-none textarea textarea-bordered outline-none w-full flex-1 join-item" 
+							<textarea ref={markdownArea} id="tool-target" className="resize-none textarea textarea-bordered outline-none w-full flex-1 join-item" 
 							          required aria-required placeholder='@Localizer["Body_Placeholder"]'
 							          autoComplete="off" defaultValue={article?.markdown}></textarea>
 						</div>
@@ -167,4 +182,13 @@ export default function Editor() {
 			</div>
 		</>
 	);
+}
+
+
+function ToolBarButton({title, onClick, children}: {title: string, onClick:MouseEventHandler<HTMLButtonElement>, children:any}) {
+	return <button type="button" className="btn btn-accent btn-sm outline-none font-normal join-item" 
+                   title={title}
+                   onClick={onClick}>
+               {children ?? "err"}
+           </button>;
 }
