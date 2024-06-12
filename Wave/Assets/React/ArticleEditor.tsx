@@ -25,7 +25,7 @@ type ArticleView = {
 function get<T>(url: string): Promise<T> {
 	return fetch(url, {
 			method: "GET"
-		}).then((response : Response) => {
+		}).then((response) => {
 			if (!response.ok) throw new Error(response.statusText);
 			
 			return response.json() as Promise<T>;
@@ -51,7 +51,7 @@ export default function Editor() {
 				setArticle(null);
 				return null;
 			});
-	}, [setArticle, setNotice, console]);
+	}, ([setArticle, setNotice, console]) as any[]);
 
 	return (
 		<>
@@ -65,8 +65,8 @@ export default function Editor() {
 				
 				<div className="w-full">
 				<ul className="steps steps-vertical md:steps-horizontal w-full lg:max-w-[40rem]">
-					<li className={`step ${article?.status >= 0 ? "step-primary" : ""}`}>@Localizer["Draft"]</li>
-					<li className={`step ${article?.status >= 1 ? "step-primary" : ""}`}>@Localizer["InReview"]</li>
+					<li className={`step ${article?.status ?? -1 >= 0 ? "step-primary" : ""}`}>@Localizer["Draft"]</li>
+					<li className={`step ${article?.status ?? -1 >= 1 ? "step-primary" : ""}`}>@Localizer["InReview"]</li>
 					<li className={`step ${article?.status === 2 ? "step-primary" : ""}`}>@Localizer["Published"]</li>
 				</ul>
 
