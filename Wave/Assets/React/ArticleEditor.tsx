@@ -185,13 +185,13 @@ export default function Editor() {
 								<div className="join join-horizontal">
 									<ToolBarButton title='@Localizer["Tools_CodeLine_Tooltip"]' 
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "`")}>
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
 											<path fill-rule="evenodd" d="M14.447 3.026a.75.75 0 0 1 .527.921l-4.5 16.5a.75.75 0 0 1-1.448-.394l4.5-16.5a.75.75 0 0 1 .921-.527ZM16.72 6.22a.75.75 0 0 1 1.06 0l5.25 5.25a.75.75 0 0 1 0 1.06l-5.25 5.25a.75.75 0 1 1-1.06-1.06L21.44 12l-4.72-4.72a.75.75 0 0 1 0-1.06Zm-9.44 0a.75.75 0 0 1 0 1.06L2.56 12l4.72 4.72a.75.75 0 0 1-1.06 1.06L.97 12.53a.75.75 0 0 1 0-1.06l5.25-5.25a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" />
 										</svg>
 									</ToolBarButton>
 									<ToolBarButton title='@Localizer["Tools_CodeBlock_Tooltip"]' 
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "```")}>
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
 											<path fill-rule="evenodd" d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Zm14.25 6a.75.75 0 0 1-.22.53l-2.25 2.25a.75.75 0 1 1-1.06-1.06L15.44 12l-1.72-1.72a.75.75 0 1 1 1.06-1.06l2.25 2.25c.141.14.22.331.22.53Zm-10.28-.53a.75.75 0 0 0 0 1.06l2.25 2.25a.75.75 0 1 0 1.06-1.06L8.56 12l1.72-1.72a.75.75 0 1 0-1.06-1.06l-2.25 2.25Z" clip-rule="evenodd" />
 										</svg>
 									</ToolBarButton>
@@ -224,7 +224,7 @@ export default function Editor() {
 							@Localizer["EditorSubmit"]
 						</button>
 						
-						<a className="btn w-full sm:btn-wide" href="/article/{Article.Id" // TODO disable when article not exists
+						<a className="btn w-full sm:btn-wide" href={`/article/${article?.id}`} // TODO disable when article not exists
 							>
 							@Localizer["ViewArticle_Label"]
 						</a>
