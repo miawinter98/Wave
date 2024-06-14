@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Wave.Data.Transactional;
@@ -19,6 +20,21 @@ public class ArticleMalformedException : ArticleException {
 /// <param name="contextFactory"></param>
 public class ApplicationRepository(IDbContextFactory<ApplicationDbContext> contextFactory) {
 	private IDbContextFactory<ApplicationDbContext> ContextFactory { get; } = contextFactory;
+
+	public async ValueTask<IReadOnlyCollection<Category>> GetCategories(ClaimsPrincipal user, bool includeUnusedCategories = false, CancellationToken cancellation = default) {
+		if (includeUnusedCategories && user.Identity?.IsAuthenticated is not true)
+			throw new ApplicationException("Trying to access unused articles with unauthenticated user");
+
+		await using var context = await ContextFactory.CreateDbContextAsync(cancellation);
+		var categories = await context.Set<Category>()
+			.IgnoreAutoIncludes()
+			.IgnoreQueryFilters()
+			.Where(c => includeUnusedCategories || c.Articles.Any())
+			.OrderBy(c => c.Color)
+			.ToListAsync(cancellation);
+
+		return new ReadOnlyCollection<Category>(categories);
+	}
 
 	public async ValueTask<Article> GetArticleAsync(Guid id, ClaimsPrincipal user, CancellationToken cancellation = default) {
 		await using var context = await ContextFactory.CreateDbContextAsync(cancellation);

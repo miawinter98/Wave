@@ -9,7 +9,28 @@ namespace Wave.Controllers;
 
 [ApiController]
 [Route("/api/[controller]")]
-public partial class ArticleController(ILogger<ArticleController> logger, ApplicationRepository repository) : ControllerBase {
+public class ArticleController(ILogger<ArticleController> logger, ApplicationRepository repository) : ControllerBase {
+	[HttpGet("/api/categories"), AllowAnonymous]
+	[Produces("application/json")]
+	public async Task<Results<
+			Ok<IEnumerable<Category>>, 
+			NoContent, 
+			UnauthorizedHttpResult, 
+			ProblemHttpResult>> GetCategories(bool all = false, CancellationToken cancellation = default) {
+		try {
+			var categories = await repository.GetCategories(User, all, cancellation);
+			
+			if (categories.Count < 1) return TypedResults.NoContent();
+			return TypedResults.Ok<IEnumerable<Category>>(categories);
+		} catch (ApplicationException) {
+			logger.LogTrace("Unauthenticated user tried to access all categories. Denied.");
+			return TypedResults.Unauthorized();
+		} catch (Exception ex) {
+			logger.LogError(ex, "Unexpected error trying to get Categories for user {UserId}.", User.FindFirstValue("Id") ?? "unknown or anonymous");
+			return TypedResults.Problem();
+		}
+	}
+
 	[HttpGet("{id:guid}"), AllowAnonymous]
 	[Produces("application/json")]
 	public async Task<Results<

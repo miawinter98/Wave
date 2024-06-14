@@ -92,6 +92,62 @@ public abstract class ApplicationRepositoryTests: DbContextTest {
 
 [TestFixture, FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 [TestOf(typeof(ApplicationRepository))]
+public class ApplicationRepositoryTest_GetCategories : ApplicationRepositoryTests {
+	#region Success Tests
+
+	[Test]
+	public async Task AnonymousDefaultOneArticleOneCategory_Success() {
+		await Repository.CreateArticleAsync(new ArticleCreateDto("test", "*test*", null, null, [PrimaryCategoryId], null), AuthorPrincipal);
+		
+		var result = await Repository.GetCategories(AnonymousPrincipal);
+		Assert.Multiple(() => {
+			Assert.That(result, Is.Not.Empty);
+			Assert.That(result.First()?.Id, Is.EqualTo(PrimaryCategoryId));
+			Assert.That(result, Has.Count.EqualTo(1));
+		});
+	}
+
+	#endregion
+
+	#region Permission Tests
+
+	[Test]
+	public async Task AnonymousDefaultNoArticles_Success() {
+		var result = await Repository.GetCategories(AnonymousPrincipal);
+
+		Assert.Multiple(() => {
+			Assert.That(result, Is.Empty);
+		});
+	}
+	[Test]
+	public void AnonymousNoArticlesAllCategories_ThrowsMissingPermissions() {
+		Assert.ThrowsAsync<ApplicationException>(async () => await Repository.GetCategories(AnonymousPrincipal, true));
+	}
+	[Test]
+	public async Task AuthorDefaultNoArticles_Success() {
+		var result = await Repository.GetCategories(AuthorPrincipal);
+
+		Assert.Multiple(() => {
+			Assert.That(result, Is.Empty);
+		});
+	}
+	[Test]
+	public async Task AuthorDefaultNoArticlesAllCategories_Success() {
+		var result = await Repository.GetCategories(AuthorPrincipal, true);
+
+		Assert.Multiple(() => {
+			Assert.That(result, Is.Not.Empty);
+			Assert.That(result, Has.Count.EqualTo(2));
+			Assert.That(result.FirstOrDefault(c => c.Id == PrimaryCategoryId), Is.Not.Null);
+			Assert.That(result.FirstOrDefault(c => c.Id == SecondaryCategoryId), Is.Not.Null);
+		});
+	}
+
+	#endregion
+}
+
+[TestFixture, FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
+[TestOf(typeof(ApplicationRepository))]
 public class ApplicationRepositoryTest_CreateArticle : ApplicationRepositoryTests {
 	private static ArticleCreateDto GetValidTestArticle() {
 		return new ArticleCreateDto(
