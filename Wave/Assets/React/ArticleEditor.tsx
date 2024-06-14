@@ -1,19 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import { updateCharactersLeft, insertBeforeSelection, insertBeforeAndAfterSelection } from "../utilities/md_functions";
 import { LabelInput, ToolBarButton } from "./Forms";
+import "groupby-polyfill/lib/polyfill.js"
 
-/*
- TODO: load categories
-<InputSelect class="select select-bordered w-full" @bind-Value="@Model.Categories" multiple size="10">
-	@foreach (var group in Categories.GroupBy(c => c.Color)) {
-		<optgroup class="font-bold not-italic my-3" label="@group.Key.Humanize()">
-			@foreach (var category in group) {
-				<option value="@category.Id" selected="@Model.Categories?.Contains(category.Id)">@category.Name</option>
-			}
-		</optgroup>
-	}
-</InputSelect>
- */
+enum CategoryColor {
+	Primary = 1, 
+	Dangerous = 5, 
+	Important = 10, 
+	Informative = 15, 
+	Secondary = 20,
+	Default = 25, 
+	Extra = 50, 
+}
+
+type Category = {
+	id: string,
+	name: string,
+	color: CategoryColor,
+}
 
 type ArticleView = {
 	id: string,
@@ -39,13 +43,23 @@ function get<T>(url: string): Promise<T> {
 export default function Editor() {
 	const [notice, setNotice] = useState<string>("");
 	const [article, setArticle] = useState<ArticleView|null>(null);
+	const [categories, setCategories] = useState<Category[]>([]);
+
 	const location = window.location.pathname;
 	useEffect(() => {
+		if (categories.length < 1) {
+			get<Category[]>("/api/categories?all=true").then(result => {
+				setCategories(result);
+			}).catch(error => {
+				setNotice(`Error loading Categories: ${error.Message}`);
+				console.log(`Error loading Categories: ${error.message}`);
+			});
+		}
+
 		const id = location.match(/article\/([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})\/edit/i);
-		
 		if (!id) {
-			setNotice("Failed to extract article id from url, this was very unexpected.");
-		} else {
+			setArticle({});
+		} else if (!article) {
 			get<ArticleView>(`/api/article/${id[1]}`)
 				.then(result => {
 					setNotice("");
@@ -56,7 +70,6 @@ export default function Editor() {
 					setNotice(`Error loading Article: ${error.message}`);
 					console.log(`Error loading Article: ${error.message}`);
 					setArticle(null);
-					return null;
 				});
 		}
 	}, ([setArticle, setNotice, console, location]) as any[]);
@@ -89,9 +102,16 @@ export default function Editor() {
 						</LabelInput>
 						<LabelInput label='@Localizer["Category_Label"]' className="row-span-3 order-first md:order-none">
 							<select className="select select-bordered w-full" size={10} multiple>
-								<optgroup className="font-bold not-italic my-3" label="TODO">
-									<option>todo</option>
-								</optgroup>
+								{
+									categories.length < 1 && <option disabled>loading...</option>
+								}
+								{
+									Array.from(Map.groupBy(categories, c => c.color) as Map<CategoryColor, Category[]>)
+										.map((value, _) => 
+											<optgroup className="font-bold not-italic my-3" label={CategoryColor[value[0]]}>
+												{value[1].map(c => <option key={c.id} value={c.id}>{c.name ?? "err"}</option>)}
+											</optgroup>)
+								}
 							</select>
 						</LabelInput>
 						<LabelInput label='@Localizer["Slug_Label"]'>
@@ -180,13 +200,13 @@ export default function Editor() {
 									<ToolBarButton title='@Localizer["Tools_CodeLine_Tooltip"]' 
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "`")}>
 										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-											<path fill-rule="evenodd" d="M14.447 3.026a.75.75 0 0 1 .527.921l-4.5 16.5a.75.75 0 0 1-1.448-.394l4.5-16.5a.75.75 0 0 1 .921-.527ZM16.72 6.22a.75.75 0 0 1 1.06 0l5.25 5.25a.75.75 0 0 1 0 1.06l-5.25 5.25a.75.75 0 1 1-1.06-1.06L21.44 12l-4.72-4.72a.75.75 0 0 1 0-1.06Zm-9.44 0a.75.75 0 0 1 0 1.06L2.56 12l4.72 4.72a.75.75 0 0 1-1.06 1.06L.97 12.53a.75.75 0 0 1 0-1.06l5.25-5.25a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" />
+											<path fillRule="evenodd" d="M14.447 3.026a.75.75 0 0 1 .527.921l-4.5 16.5a.75.75 0 0 1-1.448-.394l4.5-16.5a.75.75 0 0 1 .921-.527ZM16.72 6.22a.75.75 0 0 1 1.06 0l5.25 5.25a.75.75 0 0 1 0 1.06l-5.25 5.25a.75.75 0 1 1-1.06-1.06L21.44 12l-4.72-4.72a.75.75 0 0 1 0-1.06Zm-9.44 0a.75.75 0 0 1 0 1.06L2.56 12l4.72 4.72a.75.75 0 0 1-1.06 1.06L.97 12.53a.75.75 0 0 1 0-1.06l5.25-5.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
 										</svg>
 									</ToolBarButton>
 									<ToolBarButton title='@Localizer["Tools_CodeBlock_Tooltip"]' 
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "```")}>
 										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-											<path fill-rule="evenodd" d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Zm14.25 6a.75.75 0 0 1-.22.53l-2.25 2.25a.75.75 0 1 1-1.06-1.06L15.44 12l-1.72-1.72a.75.75 0 1 1 1.06-1.06l2.25 2.25c.141.14.22.331.22.53Zm-10.28-.53a.75.75 0 0 0 0 1.06l2.25 2.25a.75.75 0 1 0 1.06-1.06L8.56 12l1.72-1.72a.75.75 0 1 0-1.06-1.06l-2.25 2.25Z" clip-rule="evenodd" />
+											<path fillRule="evenodd" d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Zm14.25 6a.75.75 0 0 1-.22.53l-2.25 2.25a.75.75 0 1 1-1.06-1.06L15.44 12l-1.72-1.72a.75.75 0 1 1 1.06-1.06l2.25 2.25c.141.14.22.331.22.53Zm-10.28-.53a.75.75 0 0 0 0 1.06l2.25 2.25a.75.75 0 1 0 1.06-1.06L8.56 12l1.72-1.72a.75.75 0 1 0-1.06-1.06l-2.25 2.25Z" clipRule="evenodd" />
 										</svg>
 									</ToolBarButton>
 								</div>

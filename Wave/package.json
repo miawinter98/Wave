@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "check": "tsc", 
+    "check": "tsc",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
@@ -27,5 +27,8 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.4.5",
     "vite": "^5.2.13"
+  },
+  "dependencies": {
+    "groupby-polyfill": "^1.0.0"
   }
 }
