@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { updateCharactersLeft, insertBeforeSelection, insertBeforeAndAfterSelection } from "../md_functions";
+import { updateCharactersLeft, insertBeforeSelection, insertBeforeAndAfterSelection } from "../utilities/md_functions";
+import { LabelInput, ToolBarButton } from "./Forms";
 
 /*
  TODO: load categories
@@ -18,7 +19,7 @@ type ArticleView = {
 	id: string,
 	title: string,
 	slug: string,
-	markdown: string,
+	body: string,
 	status: number,
 	publishDate: Date,
 }
@@ -38,7 +39,6 @@ function get<T>(url: string): Promise<T> {
 export default function Editor() {
 	const [notice, setNotice] = useState<string>("");
 	const [article, setArticle] = useState<ArticleView|null>(null);
-	const target = document.getElementById("tool-target");
 
 	useEffect(() => {
 		get<ArticleView>("/api/article/68490edb-4cfb-40bf-badf-d9a803cd46d4")
@@ -59,8 +59,7 @@ export default function Editor() {
 	return (
 		<>
 				{
-					notice.length < 1 ? 
-						null : 
+					notice.length &&
 						<div role="alert" className="alert alert-error my-3">
 							<p>{notice}</p>
 						</div>
@@ -74,51 +73,40 @@ export default function Editor() {
 				</ul>
 
 				<form method="post">
-					<div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8">
-						<label className="form-control w-full">
-							<div className="label">
-								@Localizer["Title_Label"]
-							</div>
+					<fieldset className="grid grid-cols-1 lg:grid-cols-2 gap-x-8" disabled={!article}>
+						<LabelInput label='@Localizer["Title_Label"]'>
 							<input className="input input-bordered w-full" defaultValue={article?.title}
 								   maxLength={256} required aria-required autoComplete="off"
-								   onInput={(event: FormEvent<HTMLInputElement>) => updateCharactersLeft(event.target)} placeholder='@Localizer["Title_Placeholder"]'>
+								   onInput={(event: React.FormEvent<HTMLInputElement>) => updateCharactersLeft(event.target as HTMLInputElement)} 
+								   placeholder='@Localizer["Title_Placeholder"]'>
 							</input>
-						</label>
-						<label className="form-control w-full row-span-3 order-first md:order-none">
-							<div className="label">
-								@Localizer["Category_Label"]
-							</div>
+						</LabelInput>
+						<LabelInput label='@Localizer["Category_Label"]' className="row-span-3 order-first md:order-none">
 							<select className="select select-bordered w-full" size={10} multiple>
 								<optgroup className="font-bold not-italic my-3" label="TODO">
 									<option>todo</option>
 								</optgroup>
 							</select>
-						</label>
-						<label className="form-control w-full">
-							<div className="label">
-								@Localizer["Slug_Label"]
-							</div>
+						</LabelInput>
+						<LabelInput label='@Localizer["Slug_Label"]'>
 							<input className="input input-bordered w-full"
-								   maxLength={64} autoComplete="off" defaultValue={article?.slug}
-								   onInput={(event: FormEvent<HTMLInputElement>) => updateCharactersLeft(event.target)}
-								   placeholder='@Localizer["Slug_Placeholder"]'
-								   disabled={true} // TODO Article.Status is ArticleStatus.Published && Article.PublishDate < DateTimeOffset.UtcNow
-								   >
+							       maxLength={64} autoComplete="off" defaultValue={article?.slug}
+							       onInput={(event: React.FormEvent<HTMLInputElement>) => updateCharactersLeft(event.target as HTMLInputElement)}
+							       placeholder='@Localizer["Slug_Placeholder"]'
+							       disabled={true} // TODO Article.Status is ArticleStatus.Published && Article.PublishDate < DateTimeOffset.UtcNow
+							>
 							</input>
-						</label>
-						<label className="form-control w-full">
-							<div className="label">
-								@Localizer["PublishDate_Label"]
-							</div>
+						</LabelInput>
+						<LabelInput label='@Localizer["PublishDate_Label"]'>
 							<input className="input input-bordered w-full" defaultValue={article?.publishDate}
-								   type="datetime-local" autoComplete="off"
-								   disabled={true} // TODO Article.Status is ArticleStatus.Published && Article.PublishDate < DateTimeOffset.UtcNow
-								   >
+							       type="datetime-local" autoComplete="off"
+							       disabled={true} // TODO Article.Status is ArticleStatus.Published && Article.PublishDate < DateTimeOffset.UtcNow
+							>
 							</input>
-						</label>
-					</div>
+						</LabelInput>
+					</fieldset>
 					
-					<section className="my-6 grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
+					<fieldset className="my-6 grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4" disabled={!article}>
 						<div className="join join-vertical min-h-96 h-full w-full">
 							<div className="flex flex-wrap gap-1 p-2 z-50 bg-base-200 sticky top-0" role="toolbar">
 								<div className="join join-horizontal">
@@ -199,7 +187,7 @@ export default function Editor() {
 							</div>
 							<textarea ref={markdownArea} id="tool-target" className="resize-none textarea textarea-bordered outline-none w-full flex-1 join-item" 
 									  required aria-required placeholder='@Localizer["Body_Placeholder"]'
-									  autoComplete="off" defaultValue={article?.markdown}></textarea>
+									  autoComplete="off" defaultValue={article?.body}></textarea>
 						</div>
 						<div className="bg-base-200 p-2">
 							<h2 className="text-2xl lg:text-4xl font-bold mb-6 hyphens-auto">@Title</h2>
@@ -216,7 +204,7 @@ export default function Editor() {
 								<div className="skeleton h-4 w-full"></div>
 							</div>
 						</div>
-					</section>
+					</fieldset>
 
 					<div className="flex gap-2 flex-wrap mt-3">
 						<button type="submit" className="btn btn-primary w-full sm:btn-wide" disabled={true} // TODO implement when saving
@@ -233,13 +221,4 @@ export default function Editor() {
 			</div>
 		</>
 	);
-}
-
-
-function ToolBarButton({title, onClick, children}: {title: string, onClick:MouseEventHandler<HTMLButtonElement>, children:any}) {
-	return <button type="button" className="btn btn-accent btn-sm outline-none font-normal join-item" 
-				   title={title}
-				   onClick={onClick}>
-			   {children ?? "err"}
-		   </button>;
 }

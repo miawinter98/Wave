@@ -4,9 +4,9 @@ public sealed record ArticleView(
 	Guid Id, 
 	string Title, 
 	string Slug,
-	string Html, 
-	string Markdown, 
-	string Text,
+	string BodyHtml, 
+	string Body, 
+	string BodyPlain,
 	ArticleStatus Status,
 	DateTimeOffset PublishDate) 
 {
