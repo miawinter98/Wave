@@ -39,27 +39,33 @@ function get<T>(url: string): Promise<T> {
 export default function Editor() {
 	const [notice, setNotice] = useState<string>("");
 	const [article, setArticle] = useState<ArticleView|null>(null);
-
+	const location = window.location.pathname;
 	useEffect(() => {
-		get<ArticleView>("/api/article/68490edb-4cfb-40bf-badf-d9a803cd46d4")
-			.then(result => {
-				setNotice("");
-				setArticle(result);
-				console.log("Article loaded");
-			})
-			.catch(error => {
-				setNotice(`Error loading Article: ${error.message}`);
-				console.log(`Error loading Article: ${error.message}`);
-				setArticle(null);
-				return null;
-			});
-	}, ([setArticle, setNotice, console]) as any[]);
+		const id = location.match(/article\/([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})\/edit/i);
+		
+		if (!id) {
+			setNotice("Failed to extract article id from url, this was very unexpected.");
+		} else {
+			get<ArticleView>(`/api/article/${id[1]}`)
+				.then(result => {
+					setNotice("");
+					setArticle(result);
+					console.log("Article loaded");
+				})
+				.catch(error => {
+					setNotice(`Error loading Article: ${error.message}`);
+					console.log(`Error loading Article: ${error.message}`);
+					setArticle(null);
+					return null;
+				});
+		}
+	}, ([setArticle, setNotice, console, location]) as any[]);
 
 	const markdownArea = useRef(null);
 	return (
 		<>
 				{
-					notice.length &&
+					notice.length > 0 &&
 						<div role="alert" className="alert alert-error my-3">
 							<p>{notice}</p>
 						</div>
