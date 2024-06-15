@@ -104,14 +104,14 @@ export default function Editor() {
 
 				<form method="post">
 					<fieldset className="grid grid-cols-1 lg:grid-cols-2 gap-x-8" disabled={!article}>
-						<LabelInput label='@Localizer["Title_Label"]'>
+						<LabelInput label={t("Title_Label")}>
 							<input className="input input-bordered w-full" defaultValue={article?.title}
 								   maxLength={256} required aria-required autoComplete="off"
 								   onInput={(event: React.FormEvent<HTMLInputElement>) => updateCharactersLeft(event.target as HTMLInputElement)} 
-								   placeholder='@Localizer["Title_Placeholder"]'>
+								   placeholder={t("Title_Placeholder")}>
 							</input>
 						</LabelInput>
-						<LabelInput label='@Localizer["Category_Label"]' className="row-span-3 order-first md:order-none">
+						<LabelInput label={t("Category_Label")} className="row-span-3 order-first md:order-none">
 							<select className="select select-bordered w-full" size={10} multiple>
 								{
 									categories.length < 1 && <option disabled>loading...</option>
@@ -119,22 +119,22 @@ export default function Editor() {
 								{
 									Array.from(Map.groupBy(categories, (c: Category) => c.color) as Map<CategoryColor, Category[]>)
 										.map((value, _) => 
-											<optgroup className="font-bold not-italic my-3" label={CategoryColor[value[0]]}>
+											<optgroup className="font-bold not-italic my-3" label={t(`Category.${CategoryColor[value[0]]}`)}>
 												{value[1].map(c => <option key={c.id} value={c.id}>{c.name ?? "err"}</option>)}
 											</optgroup>)
 								}
 							</select>
 						</LabelInput>
-						<LabelInput label='@Localizer["Slug_Label"]'>
+						<LabelInput label={t("Slug_Label")}>
 							<input className="input input-bordered w-full"
 							       maxLength={64} autoComplete="off" defaultValue={article?.slug}
 							       onInput={(event: React.FormEvent<HTMLInputElement>) => updateCharactersLeft(event.target as HTMLInputElement)}
-							       placeholder='@Localizer["Slug_Placeholder"]'
+							       placeholder={t("Slug_Placeholder")}
 							       disabled={true} // TODO Article.Status is ArticleStatus.Published && Article.PublishDate < DateTimeOffset.UtcNow
 							>
 							</input>
 						</LabelInput>
-						<LabelInput label='@Localizer["PublishDate_Label"]'>
+						<LabelInput label={t("PublishDate_Label")}>
 							<input className="input input-bordered w-full" defaultValue={article?.publishDate?.toString()}
 							       type="datetime-local" autoComplete="off"
 							       disabled={true} // TODO Article.Status is ArticleStatus.Published && Article.PublishDate < DateTimeOffset.UtcNow
@@ -147,47 +147,47 @@ export default function Editor() {
 						<div className="join join-vertical min-h-96 h-full w-full">
 							<div className="flex flex-wrap gap-1 p-2 z-50 bg-base-200 sticky top-0" role="toolbar">
 								<div className="join join-horizontal">
-									<ToolBarButton title='@Localizer["Tools_H1_Tooltip"]' 
+									<ToolBarButton title={t("Tools.H1_Tooltip")}
 												   onClick={() => insertBeforeSelection(markdownArea.current, "# ", true)}>
-										<strong>@Localizer["Tools_H1_Label"]</strong>
+										<strong>{t("Tools.H1_Label")}</strong>
 									</ToolBarButton>
-									<ToolBarButton title='@Localizer["Tools_H2_Tooltip"]' 
+									<ToolBarButton title={t("Tools.H2_Tooltip")}
 												   onClick={() => insertBeforeSelection(markdownArea.current, "## ", true)}>
-										<strong>@Localizer["Tools_H2_Label"]</strong>
+										<strong>{t("Tools.H2_Label")}</strong>
 									</ToolBarButton>
-									<ToolBarButton title='@Localizer["Tools_H3_Tooltip"]' 
+									<ToolBarButton title={t("Tools.H3_Tooltip")}
 												   onClick={() => insertBeforeSelection(markdownArea.current, "### ", true)}>
-										<strong>@Localizer["Tools_H3_Label"]</strong>
+										<strong>{t("Tools.H3_Label")}</strong>
 									</ToolBarButton>
-									<ToolBarButton title='@Localizer["Tools_H4_Tooltip"]' 
+									<ToolBarButton title={t("Tools.H4_Tooltip")}
 												   onClick={() => insertBeforeSelection(markdownArea.current, "#### ", true)}>
-										<strong>@Localizer["Tools_H4_Label"]</strong>
+										<strong>{t("Tools.H4_Label")}</strong>
 									</ToolBarButton>
 								</div>
 								<div className="join join-horizontal">
-									<ToolBarButton title='@Localizer["Tools_Bold_Tooltip"]' 
+									<ToolBarButton title={t("Tools.Bold_Tooltip")}
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "**")}>
 										<strong>B</strong>
 									</ToolBarButton>
-									<ToolBarButton title='@Localizer["Tools_Italic_Tooltip"]' 
+									<ToolBarButton title={t("Tools.Italic_Tooltip")}
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "*")}>
 										<em>I</em>
 									</ToolBarButton>
-									<ToolBarButton title='@Localizer["Tools_Underline_Tooltip"]' 
+									<ToolBarButton title={t("Tools.Underline_Tooltip")}
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "++")}>
 										<span className="underline">U</span>
 									</ToolBarButton>
-									<ToolBarButton title='@Localizer["Tools_StrikeThrough_Tooltip"]' 
+									<ToolBarButton title={t("Tools.StrikeThrough_Tooltip")}
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "~~")}>
-										<del>@Localizer["Tools_StrikeThrough_Label"]</del>
+										<del>{t("Tools.StrikeThrough_Label")}</del>
 									</ToolBarButton>
-									<ToolBarButton title='@Localizer["Tools_Mark_Tooltip"]' 
+									<ToolBarButton title={t("Tools.Mark_Tooltip")}
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "==")}>
-										<mark>@Localizer["Tools_Mark_Label"]</mark>
+										<mark>{t("Tools.Mark_Label")}</mark>
 									</ToolBarButton>
-									<ToolBarButton title='@Localizer["Tools_Mark_Tooltip"]' 
+									<ToolBarButton title={t("Tools.Mark_Tooltip")}
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "> ")}>
-										| <em>@Localizer["Tools_Cite_Tooltip"]</em>
+										| <em>{t("Tools.Cite_Label")}</em>
 									</ToolBarButton>
 								</div>
 								<div className="join join-horizontal">
@@ -208,13 +208,13 @@ export default function Editor() {
 									</ToolBarButton>
 								</div>
 								<div className="join join-horizontal">
-									<ToolBarButton title='@Localizer["Tools_CodeLine_Tooltip"]' 
+									<ToolBarButton title={t("Tools.CodeLine_Tooltip")}
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "`")}>
 										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
 											<path fillRule="evenodd" d="M14.447 3.026a.75.75 0 0 1 .527.921l-4.5 16.5a.75.75 0 0 1-1.448-.394l4.5-16.5a.75.75 0 0 1 .921-.527ZM16.72 6.22a.75.75 0 0 1 1.06 0l5.25 5.25a.75.75 0 0 1 0 1.06l-5.25 5.25a.75.75 0 1 1-1.06-1.06L21.44 12l-4.72-4.72a.75.75 0 0 1 0-1.06Zm-9.44 0a.75.75 0 0 1 0 1.06L2.56 12l4.72 4.72a.75.75 0 0 1-1.06 1.06L.97 12.53a.75.75 0 0 1 0-1.06l5.25-5.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
 										</svg>
 									</ToolBarButton>
-									<ToolBarButton title='@Localizer["Tools_CodeBlock_Tooltip"]' 
+									<ToolBarButton title={t("Tools.CodeBlock_Tooltip")}
 												   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "```")}>
 										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
 											<path fillRule="evenodd" d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Zm14.25 6a.75.75 0 0 1-.22.53l-2.25 2.25a.75.75 0 1 1-1.06-1.06L15.44 12l-1.72-1.72a.75.75 0 1 1 1.06-1.06l2.25 2.25c.141.14.22.331.22.53Zm-10.28-.53a.75.75 0 0 0 0 1.06l2.25 2.25a.75.75 0 1 0 1.06-1.06L8.56 12l1.72-1.72a.75.75 0 1 0-1.06-1.06l-2.25 2.25Z" clipRule="evenodd" />
@@ -223,7 +223,7 @@ export default function Editor() {
 								</div>
 							</div>
 							<textarea ref={markdownArea} id="tool-target" className="resize-none textarea textarea-bordered outline-none w-full flex-1 join-item" 
-									  required aria-required placeholder='@Localizer["Body_Placeholder"]'
+									  required aria-required placeholder={t("Body_Placeholder")}
 									  autoComplete="off" defaultValue={article?.body}></textarea>
 						</div>
 						<div className="bg-base-200 p-2">
@@ -246,12 +246,12 @@ export default function Editor() {
 					<div className="flex gap-2 flex-wrap mt-3">
 						<button type="submit" className="btn btn-primary w-full sm:btn-wide" disabled={true} // TODO implement when saving
 							>
-							@Localizer["EditorSubmit"]
+							{t("EditorSubmit")}
 						</button>
 						
 						<a className="btn w-full sm:btn-wide" href={`/article/${article?.id}`} // TODO disable when article not exists
 							>
-							@Localizer["ViewArticle_Label"]
+							{t("ViewArticle_Label")}
 						</a>
 					</div>
 				</form>
