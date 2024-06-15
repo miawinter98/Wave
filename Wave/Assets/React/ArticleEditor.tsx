@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { updateCharactersLeft, insertBeforeSelection, insertBeforeAndAfterSelection } from "../utilities/md_functions";
 import { LabelInput, ToolBarButton } from "./Forms";
-import "groupby-polyfill/lib/polyfill.js"
+import { useTranslation, Trans } from 'react-i18next';
+import "groupby-polyfill/lib/polyfill.js";
 
 enum CategoryColor {
 	Primary = 1, 
@@ -41,6 +42,7 @@ function get<T>(url: string): Promise<T> {
 }
 
 export default function Editor() {
+	const { t } = useTranslation();
 	const [notice, setNotice] = useState<string>("");
 	const [article, setArticle] = useState<ArticleView|null>(null);
 	const [categories, setCategories] = useState<Category[]>([]);
@@ -95,9 +97,9 @@ export default function Editor() {
 				
 				<div className="w-full">
 				<ul className="steps steps-vertical md:steps-horizontal w-full lg:max-w-[40rem]">
-					<li className={`step ${article?.status ?? -1 >= 0 ? "step-primary" : ""}`}>@Localizer["Draft"]</li>
-					<li className={`step ${article?.status ?? -1 >= 1 ? "step-primary" : ""}`}>@Localizer["InReview"]</li>
-					<li className={`step ${article?.status === 2 ? "step-primary" : ""}`}>@Localizer["Published"]</li>
+					<li className={`step ${article?.status ?? -1 >= 0 ? "step-primary" : ""}`}>{t("Draft")}</li>
+					<li className={`step ${article?.status ?? -1 >= 1 ? "step-primary" : ""}`}>{t("InReview")}</li>
+					<li className={`step ${article?.status === 2 ? "step-primary" : ""}`}>{t("Published")}</li>
 				</ul>
 
 				<form method="post">
