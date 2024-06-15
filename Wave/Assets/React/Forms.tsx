@@ -1,6 +1,8 @@
-﻿interface ILabelProperties {
+﻿import React from "react";
+
+interface ILabelProperties {
     label: string, 
-    className: string | undefined,
+    className?: string,
     children: React.ReactNode,
 }
 
@@ -11,7 +13,7 @@ export function LabelInput({label, className, children} : ILabelProperties) : Re
            </label>;
 }
 
-export function ToolBarButton({title, onClick, children}: {title: string, onClick:React.MouseEvent<HTMLButtonElement>, children:any}) {
+export function ToolBarButton({title, onClick, children}: {title?: string, onClick:React.MouseEventHandler<HTMLButtonElement>, children:any}) {
 	return <button type="button" className="btn btn-accent btn-sm outline-none font-normal join-item" 
 	               title={title}
 	               onClick={onClick}>

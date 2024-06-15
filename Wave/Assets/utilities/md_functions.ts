@@ -19,7 +19,8 @@
     }
 }
 
-export function insertBeforeSelection(target: HTMLTextAreaElement, markdown : string, startOfLine = false) {
+export function insertBeforeSelection(target: HTMLTextAreaElement|null, markdown : string, startOfLine = false) {
+    if (!target) return;
     const start = target.selectionStart;
     const end = target.selectionEnd;
     const value = target.value;
@@ -37,7 +38,8 @@ export function insertBeforeSelection(target: HTMLTextAreaElement, markdown : st
     target.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
-export function insertBeforeAndAfterSelection(target: HTMLTextAreaElement, markdown : string) {
+export function insertBeforeAndAfterSelection(target: HTMLTextAreaElement|null, markdown : string) {
+    if (!target) return;
     while (/\s/.test(target.value[target.selectionStart]) && target.selectionStart < target.value.length) {
         target.selectionStart++;
     }

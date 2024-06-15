@@ -58,7 +58,16 @@ export default function Editor() {
 
 		const id = location.match(/article\/([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})\/edit/i);
 		if (!id) {
-			setArticle({});
+			const publishDate = new Date();
+			publishDate.setDate(publishDate.getDate() + 7);
+			const article : ArticleView = {
+				body: "",
+				id: "",
+				publishDate: publishDate,
+				slug: "",
+				status: 0,
+				title: ""};
+			setArticle(article);
 		} else if (!article) {
 			get<ArticleView>(`/api/article/${id[1]}`)
 				.then(result => {
@@ -74,7 +83,7 @@ export default function Editor() {
 		}
 	}, ([setArticle, setNotice, console, location]) as any[]);
 
-	const markdownArea = useRef(null);
+	const markdownArea = useRef<HTMLTextAreaElement>(null);
 	return (
 		<>
 				{
@@ -106,7 +115,7 @@ export default function Editor() {
 									categories.length < 1 && <option disabled>loading...</option>
 								}
 								{
-									Array.from(Map.groupBy(categories, c => c.color) as Map<CategoryColor, Category[]>)
+									Array.from(Map.groupBy(categories, (c: Category) => c.color) as Map<CategoryColor, Category[]>)
 										.map((value, _) => 
 											<optgroup className="font-bold not-italic my-3" label={CategoryColor[value[0]]}>
 												{value[1].map(c => <option key={c.id} value={c.id}>{c.name ?? "err"}</option>)}
@@ -124,7 +133,7 @@ export default function Editor() {
 							</input>
 						</LabelInput>
 						<LabelInput label='@Localizer["PublishDate_Label"]'>
-							<input className="input input-bordered w-full" defaultValue={article?.publishDate}
+							<input className="input input-bordered w-full" defaultValue={article?.publishDate?.toString()}
 							       type="datetime-local" autoComplete="off"
 							       disabled={true} // TODO Article.Status is ArticleStatus.Published && Article.PublishDate < DateTimeOffset.UtcNow
 							>
