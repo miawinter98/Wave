@@ -1,5 +1,11 @@
 ﻿namespace Wave.Data.Transactional;
 
+public sealed record CategoryView(Guid id, string Name, CategoryColors Color) {
+	public CategoryView(Category category) : this(
+		category.Id, category.Name, category.Color) {}
+
+}
+
 public sealed record ArticleView(
 	Guid Id, 
 	string Title, 
@@ -8,7 +14,8 @@ public sealed record ArticleView(
 	string Body, 
 	string BodyPlain,
 	ArticleStatus Status,
-	DateTimeOffset PublishDate) 
+	DateTimeOffset PublishDate,
+	IReadOnlyList<CategoryView> Categories) 
 {
 	public ArticleView(Article article) : this(
 		article.Id, 
@@ -18,5 +25,6 @@ public sealed record ArticleView(
 		article.Body,
 		article.BodyPlain,
 		article.Status,
-		article.PublishDate) {}
+		article.PublishDate,
+		article.Categories.Select(c => new CategoryView(c)).ToList()) {}
 }

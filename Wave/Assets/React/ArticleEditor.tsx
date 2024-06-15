@@ -27,6 +27,7 @@ type ArticleView = {
 	body: string,
 	status: number,
 	publishDate: Date,
+	categories: Category[],
 }
 
 function get<T>(url: string): Promise<T> {
@@ -120,7 +121,10 @@ export default function Editor() {
 									Array.from(Map.groupBy(categories, (c: Category) => c.color) as Map<CategoryColor, Category[]>)
 										.map((value, _) => 
 											<optgroup className="font-bold not-italic my-3" label={t(`Category.${CategoryColor[value[0]]}`)}>
-												{value[1].map(c => <option key={c.id} value={c.id}>{c.name ?? "err"}</option>)}
+												{value[1].map(c =>
+													<option key={c.id} value={c.id} selected={(article?.categories?.findIndex(c1 => c1.id == c.id) ?? -1) > -1}>
+														{c.name ?? "err"}</option>
+												)}
 											</optgroup>)
 								}
 							</select>
