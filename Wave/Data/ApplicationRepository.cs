@@ -39,6 +39,7 @@ public class ApplicationRepository(IDbContextFactory<ApplicationDbContext> conte
 	public async ValueTask<Article> GetArticleAsync(Guid id, ClaimsPrincipal user, CancellationToken cancellation = default) {
 		await using var context = await ContextFactory.CreateDbContextAsync(cancellation);
 		var article = await context.Set<Article>()
+			.IgnoreQueryFilters()
 			.IgnoreAutoIncludes()
 			.Include(a => a.Author)
 			.Include(a => a.Reviewer)
