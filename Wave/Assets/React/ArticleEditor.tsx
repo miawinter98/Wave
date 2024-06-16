@@ -1,50 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { updateCharactersLeft, insertBeforeSelection, insertBeforeAndAfterSelection } from "../utilities/md_functions";
 import { LabelInput, ToolBarButton } from "./Forms";
+import { CategoryColor, Category, ArticleStatus, ArticleView, ArticleDto } from "../model/Models";
 import { useTranslation, Trans } from 'react-i18next';
 import "groupby-polyfill/lib/polyfill.js";
 
 const nameof = function<T>(name: keyof T) { return name; }
 type guid = string;
-
-enum CategoryColor {
-	Primary = 1, 
-	Dangerous = 5, 
-	Important = 10, 
-	Informative = 15, 
-	Secondary = 20,
-	Default = 25, 
-	Extra = 50, 
-}
-enum ArticleStatus {
-	Draft = 0,
-	InReview = 1,
-	Published = 2,
-}
-
-type Category = {
-	id: guid,
-	name: string,
-	color: CategoryColor,
-}
-
-type ArticleView = {
-	id: guid,
-	title: string,
-	slug: string,
-	body: string,
-	status: ArticleStatus,
-	publishDate: string,
-	categories: Category[],
-}
-type ArticleDto = {
-	id: guid,
-	title: string,
-	slug: string,
-	body: string,
-	publishDate: Date,
-	categories: guid[],
-}
 
 async function get<T>(url: string): Promise<T> {
 	let response = await fetch(url, {
