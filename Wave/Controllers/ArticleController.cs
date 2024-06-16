@@ -48,8 +48,8 @@ public class ArticleController(ILogger<ArticleController> logger, ApplicationRep
 				"Failed to look up Article with Id {ArticleId}. User {UserId} Access Denied.", 
 				id, User.FindFirstValue("Id") ?? "unknown or anonymous");
 			return TypedResults.Unauthorized();
-		} catch (ArticleException ex) {
-			logger.LogError(ex, "Unexpected Article Error.");
+		} catch (Exception ex) {
+			logger.LogError(ex, "Unexpected Error.");
 			return TypedResults.Problem();
 		}
 	}
@@ -73,8 +73,8 @@ public class ArticleController(ILogger<ArticleController> logger, ApplicationRep
 			logger.LogWarning("User with ID {UserId} tried to create an article but submitted bad data.", 
 				User.FindFirstValue("Id") ?? "unknown or anonymous");
 			return TypedResults.BadRequest($"Submitted data is not valid: {string.Join(",", ex.Errors.Select(e => e.ErrorMessage))}.");
-		} catch (ArticleException ex) {
-			logger.LogError(ex, "Unexpected Article Error.");
+		} catch (Exception ex) {
+			logger.LogError(ex, "Unexpected Error.");
 			return TypedResults.Problem();
 		}
 	}

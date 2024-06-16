@@ -3,26 +3,26 @@
 namespace Wave.Data.Transactional;
 
 public abstract record ArticleDto(
-	[property:MaxLength(64)]
+	[MaxLength(64)]
 	string? Slug,
 	DateTimeOffset? PublishDate,
 	Guid[]? Categories,
 	Guid[]? Images);
 
 public record ArticleCreateDto(
-	[property:Required(AllowEmptyStrings = false)]
-	[property:MaxLength(256)]
+	[Required(AllowEmptyStrings = false)]
+	[MaxLength(256)]
 	string Title,
-	[property:Required(AllowEmptyStrings = false)] 
+	[Required(AllowEmptyStrings = false)] 
 	string Body,
 	string? Slug,
 	DateTimeOffset? PublishDate,
 	Guid[]? Categories,
 	Guid[]? Images) : ArticleDto(Slug, PublishDate, Categories, Images);
 public record ArticleUpdateDto(
-	[property:Required]
+	[Required]
 	Guid Id,
-	[property:MaxLength(256)]
+	[MaxLength(256)]
 	string? Title = null,
 	string? Body = null,
 	string? Slug = null,
