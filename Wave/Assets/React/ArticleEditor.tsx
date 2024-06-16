@@ -191,8 +191,8 @@ export default function Editor() {
 					<>
 						<div className="w-full">
 							<ul className="steps steps-vertical md:steps-horizontal">
-								<li className={`step w-24 ${article.status ?? -1 >= ArticleStatus.Draft ? "step-primary" : ""}`}>{t("Draft")}</li>
-								<li className={`step w-24 ${article.status ?? -1 >= ArticleStatus.InReview ? "step-primary" : ""}`}>{t("InReview")}</li>
+								<li className={`step w-24 ${(article.status ?? -1) >= ArticleStatus.Draft ? "step-primary" : ""}`}>{t("Draft")}</li>
+								<li className={`step w-24 ${(article.status ?? -1) >= ArticleStatus.InReview ? "step-primary" : ""}`}>{t("InReview")}</li>
 								<li className={`step w-24 ${article.status === ArticleStatus.Published ? "step-primary" : ""}`}>{t("Published")}</li>
 							</ul>
 
