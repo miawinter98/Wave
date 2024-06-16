@@ -90,6 +90,9 @@ if (domNode) {
                         },
                         loading: {
                             article: "Loading article...",
+                        },
+                        editor: {
+                            unsaved_changes_notice: "You have unsaved changes, save now so you don't loose them!",
                         }
                     }
                 },
@@ -143,6 +146,9 @@ if (domNode) {
                         },
                         loading: {
                             article: "Lade Artikel...",
+                        },
+                        editor: {
+                            unsaved_changes_notice: "Sie haben ungesicherte Änderungen, speichern Sie jetzt um diese nicht zu verlieren!",
                         }
                     }
                 }

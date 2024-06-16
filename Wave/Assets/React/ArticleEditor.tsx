@@ -59,7 +59,10 @@ async function get<T>(url: string): Promise<T> {
 async function post<T>(url: string, data: T) {
 	let response = await fetch(url, {
 		method: "POST",
-		body: JSON.stringify(data)
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json"
+		}
 	});
 	if (!response.ok)
 		throw new Error(response.statusText);
@@ -77,6 +80,7 @@ function Loading(message: string) {
 export default function Editor() {
 	const {t} = useTranslation();
 	const [notice, setNotice] = useState<string>("");
+	const [dirty, setDirty] = useState(false);
 	const [isPublished, setIsPublished] = useState(false);
 	const [article, setArticle] = useState<ArticleView|null>(null);
 	const [categories, setCategories] = useState<Category[]>([]);
@@ -91,14 +95,22 @@ export default function Editor() {
 
 	function onChangeModel(event: React.ChangeEvent) {
 		const {name, value} = event.target as (HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement);
-		const select = event.target as HTMLSelectElement;
 		if (name == nameof<ArticleDto>("publishDate")) {
 			setModel((m : ArticleDto) => ({...m, publishDate: new Date(value)}));
-		} else if (select) {
+		} else if (event.target instanceof HTMLSelectElement) {
+			const select = event.target as HTMLSelectElement;
 			setModel((m : ArticleDto) => ({...m, [name]: [...select.selectedOptions].map(o => o.value)}));
 		} else {
 			setModel((m : ArticleDto) => ({...m, [name]: value}));
 		}
+		setDirty(true);
+	}
+	function onSubmit(event: React.FormEvent) {
+		event.preventDefault();
+
+		post("/api/article", model)
+			.then(() => setDirty(false))
+			.catch(err => setNotice(`Error trying to save article: ${err}`));
 	}
 
 	const location = window.location.pathname;
@@ -155,8 +167,21 @@ export default function Editor() {
 	return (
 		<>
 			{
+				dirty &&
+				<div role="alert" className="alert alert-warning sticky left-4 right-4 top-4 mb-4 z-50 rounded-sm">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+						<path fillRule="evenodd" clipRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" />
+					</svg>
+					<p>{t("editor.unsaved_changes_notice")}</p>
+				</div>
+			}
+			{
 				notice.length > 0 &&
-				<div role="alert" className="alert alert-error my-3">
+				<div role="alert" className="alert alert-error sticky left-4 right-4 top-4 mb-4 z-50 rounded-sm">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+						<path fillRule="evenodd" clipRule="evenodd"
+							  d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" />
+					</svg>
 					<p>{notice}</p>
 				</div>
 			}
@@ -164,15 +189,14 @@ export default function Editor() {
 				article === null ?
 					Loading(t("loading.article")) :
 					<>
-						<pre>{JSON.stringify(model, null, 4)}</pre>
 						<div className="w-full">
-							<ul className="steps steps-vertical md:steps-horizontal w-full lg:max-w-[40rem]">
-								<li className={`step ${article.status ?? -1 >= ArticleStatus.Draft ? "step-primary" : ""}`}>{t("Draft")}</li>
-								<li className={`step ${article.status ?? -1 >= ArticleStatus.InReview ? "step-primary" : ""}`}>{t("InReview")}</li>
-								<li className={`step ${article.status === ArticleStatus.Published ? "step-primary" : ""}`}>{t("Published")}</li>
+							<ul className="steps steps-vertical md:steps-horizontal">
+								<li className={`step w-24 ${article.status ?? -1 >= ArticleStatus.Draft ? "step-primary" : ""}`}>{t("Draft")}</li>
+								<li className={`step w-24 ${article.status ?? -1 >= ArticleStatus.InReview ? "step-primary" : ""}`}>{t("InReview")}</li>
+								<li className={`step w-24 ${article.status === ArticleStatus.Published ? "step-primary" : ""}`}>{t("Published")}</li>
 							</ul>
 
-							<form method="post">
+							<form method="post" onSubmit={onSubmit}>
 								<fieldset className="grid grid-cols-1 lg:grid-cols-2 gap-x-8">
 									<LabelInput label={t("Title_Label")}>
 										<input className="input input-bordered w-full"
@@ -337,8 +361,7 @@ export default function Editor() {
 
 								<div className="flex gap-2 flex-wrap mt-3">
 									<button type="submit" className="btn btn-primary w-full sm:btn-wide"
-											disabled={true} // TODO implement when saving
-									>
+											disabled={!dirty}>
 										{t("EditorSubmit")}
 									</button>
 
