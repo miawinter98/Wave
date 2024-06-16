@@ -3,10 +3,11 @@ import { updateCharactersLeft, insertBeforeSelection, insertBeforeAndAfterSelect
 import { LabelInput, ToolBarButton } from "./Forms";
 import { CategoryColor, Category, ArticleStatus, ArticleView, ArticleDto } from "../model/Models";
 import { useTranslation, Trans } from 'react-i18next';
+import markdownit from "markdown-it";
+import markdownitmark from "markdown-it-mark";
 import "groupby-polyfill/lib/polyfill.js";
 
 const nameof = function<T>(name: keyof T) { return name; }
-type guid = string;
 
 async function get<T>(url: string): Promise<T> {
 	let response = await fetch(url, {
@@ -54,6 +55,14 @@ export default function Editor() {
 		slug: "",
 		title: ""
 	});
+
+	const md = markdownit({
+		html: false,
+		linkify: true,
+		typographer: true,
+	})
+		.use(markdownitmark)
+		;
 
 	function onChangeModel(event: React.ChangeEvent) {
 		const {name, value} = event.target as (HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement);
@@ -244,7 +253,7 @@ export default function Editor() {
 													<mark>{t("Tools.Mark_Label")}</mark>
 												</ToolBarButton>
 												<ToolBarButton title={t("Tools.Mark_Tooltip")}
-															   onClick={() => insertBeforeAndAfterSelection(markdownArea.current, "> ")}>
+															   onClick={() => insertBeforeSelection(markdownArea.current, "> ", true)}>
 													| <em>{t("Tools.Cite_Label")}</em>
 												</ToolBarButton>
 											</div>
@@ -313,9 +322,9 @@ export default function Editor() {
 													<div className="skeleton h-4 w-full"></div>
 													<div className="skeleton h-4 w-full"></div>
 												</div> :
-												<div className="prose prose-neutral max-w-none hyphens-auto text-justify">
-													<h2>Hello World!</h2>
-													<p>Html Preview Here</p>
+												<div className="prose prose-neutral max-w-none hyphens-auto text-justify"
+													 dangerouslySetInnerHTML={{__html: md.render(model.body)}}>
+
 												</div>
 										}
 									</div>
