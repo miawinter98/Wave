@@ -21,7 +21,7 @@ if (domNode) {
                         .replace("%3D", "=");
                     let cultureInfo = info.split("|", 2);
                     let ui_culture = cultureInfo[1]?.split("=", 2)[1];
-                    if(ui_culture && ui_culture.match(/\w\w[-\w\w]?/))
+                    if(ui_culture && ui_culture.match(/^\w\w(-\w\w)?$/))
                         return ui_culture;
                 }
 

@@ -4,6 +4,8 @@ import { LabelInput, ToolBarButton } from "./Forms";
 import { useTranslation, Trans } from 'react-i18next';
 import "groupby-polyfill/lib/polyfill.js";
 
+type guid = string;
+
 enum CategoryColor {
 	Primary = 1, 
 	Dangerous = 5, 
@@ -15,13 +17,13 @@ enum CategoryColor {
 }
 
 type Category = {
-	id: string,
+	id: guid,
 	name: string,
 	color: CategoryColor,
 }
 
 type ArticleView = {
-	id: string,
+	id: guid,
 	title: string,
 	slug: string,
 	body: string,
@@ -30,16 +32,13 @@ type ArticleView = {
 	categories: Category[],
 }
 
-function get<T>(url: string): Promise<T> {
-	return fetch(url, {
-			method: "GET"
-		}).then((response) => {
-			if (!response.ok) throw new Error(response.statusText);
-			
-			return response.json() as Promise<T>;
-		}).then(json => {
-			return json as T;
-		});
+async function get<T>(url: string): Promise<T> {
+	let response = await fetch(url, {
+		method: "GET"
+	});
+	if (!response.ok) throw new Error(response.statusText);
+
+	return response.json();
 }
 
 export default function Editor() {
@@ -69,7 +68,9 @@ export default function Editor() {
 				publishDate: publishDate,
 				slug: "",
 				status: 0,
-				title: ""};
+				title: "",
+				categories: []
+			};
 			setArticle(article);
 		} else if (!article) {
 			get<ArticleView>(`/api/article/${id[1]}`)
@@ -87,6 +88,10 @@ export default function Editor() {
 	}, ([setArticle, setNotice, console, location]) as any[]);
 
 	const markdownArea = useRef<HTMLTextAreaElement>(null);
+	// @ts-ignore
+	// @ts-ignore
+	// @ts-ignore
+	// @ts-ignore
 	return (
 		<>
 				{
