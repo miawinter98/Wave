@@ -88,6 +88,9 @@ if (domNode) {
                             Default: "Regular Category",
                             Extra: "Additional Category",
                         },
+                        loading: {
+                            article: "Loading article...",
+                        }
                     }
                 },
                 de: {
@@ -138,6 +141,9 @@ if (domNode) {
                             Default: "Reguläre Kategorie",
                             Extra: "Zusätzliche Kategorie",
                         },
+                        loading: {
+                            article: "Lade Artikel...",
+                        }
                     }
                 }
             }
