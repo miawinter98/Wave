@@ -13,6 +13,19 @@ EXPOSE 8080
 HEALTHCHECK --start-period=5s --start-interval=15s --interval=30s --timeout=30s --retries=3 \
     CMD curl --fail http://localhost:8080/health || exit 1
 
+FROM node:20-alpine AS vite-build
+WORKDIR /src
+RUN mkdir -p "wwwroot"
+COPY ["Wave/package.json", "Wave/package-lock.json", "./"]
+RUN npm install
+COPY [ \
+    "Wave/tsconfig.json", \
+    "Wave/tsconfig.node.json", \
+    "Wave/*.config.ts", \
+    "./"]
+COPY ["Wave/Assets/", "./Assets/"]
+RUN npx vite build
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 ARG VERSION=0.0.1
@@ -38,6 +51,7 @@ RUN dotnet publish "./Wave.csproj" \
 
 FROM base AS final
 WORKDIR /app
+COPY --from=vite-build /src/wwwroot ./wwwroot
 COPY --from=publish /app/publish .
 COPY LICENSE .
 ENTRYPOINT ["dotnet", "Wave.dll"]
