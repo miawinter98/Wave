@@ -71,22 +71,22 @@ public partial class Article : ISoftDelete {
 		string baseSlug = string.IsNullOrWhiteSpace(potentialNewSlug) ? Title.ToLower() : potentialNewSlug;
 
 		{
-			baseSlug = Encoding.ASCII.GetString(
-				Encoding.Convert(
-					Encoding.UTF8, 
-					Encoding.GetEncoding(
-						Encoding.ASCII.EncodingName,
-						new EncoderReplacementFallback(string.Empty),
-						new DecoderExceptionFallback()), 
-					Encoding.UTF8.GetBytes(baseSlug))
-			).Replace("-", "+").Replace(" ", "-");
+			baseSlug = Regex.Replace(Uri.EscapeDataString(Encoding.ASCII.GetString(
+					Encoding.Convert(
+						Encoding.UTF8, 
+						Encoding.GetEncoding(
+							Encoding.ASCII.EncodingName,
+							new EncoderReplacementFallback(string.Empty),
+							new DecoderExceptionFallback()), 
+						Encoding.UTF8.GetBytes(baseSlug))
+				).Replace("-", "+").Replace(" ", "-")), @"(%[\dA-F]{2})", string.Empty);
 			if (baseSlug.Length > 64) baseSlug = baseSlug[..64];
 			Slug = baseSlug;
 			return;
 		}
 
 		baseSlug = baseSlug.ToLowerInvariant()[..Math.Min(64, baseSlug.Length)];
-		string slug = Uri.EscapeDataString(baseSlug).Replace("-", "+").Replace("%20", "-");
+		string slug = Uri.EscapeDataString(baseSlug);
 		
 		// I hate my life
 		int escapeTrimOvershoot = 0;
