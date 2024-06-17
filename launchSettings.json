@@ -11,9 +11,6 @@
 				"grafana": "StartWithoutDebugging",
 				"loki": "StartWithoutDebugging",
 				"prometheus": "StartWithoutDebugging"
-			},
-			"environmentVariables": {
-				"ASPNETCORE_ENVIRONMENT": "Development"
 			}
 		},
 		"SMTP Debugging": {
@@ -23,9 +20,6 @@
 				"includes": [
 					"smtp-debug"
 				]
-			},
-			"environmentVariables": {
-				"ASPNETCORE_ENVIRONMENT": "Development"
 			}
 		},
 		"Production": {

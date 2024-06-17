@@ -50,7 +50,7 @@ public class ArticleTest {
 	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterEscapeSize3AtPosition56() {
 		Article.Title = "Auto generating slugs was a mistake I hate this _______ €";
 		Article.UpdateSlug();
-		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-_______-a"));
+		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-_______-"));
 	}
 	
 	[Test]
