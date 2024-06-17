@@ -139,6 +139,7 @@ export default function Editor() {
 				categories: []
 			};
 			setArticle(article);
+			setModel(m => ({...m, publishDate: publishDate}));
 		} else if (!article) {
 			get<ArticleView>(`/api/article/${id[1]}`)
 				.then(result => {
