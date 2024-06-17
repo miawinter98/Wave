@@ -144,12 +144,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 		}
 		article.LastModified = DateTimeOffset.UtcNow;
 		article.UpdateBody();
-
-		if (article.CanBePublic is false || article.PublishDate > DateTimeOffset.UtcNow) {
+		
+		// We can't use CanBePublic here since when we create a new article, that isn't initialized yet
+		if (article.Status != ArticleStatus.Published || article.PublishDate > DateTimeOffset.UtcNow) {
 			// Update publish date, if it exists and article isn't public yet
 			if (dto.PublishDate is {} date) article.PublishDate = date;
 			// Can only change slugs when the article is not public
-			article.UpdateSlug(dto.Slug);
+			article.UpdateSlug(Uri.EscapeDataString(string.IsNullOrWhiteSpace(dto.Slug) ? article.Title.ToLower().Replace(" ", "-") : dto.Slug));
 		}
 
 		await UpdateCategories(dto, article, cancellation);

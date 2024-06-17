@@ -54,7 +54,7 @@ public class ArticleController(ILogger<ArticleController> logger, ApplicationRep
 		}
 	}
 
-	[HttpPut, Authorize]
+	[HttpPut(Name = nameof(CreateArticle)), Authorize]
 	[Produces("application/json")]
 	public async Task<Results<
 			CreatedAtRoute<ArticleView>, 
@@ -63,7 +63,7 @@ public class ArticleController(ILogger<ArticleController> logger, ApplicationRep
 			ProblemHttpResult>> CreateArticle(ArticleCreateDto input, CancellationToken cancellation = default) {
 		try {
 			var article = new ArticleView(await repository.CreateArticleAsync(input, User, cancellation));
-			return TypedResults.CreatedAtRoute(article, nameof(GetArticle), article.Id);
+			return TypedResults.CreatedAtRoute(article, nameof(CreateArticle), article.Id);
 		} catch (ArticleMissingPermissionsException) {
 			logger.LogWarning(
 				"Unauthorized User with ID {UserId} tried to create an Article.",
