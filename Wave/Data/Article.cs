@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text;
 using System.Text.RegularExpressions;
 using Wave.Utilities;
 
@@ -60,13 +61,30 @@ public partial class Article : ISoftDelete {
 
 	public void UpdateSlug(string? potentialNewSlug = null) {
 		if (!string.IsNullOrWhiteSpace(potentialNewSlug) && Uri.IsWellFormedUriString(potentialNewSlug, UriKind.Relative)) {
+			if (potentialNewSlug.Length > 64) potentialNewSlug = potentialNewSlug[..64];
 			Slug = potentialNewSlug;
 			return;
 		}
 
-		if (string.IsNullOrWhiteSpace(potentialNewSlug) && !string.IsNullOrWhiteSpace(Slug)) return;
+		// if (string.IsNullOrWhiteSpace(potentialNewSlug) && !string.IsNullOrWhiteSpace(Slug)) return;
 
-		string baseSlug = potentialNewSlug ?? Title;
+		string baseSlug = string.IsNullOrWhiteSpace(potentialNewSlug) ? Title.ToLower() : potentialNewSlug;
+
+		{
+			baseSlug = Encoding.ASCII.GetString(
+				Encoding.Convert(
+					Encoding.UTF8, 
+					Encoding.GetEncoding(
+						Encoding.ASCII.EncodingName,
+						new EncoderReplacementFallback(string.Empty),
+						new DecoderExceptionFallback()), 
+					Encoding.UTF8.GetBytes(baseSlug))
+			).Replace("-", "+").Replace(" ", "-");
+			if (baseSlug.Length > 64) baseSlug = baseSlug[..64];
+			Slug = baseSlug;
+			return;
+		}
+
 		baseSlug = baseSlug.ToLowerInvariant()[..Math.Min(64, baseSlug.Length)];
 		string slug = Uri.EscapeDataString(baseSlug).Replace("-", "+").Replace("%20", "-");
 		

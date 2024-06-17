@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -150,7 +151,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			// Update publish date, if it exists and article isn't public yet
 			if (dto.PublishDate is {} date) article.PublishDate = date;
 			// Can only change slugs when the article is not public
-			article.UpdateSlug(Uri.EscapeDataString(string.IsNullOrWhiteSpace(dto.Slug) ? article.Title.ToLower().Replace(" ", "-") : dto.Slug));
+			article.UpdateSlug(dto.Slug);
 		}
 
 		await UpdateCategories(dto, article, cancellation);
