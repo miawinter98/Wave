@@ -19,7 +19,7 @@ async function get<T>(url: string): Promise<T> {
 	return response.json();
 }
 
-async function post<T>(url: string, data: T) {
+async function post<T, J>(url: string, data: T) : Promise<J> {
 	let response = await fetch(url, {
 		method: "POST",
 		body: JSON.stringify(data),
@@ -29,6 +29,21 @@ async function post<T>(url: string, data: T) {
 	});
 	if (!response.ok)
 		throw new Error(response.statusText);
+
+	return response.json();
+}
+async function put<T, J>(url: string, data: T) : Promise<J> {
+	let response = await fetch(url, {
+		method: "PUT",
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json"
+		}
+	});
+	if (!response.ok)
+		throw new Error(response.statusText);
+
+	return response.json();
 }
 
 function Loading(message: string) {
@@ -79,9 +94,24 @@ export default function Editor() {
 	function onSubmit(event: React.FormEvent) {
 		event.preventDefault();
 
-		post("/api/article", model)
-			.then(() => setDirty(false))
-			.catch(err => setNotice(`Error trying to save article: ${err}`));
+		if (!article || !article.id || article.id.length < 1) {
+			put<ArticleDto, ArticleView>("/api/article", model)
+				.then(result => {
+					// we just reload the editor, to make sure everything is updated properly
+					window.location.pathname = `/article/${result.id}/edit`;
+				}).catch(err => setNotice(`Error creating article: ${err}`));
+		} else {
+			post<ArticleDto, ArticleView>("/api/article", model)
+				.then(result => {
+					setDirty(false)
+					setArticle(result)
+
+					if (model.slug != result.slug) {
+						setModel(m => ({...m, slug: result.slug}));
+					}
+				})
+				.catch(err => setNotice(`Error trying to save article: ${err}`));
+		}
 	}
 
 	const location = window.location.pathname;
