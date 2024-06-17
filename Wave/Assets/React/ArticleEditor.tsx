@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { updateCharactersLeft, insertBeforeSelection, insertBeforeAndAfterSelection } from "../utilities/md_functions";
 import { LabelInput, ToolBarButton } from "./Forms";
 import { CategoryColor, Category, ArticleStatus, ArticleView, ArticleDto } from "../model/Models";
-import { useTranslation, Trans } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import markdownit from "markdown-it";
 import markdownitmark from "markdown-it-mark";
 import "groupby-polyfill/lib/polyfill.js";
