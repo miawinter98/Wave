@@ -1,6 +1,8 @@
+using System.Text;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Wave.Data.Transactional;
 
 namespace Wave.Data;
 
@@ -130,5 +132,75 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			key.HasMany(k => k.ApiClaims).WithOne().OnDelete(DeleteBehavior.Cascade);
 			key.Ignore(k => k.Claims);
 		});
+	}
+
+	internal async ValueTask UpdateArticle(ArticleDto dto, Article article, 
+			CancellationToken cancellation) {
+		if (dto is ArticleCreateDto cDto) {
+			article.Title = cDto.Title;
+			article.Body = cDto.Body;
+		} else if (dto is ArticleUpdateDto uDto) {
+			if (!string.IsNullOrWhiteSpace(uDto.Title)) article.Title = uDto.Title;
+			if (!string.IsNullOrWhiteSpace(uDto.Body)) article.Body = uDto.Body;
+		}
+		article.LastModified = DateTimeOffset.UtcNow;
+		article.UpdateBody();
+		
+		// We can't use CanBePublic here since when we create a new article, that isn't initialized yet
+		if (article.Status != ArticleStatus.Published || article.PublishDate > DateTimeOffset.UtcNow) {
+			// Update publish date, if it exists and article isn't public yet
+			if (dto.PublishDate is {} date) article.PublishDate = date;
+			// Can only change slugs when the article is not public
+			article.UpdateSlug(dto.Slug);
+		}
+
+		await UpdateCategories(dto, article, cancellation);
+		await UpdateImages(dto, article, cancellation);
+		await UpdateNewsletter(article, cancellation);
+	}
+	
+	private async ValueTask UpdateCategories(ArticleDto dto, Article article, CancellationToken cancellation) {
+		if (dto.Categories is null) return;
+		
+		// Retrieve all existing links between this article and categories
+		var relationships = await Set<ArticleCategory>()
+			.IgnoreQueryFilters()
+			.IgnoreAutoIncludes()
+			.Include(ac => ac.Category)
+			.Where(ac => ac.Article == article)
+			.ToListAsync(cancellation);
+		
+		// check which Category is not in the DTO and needs its relationship removed
+		foreach (var ac in relationships.Where(ac => !dto.Categories.Contains(ac.Category.Id))) {
+			article.Categories.Remove(ac.Category);
+			Remove(ac);
+		}
+		
+		// check which Category in the DTO is absent from the article's relationships, and add them
+		var added = dto.Categories.Where(cId => relationships.All(ac => ac.Category.Id != cId)).ToList();
+		if (added.Count > 0) {
+			var categories = await Set<Category>()
+				.IgnoreAutoIncludes().IgnoreQueryFilters()
+				.Where(c => added.Contains(c.Id))
+				.ToListAsync(cancellation);
+
+			await AddRangeAsync(categories.Select(c => new ArticleCategory {
+				Article = article, Category = c
+			}).ToList(), cancellation);
+		}
+	}
+
+	private async ValueTask UpdateImages(ArticleDto dto, Article article, CancellationToken cancellation) {
+		if (dto.Images is null) return;
+
+		// TODO:: implement
+	}
+
+	private async ValueTask UpdateNewsletter(Article article, CancellationToken cancellation) {
+		// Update Newsletter distribution if it exists
+		var newsletter = await Set<EmailNewsletter>()
+			.IgnoreQueryFilters().IgnoreAutoIncludes()
+			.FirstOrDefaultAsync(n => n.Article == article, cancellation);
+		if (newsletter is not null) newsletter.DistributionDateTime = article.PublishDate;
 	}
 }

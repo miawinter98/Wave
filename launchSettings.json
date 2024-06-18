@@ -1,23 +1,42 @@
 {
-  "profiles": {
-    "Docker Compose": {
-      "commandName": "DockerCompose",
-      "commandVersion": "1.0",
-      "serviceActions": {
-        "web": "StartDebugging",
-        "database": "StartWithoutDebugging",
-        "mailhog": "DoNotStart",
-        "redis": "StartWithoutDebugging"
-      }
-    },
-    "SMTP Debugging": {
-      "commandName": "DockerCompose",
-      "commandVersion": "1.0",
-      "composeProfile": {
-        "includes": [
-          "smtp-debug"
-        ]
-      }
-    }
-  }
+	"profiles": {
+		"Docker Compose": {
+			"commandName": "DockerCompose",
+			"commandVersion": "1.0",
+			"serviceActions": {
+				"web": "StartDebugging",
+				"database": "StartWithoutDebugging",
+				"mailhog": "DoNotStart",
+				"redis": "StartWithoutDebugging",
+				"grafana": "StartWithoutDebugging",
+				"loki": "StartWithoutDebugging",
+				"prometheus": "StartWithoutDebugging"
+			}
+		},
+		"SMTP Debugging": {
+			"commandName": "DockerCompose",
+			"commandVersion": "1.0",
+			"composeProfile": {
+				"includes": [
+					"smtp-debug"
+				]
+			}
+		},
+		"Production": {
+			"commandName": "DockerCompose",
+			"commandVersion": "1.0",
+			"serviceActions": {
+				"database": "StartWithoutDebugging",
+				"grafana": "DoNotStart",
+				"loki": "DoNotStart",
+				"mailhog": "DoNotStart",
+				"prometheus": "DoNotStart",
+				"redis": "StartWithoutDebugging",
+				"web": "StartDebugging"
+			},
+			"environmentVariables": {
+				"ASPNETCORE_ENVIRONMENT": "Production"
+			}
+		}
+	}
 }

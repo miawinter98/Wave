@@ -26,6 +26,7 @@ using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Grafana.Loki;
+using Vite.AspNetCore;
 using Wave.Utilities.Metrics;
 
 #region Version Information
@@ -81,6 +82,13 @@ builder.Services.AddControllers(options => {
 	options.OutputFormatters.Add(new SyndicationFeedFormatter());
 });
 builder.Services.AddOutputCache();
+builder.Services.AddViteServices(options => {
+	// options.Server.AutoRun = true;
+	options.Server.ScriptName = "dev";
+	options.Server.Https = false;
+	options.Server.UseReactRefresh = true;
+	options.Base = "/dist/";
+});
 
 #region Data Protection & Redis
 
@@ -198,6 +206,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => {
 	.AddSignInManager()
 	.AddDefaultTokenProviders()
 	.AddClaimsPrincipalFactory<UserClaimsFactory>();
+builder.Services.AddScoped<ApplicationRepository>();
 
 #endregion
 
@@ -334,18 +343,22 @@ app.UseStaticFiles(new StaticFileOptions {
 		}
 	}
 });
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseAntiforgery();
 
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
-
-// Add additional endpoints required by the Identity /Account Razor components.
-app.MapAdditionalIdentityEndpoints();
-
 app.MapHealthChecks("/health");
-
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.MapAdditionalIdentityEndpoints();
 app.MapControllers();
-app.UseOutputCache();
 
+if (app.Environment.IsDevelopment()) {
+	//app.UseWebSockets();
+	app.UseViteDevelopmentServer(true);
+}
+
+app.UseOutputCache();
 app.UseRequestLocalization();
 
 {

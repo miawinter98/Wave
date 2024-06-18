@@ -1,58 +1,80 @@
 ﻿@page "/article/new"
 @page "/article/{id:guid}/edit"
 
+@using System.ComponentModel.DataAnnotations
+@using Vite.AspNetCore
 @using Wave.Data
-@using Microsoft.AspNetCore.Identity
-@using System.Security.Claims
+@using Wave.Utilities
 
-@rendermode @(new InteractiveServerRenderMode(true))
+@rendermode InteractiveServer
 @attribute [Authorize(Policy = "ArticleEditPermissions")]
 
-@inject UserManager<ApplicationUser> UserManager
+@inject ILogger<ArticleEditor> Logger
+@inject NavigationManager Navigation
 @inject IStringLocalizer<ArticleEditor> Localizer
+@inject IMessageDisplay Message
+@inject IViteManifest ViteManifest
+@inject IViteDevServerStatus ViteServer
+@inject IJSRuntime JS
 
 <PageTitle>@(Localizer["EditorTitle"] + TitlePostfix)</PageTitle>
 
-@if (User is null) {
-	<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
-
+<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
+<div id="editor">
 	<div class="flex place-content-center">
+		<p>Loading Interactive Editor </p>
 		<span class="loading loading-spinner loading-lg"></span>
 	</div>
-} else {
-	<ErrorBoundary>
-		<ChildContent>
-			<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
-			
-			<Wave.Components.Pages.Partials.ArticleEditorPartial Id="@Id" User="@User" ClaimsUser="@ClaimsUser" />
-		</ChildContent>
-		<ErrorContent>
-			<h1 class="text-3xl lg:text-5xl font-light mb-6">Not found</h1>
-		</ErrorContent>
-	</ErrorBoundary>
-}
-
+</div>
 
 @code {
 	[CascadingParameter(Name = "TitlePostfix")]
 	private string TitlePostfix { get; set; } = default!;
-	[CascadingParameter]
-	private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
-
 	[Parameter]
 	public Guid? Id { get; set; }
-	private ApplicationUser? User { get; set; }
-	private ClaimsPrincipal? ClaimsUser { get; set; }
 
-	protected override async Task OnAfterRenderAsync(bool firstRender) {
-		if (firstRender) {
-			if (User is not null) return;
-			var state = await AuthenticationState;
-			ClaimsUser = state.User;
-			var user = await UserManager.GetUserAsync(state.User);
-			User = user ?? throw new ApplicationException("???2");
+	private Data.Transactional.ArticleView? Article { get; set; }
+	private bool Saving { get; set; }
+
+	private IReadOnlyList<Category> Categories { get; } = [];
+
+	private bool ReactImported { get; set; }
+
+	protected override async Task OnAfterRenderAsync(bool first) {
+		if (!first) return;
+
+		if (!ReactImported) {
+			ReactImported = true;
+			
+			string mainModule = ViteServer.IsEnabled
+				? $"{ViteServer.ServerUrlWithBasePath}/main.tsx"
+				: $"/dist/{ViteManifest["main.tsx"]!.File}";
+			await JS.InvokeVoidAsync("import", mainModule);
+		}
+
+		Article = new(Guid.NewGuid(), "", "", "", "", "", ArticleStatus.Draft, DateTimeOffset.MaxValue, []);
+	}
+
+	private async Task OnValidSubmit() {
+		try {
+			Saving = true;
+
+			if (false is false) {
+				Message.ShowError("Permission denied.");
+				return;
+			}
+
+			Message.ShowSuccess(Localizer["Save_Success"]);
+
+			if (Navigation.Uri.EndsWith("/article/new")) {
+				Navigation.NavigateTo($"/article/{Id!.Value}/edit", false, true);
+			}
+		} catch (Exception ex) {
+			Message.ShowError(Localizer["Save_Error"]);
+			Logger.LogError(ex, "Failed to save article.");
+		} finally {
+			Saving = false;
 			await InvokeAsync(StateHasChanged);
 		}
 	}
-
 }

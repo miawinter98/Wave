@@ -1,37 +1,45 @@
 ﻿@using System.Globalization
 @using Microsoft.AspNetCore.Localization
 @using Microsoft.Extensions.Options
+@using Vite.AspNetCore
 @using Wave.Data
+
+@inject IViteManifest ViteManifest
+@inject IViteDevServerStatus ViteStatus
 @inject IOptions<Customization> Customizations
+
 <!DOCTYPE html>
 <html lang="@CultureInfo.CurrentUICulture.ToString()" data-theme="@(UserTheme ?? Customizations.Value.DefaultTheme)">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="/">
-	<link rel="stylesheet" href="app.css">
-	<link rel="stylesheet" href="/css/main.min.css">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<base href="/">
+	@if (ViteStatus.IsEnabled) {
+		<link rel="stylesheet" href="@($"{ViteStatus.ServerUrlWithBasePath}/css/main.css")">
+	} else {
+		<link rel="stylesheet" href="/dist/@(ViteManifest["css/main.css"]?.File ?? "css/main.css")">
+	}
 
 	<!-- #region favicon + manifest -->
 	@if (!string.IsNullOrWhiteSpace(Customizations.Value.IconLink)) {
 		<link rel="icon" href="@Customizations.Value.IconLink">
 	} else {
-		<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-		<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-		<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-		<link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-		<link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-		<link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-		<link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-		<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-		<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-		<link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
-		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-		<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="57x57" href="/dist/apple-icon-57x57.png">
+		<link rel="apple-touch-icon" sizes="60x60" href="/dist/apple-icon-60x60.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="/dist/apple-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="76x76" href="/dist/apple-icon-76x76.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="/dist/apple-icon-114x114.png">
+		<link rel="apple-touch-icon" sizes="120x120" href="/dist/apple-icon-120x120.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="/dist/apple-icon-144x144.png">
+		<link rel="apple-touch-icon" sizes="152x152" href="/dist/apple-icon-152x152.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/dist/apple-icon-180x180.png">
+		<link rel="icon" type="image/png" sizes="192x192"  href="/dist/android-icon-192x192.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/dist/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="/dist/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/dist/favicon-16x16.png">
 	}
-	<link rel="manifest" href="/manifest.json">
+	<link rel="manifest" href="/dist/manifest.json">
 	<meta name="msapplication-TileColor" content="#ffffff">
 	<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 	<meta name="theme-color" content="#ffffff">
@@ -44,6 +52,16 @@
 <CascadingValue Value="UserTheme" Name="UserTheme">
 <Routes />
 </CascadingValue>
+	@if (ViteStatus.IsEnabled) {
+		<script type="module">
+			import RefreshRuntime from 'http://localhost:5173/dist/@@react-refresh'
+			RefreshRuntime.injectIntoGlobalHook(window)
+			window.$RefreshReg$ = () => { }
+			window.$RefreshSig$ = () => (type) => type
+			window.__vite_plugin_react_preamble_installed__ = true
+		</script>
+		<script type="module" src="@(ViteStatus.ServerUrlWithBasePath + "/@vite/client")"></script>
+	}
 	<script src="_framework/blazor.web.js" defer></script>
 	<SectionOutlet SectionName="scripts" />
 	<script>
@@ -115,26 +133,26 @@
 </html>
 
 @code {
-    [CascadingParameter]
-    public HttpContext? HttpContext { get; set; }
+	[CascadingParameter]
+	public HttpContext? HttpContext { get; set; }
 
 	private string? UserTheme { get; set; }
-
-    protected override void OnInitialized() {
-        HttpContext?.Response.Cookies.Append(
-            CookieRequestCultureProvider.DefaultCookieName,
-            CookieRequestCultureProvider.MakeCookieValue(
-                new RequestCulture(
-                    CultureInfo.CurrentCulture,
-                    CultureInfo.CurrentUICulture)), new CookieOptions {
-	            Expires = DateTimeOffset.UtcNow.AddYears(1), 
+	
+	protected override void OnInitialized() {
+		HttpContext?.Response.Cookies.Append(
+			CookieRequestCultureProvider.DefaultCookieName,
+			CookieRequestCultureProvider.MakeCookieValue(
+				new RequestCulture(
+					CultureInfo.CurrentCulture,
+					CultureInfo.CurrentUICulture)), new CookieOptions {
+				Expires = DateTimeOffset.UtcNow.AddYears(1), 
 				IsEssential = true, 
 				SameSite = SameSiteMode.Strict
-            });
+			});
 
-        if (HttpContext?.Request.Cookies.ContainsKey(".Wave.Theme") is true) {
-	        HttpContext.Request.Cookies.TryGetValue(".Wave.Theme", out string? theme);
-	        UserTheme = theme;
-        }
-    }
+		if (HttpContext?.Request.Cookies.ContainsKey(".Wave.Theme") is true) {
+			HttpContext.Request.Cookies.TryGetValue(".Wave.Theme", out string? theme);
+			UserTheme = theme;
+		}
+	}
 }

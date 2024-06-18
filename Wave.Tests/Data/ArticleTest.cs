@@ -22,7 +22,7 @@ public class ArticleTest {
 	public void SlugWithSpecialCharacters() {
 		Article.Title = "Title with, special characters?";
 		Article.UpdateSlug();
-		Assert.That(Article.Slug, Is.EqualTo("title-with%2C-special-characters%3F"));
+		Assert.That(Article.Slug, Is.EqualTo("title-with-special-characters"));
 	}
 
 	[Test]
@@ -36,14 +36,14 @@ public class ArticleTest {
 	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterEscapeSize3AtPosition55() {
 		Article.Title = "Auto generating slugs was a mistake I hate this ______ €";
 		Article.UpdateSlug();
-		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-______-%E2%82%AC"));
+		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-______-"));
 	}
 	
 	[Test]
 	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterEscapeSize2AtPosition56() {
 		Article.Title = "Auto generating slugs was a mistake I hate this _______ üa";
 		Article.UpdateSlug();
-		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-_______-%C3%BCa"));
+		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-_______-a"));
 	}
 
 	[Test]
@@ -57,7 +57,7 @@ public class ArticleTest {
 	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterEscapeSize2AtPosition57() {
 		Article.Title = "Auto generating slugs was a mistake I hate this ________ üa";
 		Article.UpdateSlug();
-		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-________-%C3%BCa"));
+		Assert.That(Article.Slug, Is.EqualTo("auto-generating-slugs-was-a-mistake-i-hate-this-________-a"));
 	}
 
 	[Test]
@@ -71,21 +71,21 @@ public class ArticleTest {
 	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterAtPosition61() {
 		Article.Title = "Article that ends with a special character and need special cäre";
 		Article.UpdateSlug();
-		Assert.That(Article.Slug, Is.EqualTo("article-that-ends-with-a-special-character-and-need-special-c"));
+		Assert.That(Article.Slug, Is.EqualTo("article-that-ends-with-a-special-character-and-need-special-cre"));
 	}
 	
 	[Test]
 	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterAtPosition62() {
 		Article.Title = "Article that ends with a special character and needs special cäre";
 		Article.UpdateSlug();
-		Assert.That(Article.Slug, Is.EqualTo("article-that-ends-with-a-special-character-and-needs-special-c"));
+		Assert.That(Article.Slug, Is.EqualTo("article-that-ends-with-a-special-character-and-needs-special-cre"));
 	}
 	
 	[Test]
 	public void SlugFromTitleLongerThan64CharacterWithSpecialCharacterAtPosition63() {
 		Article.Title = "Article that ends with a special character and needs special caäre";
 		Article.UpdateSlug();
-		Assert.That(Article.Slug, Is.EqualTo("article-that-ends-with-a-special-character-and-needs-special-ca"));
+		Assert.That(Article.Slug, Is.EqualTo("article-that-ends-with-a-special-character-and-needs-special-car"));
 	}
 	
 	[Test]
