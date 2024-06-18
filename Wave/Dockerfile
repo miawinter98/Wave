@@ -1,10 +1,13 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-ARG BASE=8.0
-FROM mcr.microsoft.com/dotnet/aspnet:$BASE AS base
+ARG BASE=
+FROM mcr.microsoft.com/dotnet/aspnet:8.0$BASE AS base
 RUN mkdir -p /app/files && chown app /app/files
-RUN mkdir -p /configuration && chown app /configuration
-RUN apt-get update && apt-get install -y curl
+RUN if command -v apt-get; then \
+	apt-get update && apt-get install -y curl; \
+	else \
+	apk add --update curl; \
+	fi
 USER app
 VOLUME /app/files
 VOLUME /configuration
@@ -24,9 +27,12 @@ COPY [ \
     "Wave/*.config.ts", \
     "./"]
 COPY ["Wave/Assets/", "./Assets/"]
+# need to copy website files, otherwise tailwind doesn't compile 
+# the required classes
+COPY ["Wave/Components/", "./Components/"]
 RUN npx vite build
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0$BASE AS build
 ARG BUILD_CONFIGURATION=Release
 ARG VERSION=0.0.1
 WORKDIR /src
