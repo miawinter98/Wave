@@ -2,7 +2,7 @@ const defaultTheme = require('tailwindcss/defaultTheme');
 
 /** @type {import('tailwindcss').Config} */
 export default {
-    content: ["Assets/**/*.{ts,tsx}", "Pages/**/*.cshtml", "Components/**/*.razor"],
+    content: ["Assets/**/*.{ts,tsx}", "Components/**/*.razor"],
     safelist: ["youtube"],
     theme: {
         extend: {

@@ -2,11 +2,12 @@
 
 ARG BASE=
 FROM mcr.microsoft.com/dotnet/aspnet:8.0$BASE AS base
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 RUN mkdir -p /app/files && chown app /app/files
 RUN if command -v apt-get; then \
 	apt-get update && apt-get install -y curl; \
 	else \
-	apk add --update curl; \
+	apk add --update curl icu-libs icu-data-full tzdata; \
 	fi
 USER app
 VOLUME /app/files
@@ -24,7 +25,8 @@ RUN npm install
 COPY [ \
     "Wave/tsconfig.json", \
     "Wave/tsconfig.node.json", \
-    "Wave/*.config.ts", \
+    "Wave/tailwind.config.ts", \
+    "Wave/vite.config.ts", \
     "./"]
 COPY ["Wave/Assets/", "./Assets/"]
 # need to copy website files, otherwise tailwind doesn't compile 
@@ -33,6 +35,7 @@ COPY ["Wave/Components/", "./Components/"]
 RUN npx vite build
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0$BASE AS build
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ARG BUILD_CONFIGURATION=Release
 ARG VERSION=0.0.1
 WORKDIR /src
@@ -46,6 +49,7 @@ RUN dotnet build "./Wave.csproj" \
     -p:Version="${VERSION}"
 
 FROM build AS publish
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ARG BUILD_CONFIGURATION=Release
 ARG VERSION=0.0.1
 ARG VERSION_SUFFIX=
