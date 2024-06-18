@@ -11,6 +11,12 @@ jobs:
       matrix:
         image_suffix: ["", "-alpine"]
 
+    permissions: 
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
