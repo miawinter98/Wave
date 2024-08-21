@@ -1,7 +1,6 @@
 ﻿@page "/article/new"
 @page "/article/{id:guid}/edit"
 
-@using System.ComponentModel.DataAnnotations
 @using Vite.AspNetCore
 @using Wave.Data
 @using Wave.Utilities
@@ -22,8 +21,10 @@
 <h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["EditorTitle"]</h1>
 <div id="editor">
 	<div class="flex place-content-center">
-		<p>Loading Interactive Editor </p>
-		<span class="loading loading-spinner loading-lg"></span>
+		<div class="flex flex-col gap-2 items-center">
+			<span class="loading loading-spinner loading-lg"></span>
+			<p>Loading Interactive Editor </p>
+		</div>
 	</div>
 </div>
 

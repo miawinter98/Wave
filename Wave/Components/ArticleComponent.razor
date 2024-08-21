@@ -47,37 +47,52 @@
 	</header>
 </SectionContent>
 
-@if (Article.Headings.Count > 0) {
-	<section class="mb-3 p-2 bg-base-200 rounded-box w-80 float-start mr-2 mb-2" data-nosnippet>
-		<h2 class="text-xl font-bold mb-3">@Localizer["TableOfContents"]</h2>
-		<ul class="menu p-0 [&_li>*]:rounded-none">
-			@{
-				int level = 1;
-				foreach (var heading in Article.Headings.OrderBy(h => h.Order)) {
-					int headingLevel = heading.Order % 10;
+@if (Article.Headings.Count > 1) {
+	<section class="p-2 bg-base-200 max-w-[28rem] rounded-box" data-nosnippet>
+		<details class="group" open>
+			<summary class="list-none">
+				<div class="flex gap-2 mb-2">
+					<div class="cursor-pointer grid place-content-center">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 block group-open:hidden">
+							<path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+						</svg>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 hidden group-open:block">
+							<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+						</svg>
+					</div>
+					<h2 class="cursor-pointer text-xl font-bold select-none">@Localizer["TableOfContents"]</h2>
+				</div>
+			</summary>
+			<ul class="menu p-0 pl-4 [&_li>*]:rounded-none">
+				@{
+					int level = 1;
+					foreach (var heading in Article.Headings.OrderBy(h => h.Order)) {
+						int headingLevel = heading.Order % 10;
 
-					while (headingLevel < level) {
-						level--;
-						@(new MarkupString("</ul></li>"))
+						while (headingLevel < level) {
+							level--;
+							@(new MarkupString("</ul></li>"))
+						}
+
+						while (headingLevel > level) {
+							level++;
+							@(new MarkupString("<li><ul>"))
+						}
+
+						<li>
+							<a href="/@Navigation.ToBaseRelativePath(Navigation.Uri)#@heading.Anchor">@((MarkupString)heading.Label)</a>
+						</li>
 					}
 
-					while (headingLevel > level) {
-						level++;
+					while (level > 1) {
+						level--;
 						@(new MarkupString("<li><ul>"))
 					}
-
-					<li>
-						<a href="/@Navigation.ToBaseRelativePath(Navigation.Uri)#@heading.Anchor">@((MarkupString)heading.Label)</a>
-					</li>
 				}
-
-				while (level > 1) {
-					level--;
-					@(new MarkupString("<li><ul>"))
-				}
-			}
-		</ul>
+			</ul>
+		</details>
 	</section>
+	<hr class="my-6" />
 }
 
 <article class="mb-6">

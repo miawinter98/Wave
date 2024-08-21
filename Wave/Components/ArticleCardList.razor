@@ -1,7 +1,15 @@
 ﻿@using Wave.Data
 
 @if (Articles.Count < 1) {
-	<p>No Articles</p>
+	<div class="flex space-x-3 bg-base-200 text-base-content p-2 rounded">
+		<div class="skeleton h-32 w-32 max-lg:hidden"></div>
+		<div class="flex flex-col space-y-1 p-2">
+			<h2 class="card-title line-clamp-1">No Articles</h2>
+			<div class="skeleton h-4 w-28"></div>
+			<div class="skeleton h-4 w-28"></div>
+			<div class="skeleton h-4 w-20"></div>
+		</div>
+	</div>
 } else {
 	<div class="flex flex-col gap-4">
 		@foreach (var article in Articles.OrderByDescending(a => a.PublishDate)) {
