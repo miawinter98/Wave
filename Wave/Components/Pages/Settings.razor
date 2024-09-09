@@ -1,8 +1,20 @@
 ﻿@page "/settings"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Options
+@using Wave.Data
+@using Wave.Services
+@using Wave.Utilities
 
+@rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin")]
 
 @inject IStringLocalizer<Settings> Localizer
+@inject IOptions<Features> Features
+@inject IServiceProvider ServiceProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject ILogger<Settings> Logger
+@inject IMessageDisplay Message
+@inject NavigationManager Navigation
 
 <PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
 
@@ -12,6 +24,26 @@
 	<BoardCardComponent Heading="@Localizer["About_Title"]">
 		<p>@Localizer["Wave_Version_Label"] @Version</p>
 	</BoardCardComponent>
+	@if (Features.Value.EmailSubscriptions) {
+		<BoardCardComponent Heading="@Localizer["Email_Title"]">
+			<div class="form-control w-full">
+				<div>
+					<span class="label-text">Email</span>
+				</div>
+				<div class="join">
+					<InputText class="input input-bordered input-sm join-item flex-1"
+					           type="email" autofill="off"
+					           @bind-Value="@Email" DisplayName="Email"/>
+					<InputSelect @bind-Value="@EmailType" class="select select-bordered select-sm">
+						<option value="default" selected>Default</option>
+						<option value="welcome">Welcome</option>
+						<option value="newsletter">Newsletter</option>
+					</InputSelect>
+					<button class="btn btn-sm btn-info join-item @(EmailBusy ? "btn-disabled" : null)" @onclick="TestEmail">Test</button>
+				</div>
+			</div>
+		</BoardCardComponent>
+	}
 </BoardComponent>
 
 @code {
@@ -19,5 +51,44 @@
 	private string TitlePostfix { get; set; } = default!;
 	[CascadingParameter(Name = "Version")]
 	private string Version { get; set; } = string.Empty;
+	[CascadingParameter]
+	private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
 
+	private string Email { get; set; } = string.Empty;
+	private string EmailType { get; set; } = "default";
+	private bool EmailBusy = false;
+
+	private async Task TestEmail() {
+		if (EmailBusy) return;
+		try {
+			EmailBusy = true;
+			await using var client = ServiceProvider.GetRequiredService<IEmailService>();
+			await client.ConnectAsync(CancellationToken.None);
+			var factory = ServiceProvider.GetRequiredService<EmailFactory>();
+
+			const string title = "Test Email";
+			const string body = "Hello from Wave";
+			EmailSubscriber sub = new() {Email = Email, Language = "en-US"};
+			string author = await factory.CreateAuthorCard(
+				(await UserManager.GetUserAsync((await AuthenticationState).User))!,
+				new Uri(Navigation.BaseUri, UriKind.Absolute));
+
+			var email = EmailType switch {
+				"welcome" => await factory.CreateWelcomeEmail(sub, [], title, title, $"<p>{body}</p>", body),
+				"newsletter" => await factory.CreateSubscribedEmail(sub, 
+					new Uri(Navigation.BaseUri, UriKind.Absolute).AbsoluteUri,
+					title, title, $"<p>{body}</p>" + author, body),
+				var _ => await factory.CreateDefaultEmail(sub.Email, sub.Name, title, title, $"<p>{body}</p>", body)
+			};
+
+			await client.SendEmailAsync(email, CancellationToken.None);
+
+			Message.ShowSuccess("Test Email send", "Test Email");
+		} catch (Exception ex) {
+			Message.ShowError("Failed to send email: " + ex.Message, "Test Email");
+			Logger.LogError(ex, "Failed to send email");
+		} finally {
+			EmailBusy = false;
+		}
+	}
 }
