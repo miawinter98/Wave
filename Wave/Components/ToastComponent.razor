@@ -9,8 +9,10 @@
 			@if (message.Title is null) {
 				@message.Body
 			} else {
-				<span class="font-bold">@message.Title</span>
-				<span><small>@message.Body</small></span>
+				<div class="flex flex-col gap-2">
+					<span class="font-bold">@message.Title</span>
+					<span><small>@message.Body</small></span>
+				</div>
 			}
 		</div>
 	}
