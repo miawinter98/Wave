@@ -66,7 +66,7 @@ public class NewsletterBackgroundService(ILogger<NewsletterBackgroundService> lo
 							newsletter.Article.BodyHtml + aboutTheAuthor, 
 							newsletter.Article.BodyPlain, 
 							"newsletter-" + newsletter.Id, replyTo);
-						await client.SendEmailAsync(email);
+						await client.SendEmailAsync(email, cancellationToken);
 					}
 				}
 			}
