@@ -140,4 +140,7 @@
     <data name="Subscribers_Label" xml:space="preserve">
         <value>Subscribers</value>
     </data>
+    <data name="Settings_Label" xml:space="preserve">
+        <value>Settings</value>
+    </data>
 </root>

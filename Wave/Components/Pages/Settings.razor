@@ -1,0 +1,23 @@
+﻿@page "/settings"
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IStringLocalizer<Settings> Localizer
+
+<PageTitle>@(Localizer["Title"] + TitlePostfix)</PageTitle>
+
+<h1 class="text-3xl lg:text-5xl font-light mb-6 text-primary">@Localizer["Title"]</h1>
+
+<BoardComponent CenterContent="false">
+	<BoardCardComponent Heading="@Localizer["About_Title"]">
+		<p>@Localizer["Wave_Version_Label"] @Version</p>
+	</BoardCardComponent>
+</BoardComponent>
+
+@code {
+	[CascadingParameter(Name = "TitlePostfix")]
+	private string TitlePostfix { get; set; } = default!;
+	[CascadingParameter(Name = "Version")]
+	private string Version { get; set; } = string.Empty;
+
+}
