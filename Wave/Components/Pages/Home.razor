@@ -8,28 +8,12 @@
 @inject IOptions<Customization> Customizations
 @inject IOptions<Features> Features
 @inject NavigationManager Navigation
-@inject IDbContextFactory<ApplicationDbContext> ContextFactory;
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IStringLocalizer<Home> Localizer
 @inject IMessageDisplay Message
 
 <HeadContent>
-	<meta property="og:type" content="website">
-	<meta property="og:title" content="@Customizations.Value.AppName">
-	<meta property="og:site_name" content="@Customizations.Value.AppName">
-	<meta property="og:url" content="@Navigation.BaseUri">
-	@if (!string.IsNullOrWhiteSpace(Customizations.Value.LogoLink)) {
-		<meta property="og:image" content="@Customizations.Value.LogoLink">
-	} else {
-		<meta property="og:image" content="@Navigation.ToAbsoluteUri("/img/logo.png")">
-	}
-	@if (!string.IsNullOrWhiteSpace(Customizations.Value.AppDescription)) {
-		<meta name="description" content="@Customizations.Value.AppDescription">
-		<meta property="og:description" content="@Customizations.Value.AppDescription">
-	}
-	@if (Features.Value.Rss) { 
-		<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName" href="/rss/rss.xml">
-		<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName" href="/rss/atom.xml">
-	}
+	<OpenGraph />
 	
 	@if (Page >= TotalPages) {
 		<meta name="robots" content="noindex">
@@ -40,7 +24,7 @@
 	}
 </HeadContent>
 
-<PageTitle>@(Customizations.Value.AppName ?? "Wave")</PageTitle>
+<PageTitle>@(Customizations.Value.AppName)</PageTitle>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 xl:grid-rows-4 gap-4">
 	<div class="sm:col-span-2 flex flex-col">

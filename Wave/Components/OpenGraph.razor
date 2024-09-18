@@ -1,0 +1,63 @@
+﻿@using Microsoft.Extensions.Options
+@using Wave.Data
+@using Wave.Utilities
+
+@inject IOptions<Customization> Customizations
+@inject IOptions<Features> Features
+@inject NavigationManager Navigation
+
+@if (Subject is null) {
+	<meta property="og:type" content="website">
+	<meta property="og:title" content="@Customizations.Value.AppName">
+	<meta property="og:site_name" content="@Customizations.Value.AppName">
+	<meta property="og:url" content="@Navigation.BaseUri">
+	@if (!string.IsNullOrWhiteSpace(Customizations.Value.LogoLink)) {
+		<meta property="og:image" content="@Customizations.Value.LogoLink">
+	} else {
+		<meta property="og:image" content="@Navigation.ToAbsoluteUri("/img/logo.png")">
+	}
+	@if (!string.IsNullOrWhiteSpace(Customizations.Value.AppDescription)) {
+		<meta name="description" content="@Customizations.Value.AppDescription">
+		<meta property="og:description" content="@Customizations.Value.AppDescription">
+	}
+	@if (Features.Value.Rss) {
+		<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName" href="@Navigation.ToAbsoluteUri("/rss/rss.xml")">
+		<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName" href="@Navigation.ToAbsoluteUri("/rss/atom.xml")">
+	}
+} else if (Subject is Article article) {
+	<meta property="og:title" content="@article.Title">
+	<meta property="og:description" content="@string.Format(Localizer!["Meta_Description"], Customizations.Value.AppName, article.BodyPlain[..Math.Min(80, article.BodyPlain.Length)] + "... ")">
+	<meta property="og:url" content="@Navigation.ToAbsoluteUri("/article/" + article.Id)">
+	<meta property="og:image" content="@Navigation.ToAbsoluteUri("/api/user/pfp/" + article.Author.Id)">
+	<meta property="og:type" content="article">
+	<meta property="og:article:author" content="@article.Author.Name">
+	<meta property="og:article:published_time" content="@article.PublishDate.ToString("u")">
+	@if (article.LastModified.HasValue) {
+		<meta property="og:article:modified_time" content="@article.LastModified.Value.ToString("u")">
+	}
+	<meta property="og:site_name" content="@Customizations.Value.AppName">
+	@if (Features.Value.Rss) {
+		<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName" href="@Navigation.ToAbsoluteUri("/rss/rss.xml")">
+		<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName" href="@Navigation.ToAbsoluteUri("/rss/atom.xml")">
+	}
+
+	<link rel="canonical" href="@ArticleUtilities.GenerateArticleLink(article, new Uri(Navigation.BaseUri))" />
+} else if (Subject is ApplicationUser user) {
+	<meta property="og:title" content="@string.Format(Localizer!["Meta_OpenGraph_Title"], user.Name, Customizations.Value.AppName)">
+	<meta property="og:description" content="@string.Format(Localizer["Meta_Description"], user.Name, Customizations.Value.AppName)">
+	<meta property="og:type" content="profile">
+	<meta property="og:image" content="@Navigation.ToAbsoluteUri("/api/user/pfp/" + user.Id)">
+
+	<meta property="og:site_name" content="@Customizations.Value.AppName">
+	@if (Features.Value.Rss) {
+		<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName | User @user.FullName" href="@Navigation.ToAbsoluteUri("/rss/rss.xml?author=@user.Id")">
+		<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName | User @user.FullName" href="@Navigation.ToAbsoluteUri("/rss/atom.xml?author=@user.Id")">
+	}
+}
+
+@code {
+	[Parameter] 
+    public object? Subject { get; set; }
+	[Parameter] 
+    public IStringLocalizer? Localizer { get; set; }
+}

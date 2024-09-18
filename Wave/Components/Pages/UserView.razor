@@ -4,10 +4,8 @@
 @using Microsoft.Extensions.Options
 @using Wave.Utilities
 
-@inject NavigationManager Navigation
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IOptions<Customization> Customizations
-@inject IOptions<Features> Features
 @inject IStringLocalizer<UserView> Localizer
 @inject IMessageDisplay Message
 
@@ -16,17 +14,7 @@
 		<meta name="author" content="@User.Name">
 		<meta name="description" content="@string.Format(Localizer["Meta_Description"], User.Name, Customizations.Value.AppName)">
 
-		<!-- Open Graph -->
-		<meta property="og:title" content="@string.Format(Localizer["Meta_OpenGraph_Title"], User.Name, Customizations.Value.AppName)">
-		<meta property="og:description" content="@string.Format(Localizer["Meta_Description"], User.Name, Customizations.Value.AppName)">
-		<meta property="og:type" content="profile">
-		<meta property="og:image" content="@Navigation.ToAbsoluteUri("/api/user/pfp/" + User.Id)">
-
-		<meta property="og:site_name" content="@Customizations.Value.AppName">
-		@if (Features.Value.Rss) {
-			<link rel="alternate" type="application/rss+xml" title="RSS Feed on @Customizations.Value.AppName | User @User.FullName" href="/rss/rss.xml?author=@User.Id">
-			<link rel="alternate" type="application/atom+xml" title="Atom RSS Feed on @Customizations.Value.AppName | User @User.FullName" href="/rss/atom.xml?author=@User.Id">
-		}
+		<OpenGraph Subject="User" Localizer="Localizer" />
 	}
 	@if (User is null) {
 		<meta name="robots" content="noindex">
