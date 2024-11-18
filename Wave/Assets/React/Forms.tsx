@@ -14,7 +14,7 @@ export function LabelInput({label, className, children} : ILabelProperties) : Re
 }
 
 export function ToolBarButton({title, onClick, children}: {title?: string, onClick:React.MouseEventHandler<HTMLButtonElement>, children:any}) {
-	return <button type="button" className="btn btn-accent btn-sm outline-none font-normal join-item" 
+	return <button type="button" className="btn btn-accent btn-sm text-sm justify-center items-center outline-none font-normal join-item"
 	               title={title}
 	               onClick={onClick}>
 		       {children ?? "err"}

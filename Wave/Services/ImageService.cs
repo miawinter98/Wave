@@ -3,6 +3,10 @@
 namespace Wave.Services;
 
 public class ImageService(ILogger<ImageService> logger) {
+	public enum ImageQuality {
+		Normal, High, Source
+	}
+
 	private ILogger<ImageService> Logger { get; } = logger;
 	private const string BasePath = "./files/images";
 	private const string ImageExtension = ".jpg";
@@ -52,7 +56,7 @@ public class ImageService(ILogger<ImageService> logger) {
 			await image.WriteAsync(path, cancellation);
 			return guid;
 		} catch (Exception ex) {
-			Logger.LogInformation(ex, "Failed to process uploaded image.");
+			Logger.LogWarning(ex, "Failed to process uploaded image.");
 			return null;
 		}
 	}

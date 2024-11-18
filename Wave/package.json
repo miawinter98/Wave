@@ -33,6 +33,7 @@
     "vite": "^5.2.13"
   },
   "dependencies": {
-    "groupby-polyfill": "^1.0.0"
+    "groupby-polyfill": "^1.0.0",
+    "react-textarea-markdown-editor": "^2.3.0"
   }
 }

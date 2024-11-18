@@ -78,6 +78,9 @@ if (domNode) {
 
                             CodeLine_Tooltip: "Mark selected text as programming code",
                             CodeBlock_Tooltip: "Insert program code block",
+
+                            ImageAdd_Label: "Image",
+                            ImageAdd_Tooltip: "Upload an Image",
                         },
                         Category: {
                             Primary: "Primary Category",
@@ -134,6 +137,9 @@ if (domNode) {
 
                             CodeLine_Tooltip: "Selektierten text als programmcode markieren",
                             CodeBlock_Tooltip: "Programmierblock einfügen",
+
+                            ImageAdd_Label: "Bild",
+                            ImageAdd_Tooltip: "Bild Hochladen",
                         },
                         Category: {
                             Primary: "Hauptkategorie",
