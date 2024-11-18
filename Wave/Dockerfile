@@ -21,7 +21,7 @@ FROM node:20-alpine AS vite-build
 WORKDIR /src
 RUN mkdir -p "wwwroot"
 COPY ["Wave/package.json", "Wave/package-lock.json", "./"]
-RUN npm install
+RUN npm install --legacy-peer-deps
 COPY [ \
     "Wave/tsconfig.json", \
     "Wave/tsconfig.node.json", \
