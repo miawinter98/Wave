@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { updateCharactersLeft, insertBeforeSelection, insertBeforeAndAfterSelection } from "../utilities/md_functions";
+import { updateCharactersLeft } from "../utilities/md_functions";
 import { LabelInput, ToolBarButton } from "./Forms";
 import ImageEditor from "./ImageEditor";
 import { CategoryColor, Category, ArticleStatus, ArticleView, ArticleDto } from "../model/Models";
@@ -215,8 +215,8 @@ export default function Editor() {
 								<li className={`step w-24 ${article.status === ArticleStatus.Published ? "step-primary" : ""}`}>{t("Published")}</li>
 							</ul>
 
-							<ImageEditor open={imageDialog} onClose={() => setImageDialog(false)} callback={(location) => {
-								textAreaMarkdown.current?.append(`\n![](${location})\n`)
+							<ImageEditor open={imageDialog} t={t} onClose={() => setImageDialog(false)} callback={(location, description) => {
+								textAreaMarkdown.current?.append(`\n![${description}](${location})\n`)
 								setImageDialog(false)
 							}} />
 

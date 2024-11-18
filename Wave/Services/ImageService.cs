@@ -9,11 +9,15 @@ public class ImageService(ILogger<ImageService> logger) {
 
 	private ILogger<ImageService> Logger { get; } = logger;
 	private const string BasePath = "./files/images";
-	private const string ImageExtension = ".jpg";
-	public string ImageMimeType => "image/jpg";
+	private const string ImageExtension = ".webp";
+	public string ImageMimeType => "image/webp";
 
 	public string? GetPath(Guid imageId) {
 		string path = Path.Combine(BasePath, imageId + ImageExtension);
+		// Fallback for older version
+		if (!File.Exists(path)) {
+			path = Path.Combine(BasePath, imageId + ".jpg");
+		}
 		return File.Exists(path) ? path : null;
 	}
 
@@ -27,7 +31,7 @@ public class ImageService(ILogger<ImageService> logger) {
 	}
 
 	public async ValueTask<Guid?> StoreImageAsync(string temporaryPath, int size = 800, bool enforceSize = false,
-		CancellationToken cancellation = default) {
+		CancellationToken cancellation = default, ImageQuality quality = ImageQuality.Normal) {
 		if (File.Exists(temporaryPath) is not true) return null;
 
 		try {
@@ -35,12 +39,24 @@ public class ImageService(ILogger<ImageService> logger) {
 
 			var image = new MagickImage();
 			await image.ReadAsync(temporaryPath, cancellation);
+			
+			image.Format = MagickFormat.WebP;
+			if (quality is ImageQuality.Source) {
+				image.Quality = 100;
+				// Do not resize
+			} else {
+				int storedSize = size;
+				if (quality is ImageQuality.Normal && storedSize < 800) storedSize = 800;
+				if (quality is ImageQuality.High && storedSize < 1600) storedSize = 1600;
 
-			// Jpeg with 90% compression should look decent
-			image.Resize(new MagickGeometry(size)); // this preserves aspect ratio
-			if (enforceSize) image.Extent(new MagickGeometry(size), Gravity.Center, MagickColors.Black);
-			image.Format = MagickFormat.Jpeg;
-			image.Quality = 90;
+				image.Resize(new MagickGeometry(storedSize)); // this preserves aspect ratio
+				if (enforceSize) image.Extent(new MagickGeometry(storedSize), Gravity.Center, MagickColors.Black);
+				image.Quality = quality switch {
+					ImageQuality.Normal => 85,
+					ImageQuality.High => 95,
+					var _ => throw new ArgumentOutOfRangeException(nameof(quality), quality, null)
+				};
+			}
 
 			if (image.GetExifProfile() is { } exifProfile) image.RemoveProfile(exifProfile);
 

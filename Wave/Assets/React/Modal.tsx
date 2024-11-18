@@ -5,9 +5,10 @@ interface ModalProperties {
     onClose: () => void,
     className?: string,
     children: React.ReactNode,
+    t: any,
 }
 
-const Modal = function({open, onClose, children}: ModalProperties) {
+const Modal = function({open, onClose, children, t}: ModalProperties) {
     const ref = useRef<HTMLDialogElement>(null);
 
     useEffect(() => {
@@ -16,12 +17,15 @@ const Modal = function({open, onClose, children}: ModalProperties) {
     }, [open])
 
     return (
-        <dialog ref={ref} onCancel={onClose} className="p-4 rounded-lg bg-base-200 border border-base-300 shadow z-[100] backdrop:bg-base-100 backdrop:bg-opacity-50">
-            {children}
+        <dialog ref={ref} onCancel={onClose} id="test"
+                className="p-4 rounded-lg bg-base-200 border border-base-300 shadow z-[100] backdrop:bg-base-100 backdrop:bg-opacity-50">
+            <div className="flex flex-col gap-2 sm:min-w-80">
+                {children}
 
-            <button type="button" className="btn btn-primary w-full sm:btn-wide" onClick={onClose}>
-                Cancel
-            </button>
+                <button type="button" className="btn btn-error self-end" onClick={onClose}>
+                    {t("dialog.Cancel")}
+                </button>
+            </div>
         </dialog>
     )
 }

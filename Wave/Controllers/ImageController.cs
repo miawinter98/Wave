@@ -26,7 +26,7 @@ public class ImageController(ImageService imageService) : ControllerBase {
 	[Consumes("multipart/form-data")]
 	public async Task<IActionResult> CreateImageAsync(
 			[FromForm] IFormFile file, 
-			ImageService.ImageQuality quality = ImageService.ImageQuality.Normal) {
+			[FromForm] ImageService.ImageQuality quality = ImageService.ImageQuality.Normal) {
 		try {
 			string tempFile = Path.GetTempFileName();
 			{
@@ -34,7 +34,7 @@ public class ImageController(ImageService imageService) : ControllerBase {
 				await file.CopyToAsync(stream);
 				stream.Close();
 			}
-			var id = await ImageService.StoreImageAsync(tempFile);
+			var id = await ImageService.StoreImageAsync(tempFile, quality:quality);
 			if (id is null) throw new ApplicationException("Saving image failed unexpectedly.");
 			return Created($"/images/{id}", new CreateResponse(id.Value));
 		} catch (Exception ex) {

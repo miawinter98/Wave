@@ -96,6 +96,20 @@ if (domNode) {
                         },
                         editor: {
                             unsaved_changes_notice: "You have unsaved changes, save now so you don't loose them!",
+                        },
+                        dialog: {
+                            Cancel: "Cancel"
+                        },
+                        image: {
+                            Uploading: "Loading Image...",
+                            Save: "Upload",
+                            Quality: "Image Quality",
+                            Alt: "Image Description (Optional)",
+                            quality: {
+                                Normal: "Normal",
+                                High: "High",
+                                Source: "Source",
+                            }
                         }
                     }
                 },
@@ -155,6 +169,20 @@ if (domNode) {
                         },
                         editor: {
                             unsaved_changes_notice: "Sie haben ungesicherte Änderungen, speichern Sie jetzt um diese nicht zu verlieren!",
+                        },
+                        dialog: {
+                            Cancel: "Abbrechen"
+                        },
+                        image: {
+                            Uploading: "Lade Bild...",
+                            Save: "Hochladen",
+                            Quality: "Bildqualität",
+                            Alt: "Bildbeschreibung (Optional)",
+                            quality: {
+                                Normal: "Normal",
+                                High: "Hoch",
+                                Source: "Original",
+                            }
                         }
                     }
                 }
