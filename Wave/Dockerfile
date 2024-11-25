@@ -34,7 +34,7 @@ COPY ["Wave/Assets/", "./Assets/"]
 COPY ["Wave/Components/", "./Components/"]
 RUN npx vite build
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0$BASE AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0$BASE AS build
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ARG BUILD_CONFIGURATION=Release
 ARG VERSION=0.0.1
