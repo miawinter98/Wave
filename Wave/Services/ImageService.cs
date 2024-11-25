@@ -23,8 +23,8 @@ public class ImageService(ILogger<ImageService> logger) {
 
 	public async Task<byte[]> GetResized(string path, int size, bool enforceSize = false, CancellationToken cancellation = default) {
 		var image = new MagickImage(path);
-		image.Resize(new MagickGeometry(size));
-		if (enforceSize) image.Extent(new MagickGeometry(size), Gravity.Center, MagickColors.Black);
+		image.Resize(new MagickGeometry((uint) size));
+		if (enforceSize) image.Extent(new MagickGeometry((uint) size), Gravity.Center, MagickColors.Black);
 		using var memory = new MemoryStream();
 		await image.WriteAsync(memory, cancellation);
 		return memory.ToArray();
@@ -49,8 +49,8 @@ public class ImageService(ILogger<ImageService> logger) {
 				if (quality is ImageQuality.Normal && storedSize < 800) storedSize = 800;
 				if (quality is ImageQuality.High && storedSize < 1600) storedSize = 1600;
 
-				image.Resize(new MagickGeometry(storedSize)); // this preserves aspect ratio
-				if (enforceSize) image.Extent(new MagickGeometry(storedSize), Gravity.Center, MagickColors.Black);
+				image.Resize(new MagickGeometry((uint) storedSize)); // this preserves aspect ratio
+				if (enforceSize) image.Extent(new MagickGeometry((uint) storedSize), Gravity.Center, MagickColors.Black);
 				image.Quality = quality switch {
 					ImageQuality.Normal => 85,
 					ImageQuality.High => 95,
