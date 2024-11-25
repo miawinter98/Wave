@@ -18,7 +18,7 @@ const Modal = function({open, onClose, children, t}: ModalProperties) {
 
     return (
         <dialog ref={ref} onCancel={onClose} id="test"
-                className="p-4 rounded-lg bg-base-200 border border-base-300 shadow z-[100] backdrop:bg-base-100 backdrop:bg-opacity-50">
+                className="p-4 rounded-lg bg-base-200 text-base-content border border-base-300 shadow z-[100] backdrop:bg-base-100 backdrop:bg-opacity-50">
             <div className="flex flex-col gap-2 sm:min-w-80">
                 {children}
 
