@@ -104,4 +104,7 @@
     <data name="About_Title" xml:space="preserve">
         <value>Über Wave</value>
     </data>
+    <data name="Email_Title" xml:space="preserve">
+        <value>E-Mail</value>
+    </data>
 </root>

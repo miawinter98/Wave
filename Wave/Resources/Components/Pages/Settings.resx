@@ -107,4 +107,7 @@
     <data name="Wave_Version_Label" xml:space="preserve">
         <value>Wave Version</value>
     </data>
+    <data name="Email_Title" xml:space="preserve">
+        <value>Email</value>
+    </data>
 </root>
