@@ -309,7 +309,7 @@ if (features?.Telemetry is true) {
 	// Jaeger etc.
 	if (builder.Configuration["OTLP_ENDPOINT_URL"] is {} otlpUrl) {
 		otel.WithTracing(tracing => {
-			tracing.AddAspNetCoreInstrumentation();
+			tracing.AddAspNetCoreInstrumentation(i => i.Filter = context => !string.Equals(context.Request.Path.Value, "/health", StringComparison.InvariantCultureIgnoreCase));
 			tracing.AddHttpClientInstrumentation();
 			tracing.AddOtlpExporter(options => options.Endpoint = new Uri(otlpUrl));
 		});
