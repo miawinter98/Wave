@@ -31,6 +31,7 @@ public class UserController(ImageService imageService, IDbContextFactory<Applica
 			return Redirect("/dist/img/default_avatar.jpg");
 		}
 
+		HttpContext.Response.Headers.ETag = $"\"{user.ProfilePicture.ImageId:n}{size}\"";
 		if (size < 800) return File(await ImageService.GetResized(path, size), ImageService.ImageMimeType);
 		return File(System.IO.File.OpenRead(path), ImageService.ImageMimeType);
 	}

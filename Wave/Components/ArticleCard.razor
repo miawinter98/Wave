@@ -4,8 +4,8 @@
 @if (HasArticleLink) {
 	<ArticleLink Article="Article">
 		<article class="card card-side card-compact bg-base-200 text-base-content">
-			<figure class="shrink-0 max-md:!hidden sm:max-w-44">
-				<img src="/api/user/pfp/@Article.Author.Id?size=600" alt="" width="600">
+			<figure class="shrink-0 max-md:!hidden w-full sm:max-w-44">
+				<img class="aspect-square !max-w-full" src="/api/user/pfp/@Article.Author.Id?size=600" alt="" width="600" height="600">
 			</figure>
 			<div class="card-body">
 				<h2 class="card-title line-clamp-1">@Article.Title</h2>

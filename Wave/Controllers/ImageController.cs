@@ -17,6 +17,7 @@ public class ImageController(ImageService imageService) : ControllerBase {
 		string? path = ImageService.GetPath(imageId);
 
 		if (path is null) return NotFound();
+		Response.Headers.ETag = $"\"{imageId:n}{size}\"";
 		if (size < 800) return File(await ImageService.GetResized(path, size), ImageService.ImageMimeType);
 		return File(System.IO.File.OpenRead(path), ImageService.ImageMimeType);
 	}

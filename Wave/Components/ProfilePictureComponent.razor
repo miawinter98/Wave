@@ -1,8 +1,6 @@
-﻿<div class="avatar">
-    <div class="rounded">
-        <img src="/api/user/pfp/@ProfileId?size=@Size" alt="" loading="@(LoadAsync ? "lazy" : "eager")" width="@Size" onerror="this.remove()" />
-    </div>
-</div>
+﻿
+<img class="aspect-square max-w-full" src="/api/user/pfp/@ProfileId?size=@Size" alt="" loading="@(LoadAsync ? "lazy" : "eager")" width="@Size" height="@Size" onerror="this.remove()" />
+
 
 @code {
     [Parameter] 

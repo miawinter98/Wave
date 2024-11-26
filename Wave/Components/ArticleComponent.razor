@@ -104,8 +104,8 @@
 @if (!string.IsNullOrWhiteSpace(Article.Author.AboutTheAuthor)) {
 	<section class="mb-2">
 		<div class="card sm:card-side card-compact bg-secondary text-secondary-content rounded shadow">
-			<figure class="shrink-0">
-				<img class="sm:max-h-56" src="/api/user/pfp/@Article.Author.Id?size=400" alt="" width="400" loading="async">
+			<figure class="shrink-0 w-full sm:max-w-56">
+				<img class="aspect-square !max-w-full" src="/api/user/pfp/@Article.Author.Id?size=600" alt="" width="600" height="600" loading="async">
 			</figure>
 			<div class="card-body sm:border-l-2 border-current">
 				<h2 class="card-title">@Localizer["AboutAuthor_Title"]</h2>
@@ -118,7 +118,7 @@
 						<UserLinkComponent Link="link" class="badge hover:badge-outline flex gap-2 p-4" />
 					}
 					<UserContactBadges User="Article.Author" />
-					<a class="badge hover:badge-outline flex gap-2 p-4" href="/profile/@Article.Author.Id">
+					<a class="badge hover:badge-outline flex gap-2 p-4" href="/profile/@Article.Author.Id" target="_top">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
 							<path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clip-rule="evenodd" />
 						</svg>
