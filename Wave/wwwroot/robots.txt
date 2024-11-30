@@ -6,12 +6,12 @@ User-agent: Google-Extended
 Disallow: /
 
 User-agent: *
-Allow: /Account/Login
-Allow: /Account/Register
-Disallow: /Account
-Disallow: /Account/Manage
-Disallow: /Email/Confirm
-Disallow: /Email/Unsubscribe
+Allow: /account/login
+Allow: /account/register
+Disallow: /account
+Disallow: /account/manage
+Disallow: /email/confirm
+Disallow: /email/unsubscribe
 
 #  _______  ______    _______  __    _  _______    ______    ___   _______  __   __  _______  _______ 
 # |       ||    _ |  |   _   ||  |  | ||       |  |    _ |  |   | |       ||  | |  ||       ||       |
