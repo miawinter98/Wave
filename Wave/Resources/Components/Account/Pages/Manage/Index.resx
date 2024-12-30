@@ -204,4 +204,13 @@ I started cooking at the young age of 7...</value>
     <data name="Links_Label" xml:space="preserve">
         <value>Add Link</value>
     </data>
+  <data name="Contact_Fediverse_Label" xml:space="preserve">
+    <value>Fediverse (Mastodon, etc.)</value>
+  </data>
+  <data name="Contact_Fediverse_Placeholder" xml:space="preserve">
+    <value>@Author@mastodon.social</value>
+  </data>
+  <data name="Contact_Fediverse_Information" xml:space="preserve">
+    <value>You can add your fediverse (Mastodon) handle. This way when someone shares an article you wrote, your account will be linked in the embed card if a users fediverse software supports that (currently, Mastodon since version 4.3 does this). If you are on Mastodon, make sure you go to your settings &gt; public profile &gt; verification page and add this blogs url as a whitelisted website for this to work.</value>
+  </data>
 </root>

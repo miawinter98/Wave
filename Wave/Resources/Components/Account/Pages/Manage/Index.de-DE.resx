@@ -204,4 +204,7 @@ Ich koche seit dem jungen Alter von 7...</value>
     <data name="Links_Label" xml:space="preserve">
         <value>Link Hinzufügen</value>
     </data>
+  <data name="Contact_Fediverse_Information" xml:space="preserve">
+    <value>Sie können ihren Fediverse (Mastodon) Benutzernamen hier einfügen. Dadurch, wenn jemand einen Artikel teilt den Sie verfasst haben, kann die eingebettete Vorschau auf ihr Benutzerprofil verweisen sofern die Fediverse Software des Benutzers dies unterstützt (momentan ist das in Mastodon seit Version 4.3 der fall). Wenn Sie Mastodon benutzen, stellen Sie sicher das sie die Webadresse dieses Blogs in ihre verifizierten Domänen unter Einstellungen &gt; Öffentliches Profil &gt; Verifizieren hinzufügen.</value>
+  </data>
 </root>

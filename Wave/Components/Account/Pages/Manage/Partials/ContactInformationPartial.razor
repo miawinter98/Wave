@@ -1,9 +1,7 @@
 ﻿@using Wave.Data
 @using Microsoft.AspNetCore.Identity
 @using System.ComponentModel.DataAnnotations
-@using Microsoft.AspNetCore.Mvc
 @using Wave.Utilities
-@using System.ComponentModel
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IStringLocalizer<Wave.Components.Account.Pages.Manage.Index> Localizer
@@ -30,9 +28,19 @@
 	<InputLabelComponent For="() => Model.ContactWebsite" LabelText="@Localizer["Contact_Website_Label"]">
 		<InputText class="input input-bordered w-full" maxlength="128" type="url" autocomplete="url" 
 		           oninput="charactersLeft_onInput(this)"
-				   @bind-Value="@Model.ContactWebsite" placeholder="@Localizer["Contact_Website_Placeholder"]" />
+		           @bind-Value="@Model.ContactWebsite" placeholder="@Localizer["Contact_Website_Placeholder"]" />
 	</InputLabelComponent>
 	
+	<hr class="my-3" />
+
+	<p class="mt-3">@Localizer["Contact_Fediverse_Information"]</p>
+	<InputLabelComponent For="() => Model.ContactFediverse" LabelText="@Localizer["Contact_Fediverse_Label"]">
+		<InputText class="input input-bordered w-full" maxlength="4096" type="text" 
+		           pattern="@(@"@.+@.+\..+")" autocomplete="off" 
+		           oninput="charactersLeft_onInput(this)"
+		           @bind-Value="@Model.ContactFediverse" placeholder="@Localizer["Contact_Fediverse_Placeholder"]" />
+	</InputLabelComponent>
+
 	<button type="submit" class="btn btn-primary w-full">
 		@Localizer["Submit"]
 	</button>
@@ -54,6 +62,7 @@
 		Model.ContactPhone = User.ContactPhone;
 		Model.ContactPhoneBusiness = User.ContactPhoneBusiness;
 		Model.ContactWebsite = User.ContactWebsite;
+		Model.ContactFediverse = User.ContactFediverse;
 	}
 
 	private async Task OnValidSubmit() {
@@ -62,6 +71,7 @@
 			User.ContactPhone = Model.ContactPhone ?? "";
 			User.ContactPhoneBusiness = Model.ContactPhoneBusiness ?? "";
 			User.ContactWebsite = Model.ContactWebsite ?? "";
+			User.ContactFediverse = Model.ContactFediverse ?? "";
 
 			await UserManager.UpdateAsync(User);
 			Message.ShowSuccess(Localizer["Contact_Success"]);
@@ -75,6 +85,7 @@
 		private string? _contactPhone;
 		private string? _contactPhoneBusiness;
 		private string? _contactWebsite;
+		private string? _contactFediverse;
 
 		[MaxLength(128), EmailAddress]
 		public string? ContactEmail {
@@ -98,6 +109,12 @@
 		public string? ContactWebsite {
 			get => string.IsNullOrWhiteSpace(_contactWebsite) ? null : _contactWebsite;
 			set => _contactWebsite = value;
+		}
+
+		[MaxLength(4096), RegularExpression(@"@.+@.+\..+")]
+		public string? ContactFediverse {
+			get => string.IsNullOrWhiteSpace(_contactFediverse) ? null : _contactFediverse;
+			set => _contactFediverse = value;
 		}
 	}
 

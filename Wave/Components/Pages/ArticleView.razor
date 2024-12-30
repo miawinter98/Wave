@@ -27,8 +27,12 @@
 	<HeadContent>
 		<meta name="author" content="@Article.Author.Name">
 		<meta name="description" content="@string.Format(Localizer["Meta_Description"], Customizations.Value.AppName, Article.BodyPlain[..Math.Min(80, Article.BodyPlain.Length)] + "... ")">
-		
-		<OpenGraph Subject="Article" Localizer="Localizer" />
+
+		<OpenGraph Subject="Article" Localizer="Localizer"/>
+
+		@if (Article.Author.ContactFediverse is { } fediverse && !string.IsNullOrWhiteSpace(fediverse)) {
+			<meta name="fediverse:creator" content="@fediverse">
+		}
 	</HeadContent>
 }
 
