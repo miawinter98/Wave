@@ -19,7 +19,7 @@
     <PackageReference Include="Humanizer.Core" Version="3.0.1" />
     <PackageReference Include="Humanizer.Core.de" Version="3.0.1" />
     <PackageReference Include="Humanizer.Core.uk" Version="3.0.1" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.2.0" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.10.0" />
     <PackageReference Include="MailKit" Version="4.14.1" />
     <PackageReference Include="Markdig" Version="0.44.0" />
     <PackageReference Include="Markdown.ColorCode" Version="3.0.1" />
