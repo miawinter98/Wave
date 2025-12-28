@@ -1,0 +1,38 @@
+include:
+    - path: docker-compose.yml
+      env_file: [metrics.env]
+    - docker-compose.override.yml
+
+
+name: wave
+services:
+    loki:
+        image: grafana/loki:master
+        ports:
+            - 3100:3100
+        healthcheck:
+            test: wget -q --tries=1 -O- http://localhost:3100/ready
+            interval: 3s
+            timeout: 3s
+            retries: 10
+            start_period: 10s
+    grafana:
+        image: grafana/grafana:master
+        ports:
+            - 3000:3000
+        volumes:
+            - ./provisioning:/etc/grafana/provisioning
+        environment:
+            - GF_AUTH_ANONYMOUS_ENABLED=true
+            - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+            - GF_AUTH_DISABLE_LOGIN_FORM=true
+        depends_on:
+            loki:
+                condition: service_healthy
+    prometheus:
+        image: prom/prometheus:v2.45.0
+        restart: unless-stopped
+        ports:
+            - 9090:9090
+        volumes:
+            - ./prometheus:/etc/prometheus

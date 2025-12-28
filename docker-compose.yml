@@ -1,5 +1,3 @@
-version: '3.4'
-
 name: wave
 services:
   web:
@@ -12,74 +10,37 @@ services:
       - "80:8080"
     links:
         - database:db
+        - valkey:cache
     environment:
-      - "TZ=Europe/Berlin"
-      - "WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development; Include Error Detail=true"
-      - "WAVE_ConnectionStrings__Redis=redis,password=development"
-      - "WAVE_Loki=http://loki:3100"
-      - "WAVE_Features__Telemetry=true"
+      - TZ=Europe/Berlin
+      - WAVE_ConnectionStrings__DefaultConnection=Host=db; Username=wave; Password=development
+      - WAVE_ConnectionStrings__Redis=cache
     volumes:
       - wave-files:/app/files
       - wave-config:/configuration
     depends_on:
+      valkey:
+        condition: service_started
       database:
         condition: service_started
   database:
-    image: postgres:16.1-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       - "POSTGRES_DB=wave"
       - "POSTGRES_USER=wave"
       - "POSTGRES_PASSWORD=development"
     volumes:
-      -  wave-db:/var/lib/postgresql/data
-  redis:
-    image: redis:7-alpine
+      -  wave-db:/var/lib/postgresql/18/docker
+  valkey:
+    image: valkey/valkey:latest
     restart: unless-stopped
-    command: redis-server --requirepass development --save 60 1 --loglevel warning
+    command: valkey-server --save 60 1 --loglevel warning
     volumes:
-      - wave-redis:/data
-
-  loki:
-    image: grafana/loki:master
-    ports:
-      - 3100:3100
-    healthcheck:
-      test: wget -q --tries=1 -O- http://localhost:3100/ready 
-      interval: 3s
-      timeout: 3s
-      retries: 10
-      start_period: 10s
-  grafana:
-    image: grafana/grafana:master
-    ports:
-      - 3000:3000
-    volumes:
-      - ./provisioning:/etc/grafana/provisioning
-    environment:
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_AUTH_DISABLE_LOGIN_FORM=true
-    depends_on:
-      loki:
-        condition: service_healthy
-  prometheus:
-    image: prom/prometheus:v2.45.0
-    restart: unless-stopped
-    ports:
-      - 9090:9090
-    volumes:
-      - ./prometheus:/etc/prometheus
-
-  mailhog:
-    image: mailhog/mailhog:latest
-    restart: unless-stopped
-    ports:
-      - 8080:8025
-    profiles: ["smtp-debug"]
+      - wave-valkey:/data
 
 volumes:
   wave-files:
   wave-config:
   wave-db:
-  wave-redis:
+  wave-valkey:

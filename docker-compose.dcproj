@@ -14,6 +14,8 @@
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
     <None Include="docker-compose.yml" />
+    <None Include="docker-compose.metrics.yml" />
+    <None Include="metrics.env" />
     <None Include=".dockerignore" />
     <None Include="prometheus\prometheus.yml" />
     <None Include="provisioning\datasources\auomatic.yml" />
