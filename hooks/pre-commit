@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+echo "Pre-commit hook: csharpier format"
+
+if
+  ! dotnet csharpier check Wave/ --log-level=None
+then
+  echo "code is not formatted, please run formatter"
+  exit 1
+fi
