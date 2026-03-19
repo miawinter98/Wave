@@ -3,7 +3,7 @@
 echo "Pre-commit hook: csharpier format"
 
 if
-  ! dotnet csharpier check Wave/ --log-level=None
+  ! dotnet csharpier check Wave/ wave.server/ --log-level=None
 then
   echo "code is not formatted, please run csharpier"
   exit 1

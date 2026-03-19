@@ -26,7 +26,7 @@
     {
 		"label": "format backend",
 		"type": "shell",
-		"command": "dotnet csharpier format Wave",
+		"command": "dotnet csharpier format Wave wave.server",
 		"problemMatcher": [],
 		"options": {
 			"cwd": "${workspaceFolder}"
