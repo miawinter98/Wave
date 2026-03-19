@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using wave.server.Data;
+using wave.server.Endpoints.Article;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddProblemDetails();
@@ -35,54 +36,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-var summaries = new[]
-{
-    "Freezing",
-    "Bracing",
-    "Chilly",
-    "Cool",
-    "Mild",
-    "Warm",
-    "Balmy",
-    "Hot",
-    "Sweltering",
-    "Scorching",
-};
+var api = app.MapGroup("api");
 
-app.MapGet(
-        "/weatherforecast",
-        () =>
-        {
-            var forecast = Enumerable
-                .Range(1, 5)
-                .Select(index => new WeatherForecast(
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-                .ToArray();
-            return forecast;
-        }
-    )
-    .WithName("GetWeatherForecast");
-
-app.Map(
-    "/test",
-    async Task<Results<Ok<ArticleRecord>, NotFound>> (
-        IDbContextFactory<DatabaseContext> context,
-        CancellationToken cancellation
-    ) =>
-    {
-        await using var dao = await context.CreateDbContextAsync(cancellation);
-        var article = await dao.Set<ArticleRecord>().FirstOrDefaultAsync(cancellation);
-
-        return article is null ? TypedResults.NotFound() : TypedResults.Ok(article);
-    }
-);
+api.MapArticleEndpoints();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
