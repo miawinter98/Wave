@@ -1,8 +1,31 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
+using wave.server.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddProblemDetails();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+#region Data
+
+var dataConnection =
+    builder.Configuration.GetConnectionString("postgres")
+    ?? throw new InvalidOperationException("Connection string 'postgres' not found.");
+builder.Services.AddDbContextFactory<DatabaseContext>(options =>
+{
+    options.UseNpgsql(dataConnection);
+#if DEBUG
+    options.EnableDetailedErrors();
+    options.EnableSensitiveDataLogging();
+    // TODO LogTo Serilog Logger
+#endif
+});
+
+#endregion
+
 
 var app = builder.Build();
 
@@ -42,6 +65,20 @@ app.MapGet(
         }
     )
     .WithName("GetWeatherForecast");
+
+app.Map(
+    "/test",
+    async Task<Results<Ok<ArticleRecord>, NotFound>> (
+        IDbContextFactory<DatabaseContext> context,
+        CancellationToken cancellation
+    ) =>
+    {
+        await using var dao = await context.CreateDbContextAsync(cancellation);
+        var article = await dao.Set<ArticleRecord>().FirstOrDefaultAsync(cancellation);
+
+        return article is null ? TypedResults.NotFound() : TypedResults.Ok(article);
+    }
+);
 
 app.Run();
 
