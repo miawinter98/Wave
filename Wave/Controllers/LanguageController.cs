@@ -5,17 +5,20 @@ namespace Wave.Controllers;
 
 [ApiController]
 [Route("/language")]
-public class LanguageController : ControllerBase {
+public class LanguageController : ControllerBase
+{
     [HttpGet("{culture}")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public IActionResult SetLanguage(string culture, string returnUrl = "") {
+    public IActionResult SetLanguage(string culture, string returnUrl = "")
+    {
         Response.Cookies.Append(
             CookieRequestCultureProvider.DefaultCookieName,
             CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
-            new CookieOptions {
-                Expires = DateTimeOffset.UtcNow.AddYears(1), 
-                IsEssential = true, 
-                SameSite = SameSiteMode.Strict
+            new CookieOptions
+            {
+                Expires = DateTimeOffset.UtcNow.AddYears(1),
+                IsEssential = true,
+                SameSite = SameSiteMode.Strict,
             }
         );
 

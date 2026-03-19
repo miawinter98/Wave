@@ -6,42 +6,51 @@ using Microsoft.Net.Http.Headers;
 
 namespace Wave.Utilities;
 
-public class SyndicationFeedFormatter : TextOutputFormatter {
+public class SyndicationFeedFormatter : TextOutputFormatter
+{
+    public SyndicationFeedFormatter()
+    {
+        SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/rss+xml"));
+        SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/atom+xml"));
 
-	public SyndicationFeedFormatter() {
-		SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/rss+xml"));
-		SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/atom+xml"));
-		
-		SupportedEncodings.Add(Encoding.UTF8);
-		SupportedEncodings.Add(Encoding.Unicode);
-	}
+        SupportedEncodings.Add(Encoding.UTF8);
+        SupportedEncodings.Add(Encoding.Unicode);
+    }
 
-	protected override bool CanWriteType(Type? type)
-		=> typeof(SyndicationFeed).IsAssignableFrom(type);
+    protected override bool CanWriteType(Type? type) =>
+        typeof(SyndicationFeed).IsAssignableFrom(type);
 
-	public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding) {
-		var httpContext = context.HttpContext;
-		httpContext.Response.Headers.ContentDisposition = "inline";
+    public override async Task WriteResponseBodyAsync(
+        OutputFormatterWriteContext context,
+        Encoding selectedEncoding
+    )
+    {
+        var httpContext = context.HttpContext;
+        httpContext.Response.Headers.ContentDisposition = "inline";
 
-		var feed = context.Object as SyndicationFeed;
+        var feed = context.Object as SyndicationFeed;
 
-		await using var stream = new MemoryStream();
-		await using var rssWriter = XmlWriter.Create(stream, new XmlWriterSettings {
-			Async = true, Encoding = selectedEncoding
-		});
-		System.ServiceModel.Syndication.SyndicationFeedFormatter formatter;
-		if (context.ContentType.Value?.StartsWith("application/rss+xml") is true) {
-			formatter = new Rss20FeedFormatter(feed) {
-				SerializeExtensionsAsAtom = false
-			};
-		} else if (context.ContentType.Value?.StartsWith("application/atom+xml") is true) {
-			formatter = new Atom10FeedFormatter(feed);
-		} else {
-			throw new FormatException($"The format {context.ContentType.Value} is not supported.");
-		}
-		formatter.WriteTo(rssWriter);
-		rssWriter.Close();
+        await using var stream = new MemoryStream();
+        await using var rssWriter = XmlWriter.Create(
+            stream,
+            new XmlWriterSettings { Async = true, Encoding = selectedEncoding }
+        );
+        System.ServiceModel.Syndication.SyndicationFeedFormatter formatter;
+        if (context.ContentType.Value?.StartsWith("application/rss+xml") is true)
+        {
+            formatter = new Rss20FeedFormatter(feed) { SerializeExtensionsAsAtom = false };
+        }
+        else if (context.ContentType.Value?.StartsWith("application/atom+xml") is true)
+        {
+            formatter = new Atom10FeedFormatter(feed);
+        }
+        else
+        {
+            throw new FormatException($"The format {context.ContentType.Value} is not supported.");
+        }
+        formatter.WriteTo(rssWriter);
+        rssWriter.Close();
 
-		await httpContext.Response.BodyWriter.WriteAsync(stream.ToArray());
-	}
+        await httpContext.Response.BodyWriter.WriteAsync(stream.ToArray());
+    }
 }

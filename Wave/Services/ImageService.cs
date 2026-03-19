@@ -2,83 +2,118 @@
 
 namespace Wave.Services;
 
-public class ImageService(ILogger<ImageService> logger) {
-	public enum ImageQuality {
-		Normal, High, Source
-	}
+public class ImageService(ILogger<ImageService> logger)
+{
+    public enum ImageQuality
+    {
+        Normal,
+        High,
+        Source,
+    }
 
-	private ILogger<ImageService> Logger { get; } = logger;
-	private const string BasePath = "./files/images";
-	private const string ImageExtension = ".webp";
-	public string ImageMimeType => "image/webp";
+    private ILogger<ImageService> Logger { get; } = logger;
+    private const string BasePath = "./files/images";
+    private const string ImageExtension = ".webp";
+    public string ImageMimeType => "image/webp";
 
-	public string? GetPath(Guid imageId) {
-		string path = Path.Combine(BasePath, imageId + ImageExtension);
-		// Fallback for older version
-		if (!File.Exists(path)) {
-			path = Path.Combine(BasePath, imageId + ".jpg");
-		}
-		return File.Exists(path) ? path : null;
-	}
+    public string? GetPath(Guid imageId)
+    {
+        string path = Path.Combine(BasePath, imageId + ImageExtension);
+        // Fallback for older version
+        if (!File.Exists(path))
+        {
+            path = Path.Combine(BasePath, imageId + ".jpg");
+        }
+        return File.Exists(path) ? path : null;
+    }
 
-	public async Task<byte[]> GetResized(string path, int size, bool enforceSize = false, CancellationToken cancellation = default) {
-		var image = new MagickImage(path);
-		image.Resize(new MagickGeometry((uint) size));
-		if (enforceSize) image.Extent(new MagickGeometry((uint) size), Gravity.Center, MagickColors.Black);
-		using var memory = new MemoryStream();
-		await image.WriteAsync(memory, cancellation);
-		return memory.ToArray();
-	}
+    public async Task<byte[]> GetResized(
+        string path,
+        int size,
+        bool enforceSize = false,
+        CancellationToken cancellation = default
+    )
+    {
+        var image = new MagickImage(path);
+        image.Resize(new MagickGeometry((uint)size));
+        if (enforceSize)
+            image.Extent(new MagickGeometry((uint)size), Gravity.Center, MagickColors.Black);
+        using var memory = new MemoryStream();
+        await image.WriteAsync(memory, cancellation);
+        return memory.ToArray();
+    }
 
-	public async ValueTask<Guid?> StoreImageAsync(string temporaryPath, int size = 800, bool enforceSize = false,
-		CancellationToken cancellation = default, ImageQuality quality = ImageQuality.Normal) {
-		if (File.Exists(temporaryPath) is not true) return null;
+    public async ValueTask<Guid?> StoreImageAsync(
+        string temporaryPath,
+        int size = 800,
+        bool enforceSize = false,
+        CancellationToken cancellation = default,
+        ImageQuality quality = ImageQuality.Normal
+    )
+    {
+        if (File.Exists(temporaryPath) is not true)
+            return null;
 
-		try {
-			if (File.Exists(BasePath) is not true) Directory.CreateDirectory(BasePath);
+        try
+        {
+            if (File.Exists(BasePath) is not true)
+                Directory.CreateDirectory(BasePath);
 
-			var image = new MagickImage();
-			await image.ReadAsync(temporaryPath, cancellation);
-			
-			image.Format = MagickFormat.WebP;
-			if (quality is ImageQuality.Source) {
-				image.Quality = 100;
-				// Do not resize
-			} else {
-				int storedSize = size;
-				if (quality is ImageQuality.Normal && storedSize < 800) storedSize = 800;
-				if (quality is ImageQuality.High && storedSize < 1600) storedSize = 1600;
+            var image = new MagickImage();
+            await image.ReadAsync(temporaryPath, cancellation);
 
-				image.Resize(new MagickGeometry((uint) storedSize)); // this preserves aspect ratio
-				if (enforceSize) image.Extent(new MagickGeometry((uint) storedSize), Gravity.Center, MagickColors.Black);
-				image.Quality = quality switch {
-					ImageQuality.Normal => 85,
-					ImageQuality.High => 95,
-					var _ => throw new ArgumentOutOfRangeException(nameof(quality), quality, null)
-				};
-			}
+            image.Format = MagickFormat.WebP;
+            if (quality is ImageQuality.Source)
+            {
+                image.Quality = 100;
+                // Do not resize
+            }
+            else
+            {
+                int storedSize = size;
+                if (quality is ImageQuality.Normal && storedSize < 800)
+                    storedSize = 800;
+                if (quality is ImageQuality.High && storedSize < 1600)
+                    storedSize = 1600;
 
-			if (image.GetExifProfile() is { } exifProfile) image.RemoveProfile(exifProfile);
+                image.Resize(new MagickGeometry((uint)storedSize)); // this preserves aspect ratio
+                if (enforceSize)
+                    image.Extent(
+                        new MagickGeometry((uint)storedSize),
+                        Gravity.Center,
+                        MagickColors.Black
+                    );
+                image.Quality = quality switch
+                {
+                    ImageQuality.Normal => 85,
+                    ImageQuality.High => 95,
+                    var _ => throw new ArgumentOutOfRangeException(nameof(quality), quality, null),
+                };
+            }
 
-			// Overwrite exif for privacy reasons
-			var exif = new ExifProfile {
-				Parts = ExifParts.None
-			};
-			exif.CreateThumbnail();
-			image.SetProfile(exif);
+            if (image.GetExifProfile() is { } exifProfile)
+                image.RemoveProfile(exifProfile);
 
-			var guid = Guid.NewGuid();
-			string path = Path.Combine(BasePath, guid + ImageExtension);
-			await image.WriteAsync(path, cancellation);
-			return guid;
-		} catch (Exception ex) {
-			Logger.LogWarning(ex, "Failed to process uploaded image.");
-			return null;
-		}
-	}
+            // Overwrite exif for privacy reasons
+            var exif = new ExifProfile { Parts = ExifParts.None };
+            exif.CreateThumbnail();
+            image.SetProfile(exif);
 
-	public void Delete(Guid imageId) {
-		string path = Path.Combine(BasePath, imageId + ImageExtension);
-		File.Delete(path);
-	}
+            var guid = Guid.NewGuid();
+            string path = Path.Combine(BasePath, guid + ImageExtension);
+            await image.WriteAsync(path, cancellation);
+            return guid;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to process uploaded image.");
+            return null;
+        }
+    }
+
+    public void Delete(Guid imageId)
+    {
+        string path = Path.Combine(BasePath, imageId + ImageExtension);
+        File.Delete(path);
+    }
 }

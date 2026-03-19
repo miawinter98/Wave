@@ -1,5 +1,6 @@
 ﻿namespace Wave.Data;
 
-public interface ISoftDelete {
+public interface ISoftDelete
+{
     bool IsDeleted { get; set; }
 }

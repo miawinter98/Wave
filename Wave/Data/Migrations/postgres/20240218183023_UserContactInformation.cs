@@ -16,7 +16,8 @@ namespace Wave.Data.Migrations.postgres
                 type: "character varying(128)",
                 maxLength: 128,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
 
             migrationBuilder.AddColumn<string>(
                 name: "ContactPhone",
@@ -24,7 +25,8 @@ namespace Wave.Data.Migrations.postgres
                 type: "character varying(64)",
                 maxLength: 64,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
 
             migrationBuilder.AddColumn<string>(
                 name: "ContactPhoneBusiness",
@@ -32,7 +34,8 @@ namespace Wave.Data.Migrations.postgres
                 type: "character varying(64)",
                 maxLength: 64,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
 
             migrationBuilder.AddColumn<string>(
                 name: "ContactWebsite",
@@ -40,27 +43,20 @@ namespace Wave.Data.Migrations.postgres
                 type: "character varying(128)",
                 maxLength: 128,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ContactEmail",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "ContactEmail", table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "ContactPhone",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "ContactPhone", table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "ContactPhoneBusiness",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "ContactPhoneBusiness", table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "ContactWebsite",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "ContactWebsite", table: "AspNetUsers");
         }
     }
 }

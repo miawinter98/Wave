@@ -7,200 +7,287 @@ using Wave.Data.Transactional;
 namespace Wave.Data;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-	: IdentityDbContext<ApplicationUser>(options) {
+    : IdentityDbContext<ApplicationUser>(options)
+{
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
 
-	protected override void OnModelCreating(ModelBuilder builder) {
-		base.OnModelCreating(builder);
+        var dateTimeOffsetUtcConverter = new ValueConverter<DateTimeOffset, DateTimeOffset>(
+            model => model.ToUniversalTime(),
+            utc => utc.ToLocalTime()
+        );
 
-		var dateTimeOffsetUtcConverter = new ValueConverter<DateTimeOffset, DateTimeOffset>(
-			model => model.ToUniversalTime(),
-			utc => utc.ToLocalTime()
-			);
+        builder.Entity<ApplicationUser>(user =>
+        {
+            user.Property(u => u.FullName).HasMaxLength(64);
+            user.Property(u => u.AboutTheAuthor).HasMaxLength(512);
+            user.Property(u => u.Biography).HasMaxLength(4096);
 
-		builder.Entity<ApplicationUser>(user => {
-			user.Property(u => u.FullName).HasMaxLength(64);
-			user.Property(u => u.AboutTheAuthor).HasMaxLength(512);
-			user.Property(u => u.Biography).HasMaxLength(4096);
+            user.HasOne(u => u.ProfilePicture)
+                .WithOne()
+                .HasForeignKey(typeof(ProfilePicture))
+                .OnDelete(DeleteBehavior.SetNull);
+            user.HasMany(u => u.Links).WithOne().OnDelete(DeleteBehavior.Cascade);
 
-			user.HasOne(u => u.ProfilePicture).WithOne().HasForeignKey(typeof(ProfilePicture))
-				.OnDelete(DeleteBehavior.SetNull);
-			user.HasMany(u => u.Links).WithOne().OnDelete(DeleteBehavior.Cascade);
+            user.Navigation(u => u.ProfilePicture).IsRequired(false);
+            user.Navigation(u => u.Links).AutoInclude();
+        });
+        builder.Entity<ProfilePicture>(pfp =>
+        {
+            pfp.HasKey(p => p.Id);
+            pfp.Property(p => p.ImageId).IsRequired();
+            pfp.ToTable("ProfilePictures");
+        });
 
-			user.Navigation(u => u.ProfilePicture).IsRequired(false);
-			user.Navigation(u => u.Links).AutoInclude();
-		});
-		builder.Entity<ProfilePicture>(pfp => {
-			pfp.HasKey(p => p.Id);
-			pfp.Property(p => p.ImageId).IsRequired();
-			pfp.ToTable("ProfilePictures");
-		});
+        builder.Entity<Article>(article =>
+        {
+            article.HasKey(a => a.Id);
+            article.Property(a => a.Title).IsRequired().HasMaxLength(256);
+            article.Property(a => a.Slug).HasMaxLength(64).IsRequired().HasDefaultValue("");
 
-		builder.Entity<Article>(article => {
-			article.HasKey(a => a.Id);
-			article.Property(a => a.Title)
-				.IsRequired().HasMaxLength(256);
-			article.Property(a => a.Slug).HasMaxLength(64).IsRequired().HasDefaultValue("");
+            article
+                .HasOne(a => a.Author)
+                .WithMany(a => a.Articles)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+            article
+                .HasOne(a => a.Reviewer)
+                .WithMany()
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+            article.OwnsMany(a => a.Headings);
 
-			article.HasOne(a => a.Author).WithMany(a => a.Articles)
-				.IsRequired().OnDelete(DeleteBehavior.Cascade);
-			article.HasOne(a => a.Reviewer).WithMany()
-				.IsRequired(false).OnDelete(DeleteBehavior.SetNull);
-			article.OwnsMany(a => a.Headings);
+            article
+                .Property(a => a.CreationDate)
+                .IsRequired()
+                .HasDefaultValueSql("now()")
+                .HasConversion(dateTimeOffsetUtcConverter);
+            article.Property(a => a.PublishDate).HasConversion(dateTimeOffsetUtcConverter);
+            article
+                .Property(a => a.LastModified)
+                .IsRequired()
+                .HasDefaultValueSql("now()")
+                .HasConversion(dateTimeOffsetUtcConverter);
 
-			article.Property(a => a.CreationDate)
-				.IsRequired().HasDefaultValueSql("now()")
-				.HasConversion(dateTimeOffsetUtcConverter);
-			article.Property(a => a.PublishDate)
-				.HasConversion(dateTimeOffsetUtcConverter);
-			article.Property(a => a.LastModified)
-				.IsRequired().HasDefaultValueSql("now()")
-				.HasConversion(dateTimeOffsetUtcConverter);
-			
-			article.Property(a => a.BodyPlain).HasDefaultValue("");
+            article.Property(a => a.BodyPlain).HasDefaultValue("");
 
-			article.Property(a => a.CanBePublic)
-				.HasComputedColumnSql(
-					$"\"{nameof(Article.IsDeleted)}\" = false AND \"{nameof(Article.Status)}\" = {(int)ArticleStatus.Published}", true);
+            article
+                .Property(a => a.CanBePublic)
+                .HasComputedColumnSql(
+                    $"\"{nameof(Article.IsDeleted)}\" = false AND \"{nameof(Article.Status)}\" = {(int)ArticleStatus.Published}",
+                    true
+                );
 
-			article.HasQueryFilter(a => a.CanBePublic && a.PublishDate <= DateTimeOffset.UtcNow);
-			article.ToTable("Articles");
-		});
+            article.HasQueryFilter(a => a.CanBePublic && a.PublishDate <= DateTimeOffset.UtcNow);
+            article.ToTable("Articles");
+        });
 
-		builder.HasCollation("default-case-insensitive", "und-u-kf-upper-ks-level1", "icu", false);
-		builder.Entity<Category>(category => {
-			category.HasKey(c => c.Id);
-			category.Property(c => c.Name).IsRequired().HasMaxLength(128).UseCollation("default-case-insensitive");
-			category.HasIndex(c => c.Name).IsUnique();
-			category.Property(c => c.Color).IsRequired().HasSentinel(CategoryColors.Default)
-				.HasDefaultValue(CategoryColors.Default);
+        builder.HasCollation("default-case-insensitive", "und-u-kf-upper-ks-level1", "icu", false);
+        builder.Entity<Category>(category =>
+        {
+            category.HasKey(c => c.Id);
+            category
+                .Property(c => c.Name)
+                .IsRequired()
+                .HasMaxLength(128)
+                .UseCollation("default-case-insensitive");
+            category.HasIndex(c => c.Name).IsUnique();
+            category
+                .Property(c => c.Color)
+                .IsRequired()
+                .HasSentinel(CategoryColors.Default)
+                .HasDefaultValue(CategoryColors.Default);
 
-			category.HasMany(c => c.Articles).WithMany(a => a.Categories)
-				.UsingEntity<ArticleCategory>(
-					ac => ac.HasOne(a => a.Article).WithMany().OnDelete(DeleteBehavior.Cascade), 
-					ac => ac.HasOne(a => a.Category).WithMany().OnDelete(DeleteBehavior.Restrict), 
-					articleCategory => {
-						articleCategory.HasKey(ac => ac.Id);
-						articleCategory.ToTable("ArticleCategories");
-						articleCategory.HasQueryFilter(ac => 
-							ac.Article.CanBePublic && ac.Article.PublishDate <= DateTimeOffset.UtcNow);
-					});
-			
-			category.ToTable("Categories");
-		});
-		builder.Entity<ArticleImage>(img => {
-			img.HasKey(i => i.Id);
-			img.Property(i => i.ImageDescription).IsRequired().HasMaxLength(2048);
+            category
+                .HasMany(c => c.Articles)
+                .WithMany(a => a.Categories)
+                .UsingEntity<ArticleCategory>(
+                    ac => ac.HasOne(a => a.Article).WithMany().OnDelete(DeleteBehavior.Cascade),
+                    ac => ac.HasOne(a => a.Category).WithMany().OnDelete(DeleteBehavior.Restrict),
+                    articleCategory =>
+                    {
+                        articleCategory.HasKey(ac => ac.Id);
+                        articleCategory.ToTable("ArticleCategories");
+                        articleCategory.HasQueryFilter(ac =>
+                            ac.Article.CanBePublic
+                            && ac.Article.PublishDate <= DateTimeOffset.UtcNow
+                        );
+                    }
+                );
 
-			img.HasOne<Article>().WithMany(a => a.Images).OnDelete(DeleteBehavior.Cascade);
+            category.ToTable("Categories");
+        });
+        builder.Entity<ArticleImage>(img =>
+        {
+            img.HasKey(i => i.Id);
+            img.Property(i => i.ImageDescription).IsRequired().HasMaxLength(2048);
 
-			img.ToTable("Images");
-		});
+            img.HasOne<Article>().WithMany(a => a.Images).OnDelete(DeleteBehavior.Cascade);
 
-		builder.Entity<EmailNewsletter>(newsletter => {
-			newsletter.HasKey(n => n.Id);
-			newsletter.HasOne(n => n.Article).WithOne().HasForeignKey<EmailNewsletter>()
-				.IsRequired().OnDelete(DeleteBehavior.Cascade);
-			newsletter.Property(a => a.DistributionDateTime)
-				.HasConversion(dateTimeOffsetUtcConverter);
+            img.ToTable("Images");
+        });
 
-			newsletter.HasQueryFilter(n => n.Article.CanBePublic && n.Article.PublishDate <= DateTimeOffset.UtcNow);
-			newsletter.ToTable("Newsletter");
-		});
-		builder.Entity<EmailSubscriber>(subscriber => {
-			subscriber.HasKey(s => s.Id);
+        builder.Entity<EmailNewsletter>(newsletter =>
+        {
+            newsletter.HasKey(n => n.Id);
+            newsletter
+                .HasOne(n => n.Article)
+                .WithOne()
+                .HasForeignKey<EmailNewsletter>()
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+            newsletter
+                .Property(a => a.DistributionDateTime)
+                .HasConversion(dateTimeOffsetUtcConverter);
 
-			subscriber.Property(s => s.Name).IsRequired(false).HasMaxLength(128);
-			subscriber.Property(s => s.Email).IsRequired().HasMaxLength(256).UseCollation("default-case-insensitive");
-			subscriber.HasIndex(s => s.Email).IsUnique();
-			subscriber.Property(s => s.Language).IsRequired().HasMaxLength(8).HasDefaultValue("en-US");
+            newsletter.HasQueryFilter(n =>
+                n.Article.CanBePublic && n.Article.PublishDate <= DateTimeOffset.UtcNow
+            );
+            newsletter.ToTable("Newsletter");
+        });
+        builder.Entity<EmailSubscriber>(subscriber =>
+        {
+            subscriber.HasKey(s => s.Id);
 
-			subscriber.Property(s => s.UnsubscribeReason).HasMaxLength(256);
-			subscriber.Property(s => s.LastMailReceived).HasConversion(dateTimeOffsetUtcConverter);
-			subscriber.Property(s => s.LastMailOpened).HasConversion(dateTimeOffsetUtcConverter);
+            subscriber.Property(s => s.Name).IsRequired(false).HasMaxLength(128);
+            subscriber
+                .Property(s => s.Email)
+                .IsRequired()
+                .HasMaxLength(256)
+                .UseCollation("default-case-insensitive");
+            subscriber.HasIndex(s => s.Email).IsUnique();
+            subscriber
+                .Property(s => s.Language)
+                .IsRequired()
+                .HasMaxLength(8)
+                .HasDefaultValue("en-US");
 
-			subscriber.HasIndex(s => s.Unsubscribed);
+            subscriber.Property(s => s.UnsubscribeReason).HasMaxLength(256);
+            subscriber.Property(s => s.LastMailReceived).HasConversion(dateTimeOffsetUtcConverter);
+            subscriber.Property(s => s.LastMailOpened).HasConversion(dateTimeOffsetUtcConverter);
 
-			subscriber.HasQueryFilter(s => !s.Unsubscribed);
-			subscriber.ToTable("NewsletterSubscribers");
-		});
+            subscriber.HasIndex(s => s.Unsubscribed);
 
-		builder.Entity<ApiKey>(key => {
-			key.HasKey(k => k.Key);
-			key.Property(k => k.Key).IsRequired().HasMaxLength(128);
-			key.Property(k => k.OwnerName).IsRequired().HasMaxLength(128);
+            subscriber.HasQueryFilter(s => !s.Unsubscribed);
+            subscriber.ToTable("NewsletterSubscribers");
+        });
 
-			key.HasMany(k => k.ApiClaims).WithOne().OnDelete(DeleteBehavior.Cascade);
-			key.Ignore(k => k.Claims);
-		});
-	}
+        builder.Entity<ApiKey>(key =>
+        {
+            key.HasKey(k => k.Key);
+            key.Property(k => k.Key).IsRequired().HasMaxLength(128);
+            key.Property(k => k.OwnerName).IsRequired().HasMaxLength(128);
 
-	internal async ValueTask UpdateArticle(ArticleDto dto, Article article, 
-			CancellationToken cancellation) {
-		if (dto is ArticleCreateDto cDto) {
-			article.Title = cDto.Title;
-			article.Body = cDto.Body;
-		} else if (dto is ArticleUpdateDto uDto) {
-			if (!string.IsNullOrWhiteSpace(uDto.Title)) article.Title = uDto.Title;
-			if (!string.IsNullOrWhiteSpace(uDto.Body)) article.Body = uDto.Body;
-		}
-		article.LastModified = DateTimeOffset.UtcNow;
-		article.UpdateBody();
-		
-		// We can't use CanBePublic here since when we create a new article, that isn't initialized yet
-		if (article.Status != ArticleStatus.Published || article.PublishDate > DateTimeOffset.UtcNow) {
-			// Update publish date, if it exists and article isn't public yet
-			if (dto.PublishDate is {} date) article.PublishDate = date;
-			// Can only change slugs when the article is not public
-			article.UpdateSlug(dto.Slug);
-		}
+            key.HasMany(k => k.ApiClaims).WithOne().OnDelete(DeleteBehavior.Cascade);
+            key.Ignore(k => k.Claims);
+        });
+    }
 
-		await UpdateCategories(dto, article, cancellation);
-		await UpdateImages(dto, article, cancellation);
-		await UpdateNewsletter(article, cancellation);
-	}
-	
-	private async ValueTask UpdateCategories(ArticleDto dto, Article article, CancellationToken cancellation) {
-		if (dto.Categories is null) return;
-		
-		// Retrieve all existing links between this article and categories
-		var relationships = await Set<ArticleCategory>()
-			.IgnoreQueryFilters()
-			.IgnoreAutoIncludes()
-			.Include(ac => ac.Category)
-			.Where(ac => ac.Article == article)
-			.ToListAsync(cancellation);
-		
-		// check which Category is not in the DTO and needs its relationship removed
-		foreach (var ac in relationships.Where(ac => !dto.Categories.Contains(ac.Category.Id))) {
-			article.Categories.Remove(ac.Category);
-			Remove(ac);
-		}
-		
-		// check which Category in the DTO is absent from the article's relationships, and add them
-		var added = dto.Categories.Where(cId => relationships.All(ac => ac.Category.Id != cId)).ToList();
-		if (added.Count > 0) {
-			var categories = await Set<Category>()
-				.IgnoreAutoIncludes().IgnoreQueryFilters()
-				.Where(c => added.Contains(c.Id))
-				.ToListAsync(cancellation);
+    internal async ValueTask UpdateArticle(
+        ArticleDto dto,
+        Article article,
+        CancellationToken cancellation
+    )
+    {
+        if (dto is ArticleCreateDto cDto)
+        {
+            article.Title = cDto.Title;
+            article.Body = cDto.Body;
+        }
+        else if (dto is ArticleUpdateDto uDto)
+        {
+            if (!string.IsNullOrWhiteSpace(uDto.Title))
+                article.Title = uDto.Title;
+            if (!string.IsNullOrWhiteSpace(uDto.Body))
+                article.Body = uDto.Body;
+        }
+        article.LastModified = DateTimeOffset.UtcNow;
+        article.UpdateBody();
 
-			await AddRangeAsync(categories.Select(c => new ArticleCategory {
-				Article = article, Category = c
-			}).ToList(), cancellation);
-		}
-	}
+        // We can't use CanBePublic here since when we create a new article, that isn't initialized yet
+        if (
+            article.Status != ArticleStatus.Published
+            || article.PublishDate > DateTimeOffset.UtcNow
+        )
+        {
+            // Update publish date, if it exists and article isn't public yet
+            if (dto.PublishDate is { } date)
+                article.PublishDate = date;
+            // Can only change slugs when the article is not public
+            article.UpdateSlug(dto.Slug);
+        }
 
-	private async ValueTask UpdateImages(ArticleDto dto, Article article, CancellationToken cancellation) {
-		if (dto.Images is null) return;
+        await UpdateCategories(dto, article, cancellation);
+        await UpdateImages(dto, article, cancellation);
+        await UpdateNewsletter(article, cancellation);
+    }
 
-		// TODO:: implement
-	}
+    private async ValueTask UpdateCategories(
+        ArticleDto dto,
+        Article article,
+        CancellationToken cancellation
+    )
+    {
+        if (dto.Categories is null)
+            return;
 
-	private async ValueTask UpdateNewsletter(Article article, CancellationToken cancellation) {
-		// Update Newsletter distribution if it exists
-		var newsletter = await Set<EmailNewsletter>()
-			.IgnoreQueryFilters().IgnoreAutoIncludes()
-			.FirstOrDefaultAsync(n => n.Article == article, cancellation);
-		if (newsletter is not null) newsletter.DistributionDateTime = article.PublishDate;
-	}
+        // Retrieve all existing links between this article and categories
+        var relationships = await Set<ArticleCategory>()
+            .IgnoreQueryFilters()
+            .IgnoreAutoIncludes()
+            .Include(ac => ac.Category)
+            .Where(ac => ac.Article == article)
+            .ToListAsync(cancellation);
+
+        // check which Category is not in the DTO and needs its relationship removed
+        foreach (var ac in relationships.Where(ac => !dto.Categories.Contains(ac.Category.Id)))
+        {
+            article.Categories.Remove(ac.Category);
+            Remove(ac);
+        }
+
+        // check which Category in the DTO is absent from the article's relationships, and add them
+        var added = dto
+            .Categories.Where(cId => relationships.All(ac => ac.Category.Id != cId))
+            .ToList();
+        if (added.Count > 0)
+        {
+            var categories = await Set<Category>()
+                .IgnoreAutoIncludes()
+                .IgnoreQueryFilters()
+                .Where(c => added.Contains(c.Id))
+                .ToListAsync(cancellation);
+
+            await AddRangeAsync(
+                categories
+                    .Select(c => new ArticleCategory { Article = article, Category = c })
+                    .ToList(),
+                cancellation
+            );
+        }
+    }
+
+    private async ValueTask UpdateImages(
+        ArticleDto dto,
+        Article article,
+        CancellationToken cancellation
+    )
+    {
+        if (dto.Images is null)
+            return;
+
+        // TODO:: implement
+    }
+
+    private async ValueTask UpdateNewsletter(Article article, CancellationToken cancellation)
+    {
+        // Update Newsletter distribution if it exists
+        var newsletter = await Set<EmailNewsletter>()
+            .IgnoreQueryFilters()
+            .IgnoreAutoIncludes()
+            .FirstOrDefaultAsync(n => n.Article == article, cancellation);
+        if (newsletter is not null)
+            newsletter.DistributionDateTime = article.PublishDate;
+    }
 }

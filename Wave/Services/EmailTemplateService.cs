@@ -4,329 +4,446 @@ using Mjml.Net;
 
 namespace Wave.Services;
 
-public partial class EmailTemplateService(ILogger<EmailTemplateService> logger, IDistributedCache tokenCache, FileSystemService fileSystem) {
-	public enum Constants {
-		BrowserLink, HomeLink, ContentLogo, ContentTitle, ContentBody, EmailUnsubscribeLink, ArticleRecommendations 
-	}
+public partial class EmailTemplateService(
+    ILogger<EmailTemplateService> logger,
+    IDistributedCache tokenCache,
+    FileSystemService fileSystem
+)
+{
+    public enum Constants
+    {
+        BrowserLink,
+        HomeLink,
+        ContentLogo,
+        ContentTitle,
+        ContentBody,
+        EmailUnsubscribeLink,
+        ArticleRecommendations,
+    }
 
-	private ILogger<EmailTemplateService> Logger { get; } = logger;
-	private MjmlRenderer Renderer { get; } = new();
-	private IDistributedCache TokenCache { get; } = tokenCache;
-	private FileSystemService FileSystem { get; } = fileSystem;
+    private ILogger<EmailTemplateService> Logger { get; } = logger;
+    private MjmlRenderer Renderer { get; } = new();
+    private IDistributedCache TokenCache { get; } = tokenCache;
+    private FileSystemService FileSystem { get; } = fileSystem;
 
-	private Regex TokenMatcher { get; } = MyRegex();
+    private Regex TokenMatcher { get; } = MyRegex();
 
-	public async Task<(string user, string token)> CreateConfirmTokensAsync(Guid subscriberId, string role = "subscribe", TimeSpan? expiration = null) {
-		string user = Convert.ToBase64String(subscriberId.ToByteArray());
-		string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-		string cacheKey = role + "-" + user;
-		
-		await TokenCache.SetAsync(cacheKey, 
-			Convert.FromBase64String(token), 
-			new DistributedCacheEntryOptions {
-				AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromDays(1)
-			});
-		
-		return (user, token);
-	}
+    public async Task<(string user, string token)> CreateConfirmTokensAsync(
+        Guid subscriberId,
+        string role = "subscribe",
+        TimeSpan? expiration = null
+    )
+    {
+        string user = Convert.ToBase64String(subscriberId.ToByteArray());
+        string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        string cacheKey = role + "-" + user;
 
-	public async Task<Guid?> ValidateTokensAsync(string user, string token, string role = "subscribe", bool deleteToken = true) {
-		string cacheKey = role + "-" + user;
-		byte[]? tokenInCache = await TokenCache.GetAsync(cacheKey);
-		
-		if (tokenInCache is null || token != Convert.ToBase64String(tokenInCache))
-			return null;
+        await TokenCache.SetAsync(
+            cacheKey,
+            Convert.FromBase64String(token),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromDays(1),
+            }
+        );
 
-		if (deleteToken) await TokenCache.RemoveAsync(cacheKey);
-		return new Guid(Convert.FromBase64String(user));
-	}
-	
+        return (user, token);
+    }
 
-	public string Default(string home, string logoLink, string title, string body) {
-		return Process("default", new Dictionary<Constants, object?> {
-			{Constants.HomeLink, home},
-			{Constants.ContentLogo, logoLink},
-			{Constants.ContentTitle, title},
-			{Constants.ContentBody, body}
-		});
-	}
+    public async Task<Guid?> ValidateTokensAsync(
+        string user,
+        string token,
+        string role = "subscribe",
+        bool deleteToken = true
+    )
+    {
+        string cacheKey = role + "-" + user;
+        byte[]? tokenInCache = await TokenCache.GetAsync(cacheKey);
 
-	public ValueTask<string> DefaultAsync(string home, string logoLink, string title, string body) {
-		return ProcessAsync("default", new Dictionary<Constants, object?> {
-			{Constants.HomeLink, home},
-			{Constants.ContentLogo, logoLink},
-			{Constants.ContentTitle, title},
-			{Constants.ContentBody, body}
-		});
-	}
+        if (tokenInCache is null || token != Convert.ToBase64String(tokenInCache))
+            return null;
 
-	public string Newsletter(string home, string browserUrl, string logoLink, string title, string body, string unsubscribe) {
-		return Process("newsletter", new Dictionary<Constants, object?> {
-			{ Constants.HomeLink, home },
-			{ Constants.BrowserLink, browserUrl },
-			{ Constants.ContentLogo, logoLink },
-			{ Constants.ContentTitle, title },
-			{ Constants.ContentBody, body },
-			{ Constants.EmailUnsubscribeLink, unsubscribe }
-		});
-	}
-	public ValueTask<string> NewsletterAsync(string home, string browserUrl, string logoLink, string title, string body, string unsubscribe) {
-		return ProcessAsync("newsletter", new Dictionary<Constants, object?> {
-			{ Constants.HomeLink, home },
-			{ Constants.BrowserLink, browserUrl },
-			{ Constants.ContentLogo, logoLink },
-			{ Constants.ContentTitle, title },
-			{ Constants.ContentBody, body },
-			{ Constants.EmailUnsubscribeLink, unsubscribe }
-		});
-	}
+        if (deleteToken)
+            await TokenCache.RemoveAsync(cacheKey);
+        return new Guid(Convert.FromBase64String(user));
+    }
 
-	public string Welcome(string home, string logoLink, string title, string body, string unsubscribe, string articles) {
-		return Process("welcome", new Dictionary<Constants, object?> {
-			{ Constants.HomeLink, home },
-			{ Constants.ContentLogo, logoLink },
-			{ Constants.ContentTitle, title },
-			{ Constants.ContentBody, body },
-			{ Constants.EmailUnsubscribeLink, unsubscribe },
-			{ Constants.ArticleRecommendations, articles }
-		});
-	}
+    public string Default(string home, string logoLink, string title, string body)
+    {
+        return Process(
+            "default",
+            new Dictionary<Constants, object?>
+            {
+                { Constants.HomeLink, home },
+                { Constants.ContentLogo, logoLink },
+                { Constants.ContentTitle, title },
+                { Constants.ContentBody, body },
+            }
+        );
+    }
 
-	public void TryCreateDefaultTemplates() {
-		FileSystem.GetEmailTemplate("default", DefaultTemplates["default"]);
-		FileSystem.GetEmailTemplate("newsletter", DefaultTemplates["newsletter"]);
-		FileSystem.GetEmailTemplate("welcome", DefaultTemplates["welcome"]);
-		FileSystem.GetPartialTemplate("email-article", DefaultPartials["email-article"]);
-		FileSystem.GetPartialTemplate("email-plain-footer", DefaultPartials["email-plain-footer"]);
-		FileSystem.GetPartialTemplate("email-author", DefaultPartials["email-author"]);
-	}
+    public ValueTask<string> DefaultAsync(string home, string logoLink, string title, string body)
+    {
+        return ProcessAsync(
+            "default",
+            new Dictionary<Constants, object?>
+            {
+                { Constants.HomeLink, home },
+                { Constants.ContentLogo, logoLink },
+                { Constants.ContentTitle, title },
+                { Constants.ContentBody, body },
+            }
+        );
+    }
 
-	public string ApplyTokens(string template, Func<string, string?> replacer) {
-		return TokenMatcher.Replace(template, t => replacer(t.Value[2..^2]) ?? "");
-	}
+    public string Newsletter(
+        string home,
+        string browserUrl,
+        string logoLink,
+        string title,
+        string body,
+        string unsubscribe
+    )
+    {
+        return Process(
+            "newsletter",
+            new Dictionary<Constants, object?>
+            {
+                { Constants.HomeLink, home },
+                { Constants.BrowserLink, browserUrl },
+                { Constants.ContentLogo, logoLink },
+                { Constants.ContentTitle, title },
+                { Constants.ContentBody, body },
+                { Constants.EmailUnsubscribeLink, unsubscribe },
+            }
+        );
+    }
 
-	public string GetTemplate(string templateName) {
-		return FileSystem.GetEmailTemplate(templateName, 
-			       DefaultTemplates.TryGetValue(templateName, out string? s) ? s : null) 
-		       ?? throw new ApplicationException("Failed to retrieve mail template " + templateName + ".");
-	}
-	public async ValueTask<string> GetPartialAsync(string partialName) {
-		return await FileSystem.GetPartialTemplateAsync(partialName, 
-					DefaultTemplates.TryGetValue(partialName, out string? s) ? s : null) 
-				?? throw new ApplicationException("Failed to retrieve mail template " + partialName + ".");
-	}
-	
-	public async ValueTask<string> GetTemplateAsync(string templateName) {
-		return await FileSystem.GetEmailTemplateAsync(templateName, 
-					DefaultTemplates.TryGetValue(templateName, out string? s) ? s : null) 
-				?? throw new ApplicationException("Failed to retrieve mail template " + templateName + ".");
-	}
+    public ValueTask<string> NewsletterAsync(
+        string home,
+        string browserUrl,
+        string logoLink,
+        string title,
+        string body,
+        string unsubscribe
+    )
+    {
+        return ProcessAsync(
+            "newsletter",
+            new Dictionary<Constants, object?>
+            {
+                { Constants.HomeLink, home },
+                { Constants.BrowserLink, browserUrl },
+                { Constants.ContentLogo, logoLink },
+                { Constants.ContentTitle, title },
+                { Constants.ContentBody, body },
+                { Constants.EmailUnsubscribeLink, unsubscribe },
+            }
+        );
+    }
 
-	public string CompileTemplate(string template, string templateName = "unknown") {
-		var options = new MjmlOptions { Beautify = false };
+    public string Welcome(
+        string home,
+        string logoLink,
+        string title,
+        string body,
+        string unsubscribe,
+        string articles
+    )
+    {
+        return Process(
+            "welcome",
+            new Dictionary<Constants, object?>
+            {
+                { Constants.HomeLink, home },
+                { Constants.ContentLogo, logoLink },
+                { Constants.ContentTitle, title },
+                { Constants.ContentBody, body },
+                { Constants.EmailUnsubscribeLink, unsubscribe },
+                { Constants.ArticleRecommendations, articles },
+            }
+        );
+    }
 
-		(string html, var errors) = Renderer.Render(template, options);
+    public void TryCreateDefaultTemplates()
+    {
+        FileSystem.GetEmailTemplate("default", DefaultTemplates["default"]);
+        FileSystem.GetEmailTemplate("newsletter", DefaultTemplates["newsletter"]);
+        FileSystem.GetEmailTemplate("welcome", DefaultTemplates["welcome"]);
+        FileSystem.GetPartialTemplate("email-article", DefaultPartials["email-article"]);
+        FileSystem.GetPartialTemplate("email-plain-footer", DefaultPartials["email-plain-footer"]);
+        FileSystem.GetPartialTemplate("email-author", DefaultPartials["email-author"]);
+    }
 
-		foreach (var error in errors) {
-			Logger.LogWarning("Validation error in template {template}: [{position}] [{type}] {error}", 
-				templateName, error.Position, error.Type, error.Error);
-		}
+    public string ApplyTokens(string template, Func<string, string?> replacer)
+    {
+        return TokenMatcher.Replace(template, t => replacer(t.Value[2..^2]) ?? "");
+    }
 
-		return html;
-	}
-	
-	public string Process(string templateName, Dictionary<Constants, object?> data) {
-		string template = ApplyTokens(GetTemplate(templateName), token => 
-			data.TryGetValue(Enum.Parse<Constants>(token, true), out object? v) ? v?.ToString() : null);
-		return CompileTemplate(template, templateName);
-	}
-	
-	public async ValueTask<string> ProcessAsync(string templateName, Dictionary<Constants, object?> data) {
-		string template = ApplyTokens(await GetTemplateAsync(templateName), token => 
-			data.TryGetValue(Enum.Parse<Constants>(token, true), out object? v) ? v?.ToString() : null);
-		return CompileTemplate(template, templateName);
-	}
+    public string GetTemplate(string templateName)
+    {
+        return FileSystem.GetEmailTemplate(
+                templateName,
+                DefaultTemplates.TryGetValue(templateName, out string? s) ? s : null
+            )
+            ?? throw new ApplicationException(
+                "Failed to retrieve mail template " + templateName + "."
+            );
+    }
 
-	[GeneratedRegex(@"(\[\[.*?\]\])", 
-		RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.CultureInvariant)]
-	private static partial Regex MyRegex();
+    public async ValueTask<string> GetPartialAsync(string partialName)
+    {
+        return await FileSystem.GetPartialTemplateAsync(
+                partialName,
+                DefaultTemplates.TryGetValue(partialName, out string? s) ? s : null
+            )
+            ?? throw new ApplicationException(
+                "Failed to retrieve mail template " + partialName + "."
+            );
+    }
 
+    public async ValueTask<string> GetTemplateAsync(string templateName)
+    {
+        return await FileSystem.GetEmailTemplateAsync(
+                templateName,
+                DefaultTemplates.TryGetValue(templateName, out string? s) ? s : null
+            )
+            ?? throw new ApplicationException(
+                "Failed to retrieve mail template " + templateName + "."
+            );
+    }
 
-	private Dictionary<string, string> DefaultTemplates { get; } = new() {
-		{
-			"default",
-			$"""
-			 <mjml>
-			   <mj-head>
-			     <mj-preview />
-			   </mj-head>
-			   <mj-body>
-			     <mj-section direction="rtl" padding-bottom="5px" padding-left="0px" padding-right="0px" padding-top="15px" padding="15px 0px 5px 0px">
-			       <mj-column vertical-align="middle" width="33%">
-			         <mj-image align="center" alt="" border-radius="0" border="none" container-background-color="transparent" height="auto" padding-bottom="5px" padding-left="5px" padding-right="5px" padding-top="5px" padding="5px 5px 5px 5px" href="[[{Constants.HomeLink}]]" src="[[{Constants.ContentLogo}]]"></mj-image>
-			       </mj-column>
-			       <mj-column vertical-align="middle" width="67%">
-			         <mj-text font-size="13px" font-family="Ubuntu,Verdana">
-			           <h1>[[{Constants.ContentTitle}]]</h1>
-			         </mj-text>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
-			       <mj-column>
-			         <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section>
-			       <mj-column>
-			         <mj-text color="#55575d" font-size="13px" font-family="Ubuntu,Verdana">[[{Constants.ContentBody}]]</mj-text>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
-			       <mj-column>
-			         <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
-			       </mj-column>
-			     </mj-section>
-			   </mj-body>
-			 </mjml>
-			 """
-		},
-		{
-			"newsletter",
-			$"""
-			 <mjml>
-			   <mj-head>
-			     <mj-preview />
-			   </mj-head>
-			   <mj-body>
-			     <mj-section>
-			       <mj-column>
-			         <mj-text align="center" font-size="13px" font-family="Ubuntu,Verdana">
-			           <a href="[[{Constants.BrowserLink}]]">Read in Browser</a>
-			         </mj-text>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section direction="rtl" padding-bottom="5px" padding-left="0px" padding-right="0px" padding-top="15px" padding="15px 0px 5px 0px">
-			       <mj-column vertical-align="middle" width="33%">
-			         <mj-image align="center" alt="" border-radius="0" border="none" container-background-color="transparent" height="auto" padding-bottom="5px" padding-left="5px" padding-right="5px" padding-top="5px" padding="5px 5px 5px 5px" href="[[{Constants.HomeLink}]]" src="[[{Constants.ContentLogo}]]"></mj-image>
-			       </mj-column>
-			       <mj-column vertical-align="middle" width="67%">
-			         <mj-text font-size="13px" font-family="Ubuntu,Verdana">
-			           <h1>[[{Constants.ContentTitle}]]</h1>
-			         </mj-text>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
-			       <mj-column>
-			         <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section>
-			       <mj-column>
-			         <mj-text color="#55575d" font-size="13px" font-family="Ubuntu,Verdana">[[{Constants.ContentBody}]]</mj-text>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
-			       <mj-column>
-			         <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section>
-			       <mj-column>
-			         <mj-text align="center" font-size="13px" font-family="Ubuntu,Verdana">
-			           <a href="[[{Constants.EmailUnsubscribeLink}]]">Unsubscribe</a>
-			         </mj-text>
-			       </mj-column>
-			     </mj-section>
-			   </mj-body>
-			 </mjml>
-			 """
-		},
-		{
-			"welcome",
-			$"""
-			 <mjml>
-			   <mj-head>
-			     <mj-preview />
-			   </mj-head>
-			   <mj-body>
-			     <mj-section direction="rtl" padding-bottom="5px" padding-left="0px" padding-right="0px" padding-top="15px" padding="15px 0px 5px 0px">
-			       <mj-column vertical-align="middle" width="33%">
-			         <mj-image align="center" alt="" border-radius="0" border="none" container-background-color="transparent" height="auto" padding-bottom="5px" padding-left="5px" padding-right="5px" padding-top="5px" padding="5px 5px 5px 5px" href="[[{Constants.HomeLink}]]" src="[[{Constants.ContentLogo}]]"></mj-image>
-			       </mj-column>
-			       <mj-column vertical-align="middle" width="67%">
-			         <mj-text font-size="13px" font-family="Ubuntu,Verdana">
-			           <h1>[[{Constants.ContentTitle}]]</h1>
-			         </mj-text>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
-			       <mj-column>
-			         <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section>
-			       <mj-column>
-			         <mj-text color="#55575d" font-size="13px" font-family="Ubuntu,Verdana">[[{Constants.ContentBody}]]</mj-text>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
-			       <mj-column>
-			         <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section>
-			       <mj-column>
-			         <mj-text color="#55575d" font-size="13px" font-family="Ubuntu,Verdana">[[{Constants.ArticleRecommendations}]]</mj-text>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
-			       <mj-column>
-			         <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
-			       </mj-column>
-			     </mj-section>
-			     <mj-section>
-			       <mj-column>
-			         <mj-text align="center" font-size="13px" font-family="Ubuntu,Verdana">
-			           <a href="[[{Constants.EmailUnsubscribeLink}]]">Unsubscribe</a>
-			         </mj-text>
-			       </mj-column>
-			     </mj-section>
-			   </mj-body>
-			 </mjml>
-			 """
-		}
-	};
+    public string CompileTemplate(string template, string templateName = "unknown")
+    {
+        var options = new MjmlOptions { Beautify = false };
 
-	private Dictionary<string, string> DefaultPartials { get; } = new()
-	{
-		{
-			"email-article",
-			"""
-			<div style="padding: 10px; background: #9f9f9f; color: #fff; margin-bottom: 10px; border-radius: 2px">
-			  <h3 style="margin-top: 0;">{0}</h3>
-			  <small>{1}</small>
-			  <p>{2}...</p>
-			  <a href="{3}">Link</a>
-			</div>
-			"""
-		},
-		{
-			"email-plain-footer",
-			$"Unsubscribe: [[{Constants.EmailUnsubscribeLink}]]"
-		},
-		{
-			"email-author",
-			"""
-			<div style="padding: 1em; border: 1px solid black; box-shadow: 4px 4px 0 0 currentColor; background: #ffb3c8; margin-top: 12px; min-height: 108px">
-				<img style="float: left; margin: 0 8px 8px 0; border: 1px solid transparent; border-radius: 4px" 
-					 src="{0}" alt="" width="100" />
-				<span style="margin: 0; color: black">
-					<h2 style="color: black; margin-top: 0;">{1}</h2>
-					<p>{2}</p>
-					<a target="_blank" style="color: black" href="{3}">Profile</a>
-				</span>
-			</div>
-			"""
-		}
-	};
+        (string html, var errors) = Renderer.Render(template, options);
+
+        foreach (var error in errors)
+        {
+            Logger.LogWarning(
+                "Validation error in template {template}: [{position}] [{type}] {error}",
+                templateName,
+                error.Position,
+                error.Type,
+                error.Error
+            );
+        }
+
+        return html;
+    }
+
+    public string Process(string templateName, Dictionary<Constants, object?> data)
+    {
+        string template = ApplyTokens(
+            GetTemplate(templateName),
+            token =>
+                data.TryGetValue(Enum.Parse<Constants>(token, true), out object? v)
+                    ? v?.ToString()
+                    : null
+        );
+        return CompileTemplate(template, templateName);
+    }
+
+    public async ValueTask<string> ProcessAsync(
+        string templateName,
+        Dictionary<Constants, object?> data
+    )
+    {
+        string template = ApplyTokens(
+            await GetTemplateAsync(templateName),
+            token =>
+                data.TryGetValue(Enum.Parse<Constants>(token, true), out object? v)
+                    ? v?.ToString()
+                    : null
+        );
+        return CompileTemplate(template, templateName);
+    }
+
+    [GeneratedRegex(
+        @"(\[\[.*?\]\])",
+        RegexOptions.IgnoreCase
+            | RegexOptions.Compiled
+            | RegexOptions.Singleline
+            | RegexOptions.CultureInvariant
+    )]
+    private static partial Regex MyRegex();
+
+    private Dictionary<string, string> DefaultTemplates { get; } =
+        new()
+        {
+            {
+                "default",
+                $"""
+                    <mjml>
+                      <mj-head>
+                        <mj-preview />
+                      </mj-head>
+                      <mj-body>
+                        <mj-section direction="rtl" padding-bottom="5px" padding-left="0px" padding-right="0px" padding-top="15px" padding="15px 0px 5px 0px">
+                          <mj-column vertical-align="middle" width="33%">
+                            <mj-image align="center" alt="" border-radius="0" border="none" container-background-color="transparent" height="auto" padding-bottom="5px" padding-left="5px" padding-right="5px" padding-top="5px" padding="5px 5px 5px 5px" href="[[{Constants.HomeLink}]]" src="[[{Constants.ContentLogo}]]"></mj-image>
+                          </mj-column>
+                          <mj-column vertical-align="middle" width="67%">
+                            <mj-text font-size="13px" font-family="Ubuntu,Verdana">
+                              <h1>[[{Constants.ContentTitle}]]</h1>
+                            </mj-text>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
+                          <mj-column>
+                            <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section>
+                          <mj-column>
+                            <mj-text color="#55575d" font-size="13px" font-family="Ubuntu,Verdana">[[{Constants.ContentBody}]]</mj-text>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
+                          <mj-column>
+                            <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
+                          </mj-column>
+                        </mj-section>
+                      </mj-body>
+                    </mjml>
+                    """
+            },
+            {
+                "newsletter",
+                $"""
+                    <mjml>
+                      <mj-head>
+                        <mj-preview />
+                      </mj-head>
+                      <mj-body>
+                        <mj-section>
+                          <mj-column>
+                            <mj-text align="center" font-size="13px" font-family="Ubuntu,Verdana">
+                              <a href="[[{Constants.BrowserLink}]]">Read in Browser</a>
+                            </mj-text>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section direction="rtl" padding-bottom="5px" padding-left="0px" padding-right="0px" padding-top="15px" padding="15px 0px 5px 0px">
+                          <mj-column vertical-align="middle" width="33%">
+                            <mj-image align="center" alt="" border-radius="0" border="none" container-background-color="transparent" height="auto" padding-bottom="5px" padding-left="5px" padding-right="5px" padding-top="5px" padding="5px 5px 5px 5px" href="[[{Constants.HomeLink}]]" src="[[{Constants.ContentLogo}]]"></mj-image>
+                          </mj-column>
+                          <mj-column vertical-align="middle" width="67%">
+                            <mj-text font-size="13px" font-family="Ubuntu,Verdana">
+                              <h1>[[{Constants.ContentTitle}]]</h1>
+                            </mj-text>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
+                          <mj-column>
+                            <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section>
+                          <mj-column>
+                            <mj-text color="#55575d" font-size="13px" font-family="Ubuntu,Verdana">[[{Constants.ContentBody}]]</mj-text>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
+                          <mj-column>
+                            <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section>
+                          <mj-column>
+                            <mj-text align="center" font-size="13px" font-family="Ubuntu,Verdana">
+                              <a href="[[{Constants.EmailUnsubscribeLink}]]">Unsubscribe</a>
+                            </mj-text>
+                          </mj-column>
+                        </mj-section>
+                      </mj-body>
+                    </mjml>
+                    """
+            },
+            {
+                "welcome",
+                $"""
+                    <mjml>
+                      <mj-head>
+                        <mj-preview />
+                      </mj-head>
+                      <mj-body>
+                        <mj-section direction="rtl" padding-bottom="5px" padding-left="0px" padding-right="0px" padding-top="15px" padding="15px 0px 5px 0px">
+                          <mj-column vertical-align="middle" width="33%">
+                            <mj-image align="center" alt="" border-radius="0" border="none" container-background-color="transparent" height="auto" padding-bottom="5px" padding-left="5px" padding-right="5px" padding-top="5px" padding="5px 5px 5px 5px" href="[[{Constants.HomeLink}]]" src="[[{Constants.ContentLogo}]]"></mj-image>
+                          </mj-column>
+                          <mj-column vertical-align="middle" width="67%">
+                            <mj-text font-size="13px" font-family="Ubuntu,Verdana">
+                              <h1>[[{Constants.ContentTitle}]]</h1>
+                            </mj-text>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
+                          <mj-column>
+                            <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section>
+                          <mj-column>
+                            <mj-text color="#55575d" font-size="13px" font-family="Ubuntu,Verdana">[[{Constants.ContentBody}]]</mj-text>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
+                          <mj-column>
+                            <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section>
+                          <mj-column>
+                            <mj-text color="#55575d" font-size="13px" font-family="Ubuntu,Verdana">[[{Constants.ArticleRecommendations}]]</mj-text>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section padding-top="5px" padding-bottom="5px" padding="5px 0 5px 0">
+                          <mj-column>
+                            <mj-divider border-color="#9f9f9f" border-width="1px"></mj-divider>
+                          </mj-column>
+                        </mj-section>
+                        <mj-section>
+                          <mj-column>
+                            <mj-text align="center" font-size="13px" font-family="Ubuntu,Verdana">
+                              <a href="[[{Constants.EmailUnsubscribeLink}]]">Unsubscribe</a>
+                            </mj-text>
+                          </mj-column>
+                        </mj-section>
+                      </mj-body>
+                    </mjml>
+                    """
+            },
+        };
+
+    private Dictionary<string, string> DefaultPartials { get; } =
+        new()
+        {
+            {
+                "email-article",
+                """
+                    <div style="padding: 10px; background: #9f9f9f; color: #fff; margin-bottom: 10px; border-radius: 2px">
+                      <h3 style="margin-top: 0;">{0}</h3>
+                      <small>{1}</small>
+                      <p>{2}...</p>
+                      <a href="{3}">Link</a>
+                    </div>
+                    """
+            },
+            { "email-plain-footer", $"Unsubscribe: [[{Constants.EmailUnsubscribeLink}]]" },
+            {
+                "email-author",
+                """
+                    <div style="padding: 1em; border: 1px solid black; box-shadow: 4px 4px 0 0 currentColor; background: #ffb3c8; margin-top: 12px; min-height: 108px">
+                    	<img style="float: left; margin: 0 8px 8px 0; border: 1px solid transparent; border-radius: 4px" 
+                    		 src="{0}" alt="" width="100" />
+                    	<span style="margin: 0; color: black">
+                    		<h2 style="color: black; margin-top: 0;">{1}</h2>
+                    		<p>{2}</p>
+                    		<a target="_blank" style="color: black" href="{3}">Profile</a>
+                    	</span>
+                    </div>
+                    """
+            },
+        };
 }
