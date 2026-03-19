@@ -1,0 +1,48 @@
+{
+  // For more information, visit: https://go.microsoft.com/fwlink/?LinkId=733558
+  "version": "2.0.0",
+  "tasks": [
+    {
+		"label": "format frontend",
+		"type": "shell",
+		"command": "yarn exec prettier . --write",
+		"problemMatcher": [],
+		"options": {
+			"cwd": "${workspaceFolder}/wave.client"
+		},
+		"runOptions": {
+			"instanceLimit": 1,
+			"instancePolicy": "terminateOldest",
+		},
+		"presentation": {
+			"echo": true,
+			"reveal": "silent",
+			"focus": false,
+			"panel": "shared",
+			"showReuseMessage": true,
+			"clear": false
+		}
+	},
+    {
+		"label": "format backend",
+		"type": "shell",
+		"command": "dotnet csharpier format Wave",
+		"problemMatcher": [],
+		"options": {
+			"cwd": "${workspaceFolder}"
+		},
+		"runOptions": {
+			"instanceLimit": 1,
+			"instancePolicy": "terminateOldest",
+		},
+		"presentation": {
+			"echo": true,
+			"reveal": "silent",
+			"focus": false,
+			"panel": "shared",
+			"showReuseMessage": true,
+			"clear": false
+		}
+	},
+  ]
+}
