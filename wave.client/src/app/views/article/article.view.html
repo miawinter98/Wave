@@ -1,13 +1,21 @@
-<base-layout>
-	<h2>Latest Article:</h2>
-
+<base-layout [title]="this.latestArticle()?.title ?? 'Article Not Found'">
 	@if(this.latestArticle(); as article) {
-	<dl>
-		<dt>title</dt>
-		<p>{{article.title}}</p>
-		<dt>body</dt>
-		<p>{{article.body}}</p>
-	</dl>
+	<article>
+		<header class="mb-3">
+			<p>
+				Published: {{ article.created | date: "dd.MM.yyyy HH:mm:ss" }}
+			</p>
+			<p>
+				Modified: {{ article.modified | date: "dd.MM.yyyy HH:mm:ss" }}
+			</p>
+		</header>
+		<div
+			class="[&_h2]:text-2xl [&_h2]:mb-2"
+			[innerHTML]="parseBodySafe(article.body!)"
+		>
+			Loading...
+		</div>
+	</article>
 	} @else {
 	<p>No Article found or error</p>
 	}
