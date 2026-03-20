@@ -10,6 +10,7 @@ public enum ArticleStatus
     Draft = 0,
 
     [UsedImplicitly(ImplicitUseKindFlags.Access)]
+    [JsonStringEnumMemberName("Review")]
     InReview = 1,
 
     [UsedImplicitly(ImplicitUseKindFlags.Access)]
