@@ -1,0 +1,12 @@
+<h2>Latest Article:</h2>
+
+@if(this.latestArticle(); as article) {
+<dl>
+	<dt>title</dt>
+	<p>{{article.title}}</p>
+	<dt>body</dt>
+	<p>{{article.body}}</p>
+</dl>
+} @else {
+<p>No Article found or error</p>
+}
