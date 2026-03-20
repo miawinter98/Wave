@@ -28,6 +28,16 @@ builder.Services.AddDbContextFactory<DatabaseContext>(options =>
 #endregion
 
 
+#region Services
+
+var services = builder.Services;
+
+services.AddScoped<ArticleRepository>();
+services.AddScoped<ArticleService>();
+
+#endregion
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

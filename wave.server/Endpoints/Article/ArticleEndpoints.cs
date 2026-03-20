@@ -1,6 +1,5 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using wave.server.Data;
 
 namespace wave.server.Endpoints.Article;
 
@@ -17,15 +16,13 @@ public static class ArticleEndpoints
     }
 
     private static async Task<Results<Ok<ArticleResponse>, NotFound>> GetNewest(
-        IDbContextFactory<DatabaseContext> context,
+        ClaimsPrincipal user,
+        ArticleService service,
         CancellationToken cancellation
     )
     {
-        await using var dao = await context.CreateDbContextAsync(cancellation);
-        var article = await dao.Set<ArticleRecord>().FirstOrDefaultAsync(cancellation);
+        var result = await service.GetLatestAsync(user, cancellation);
 
-        return article is null
-            ? TypedResults.NotFound()
-            : TypedResults.Ok(new ArticleResponse(article));
+        return result is null ? TypedResults.NotFound() : TypedResults.Ok(result);
     }
 }
