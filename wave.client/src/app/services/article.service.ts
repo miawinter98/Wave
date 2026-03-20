@@ -13,6 +13,8 @@ export class ArticleService {
 	private client = inject(HttpClient);
 
 	public getLatest(): Observable<ArticleResponse> {
-		return this.client.get<ArticleResponse>('/api/article/latest');
+		return this.client.get<ArticleResponse>(
+			'http://localhost:5206/api/article/latest',
+		);
 	}
 }
