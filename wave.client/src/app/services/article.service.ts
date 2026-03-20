@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import type { paths, components } from '../models/schema';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 type ArticleResponse =
 	paths['/api/article/latest']['get']['responses']['200']['content']['application/json'];
@@ -14,7 +15,7 @@ export class ArticleService {
 
 	public getLatest(): Observable<ArticleResponse> {
 		return this.client.get<ArticleResponse>(
-			'http://localhost:5206/api/article/latest',
+			new URL('/api/article/latest', environment.apiUrl).toString(),
 		);
 	}
 }
