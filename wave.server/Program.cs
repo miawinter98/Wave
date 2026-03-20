@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using wave.server.Data;
 using wave.server.Endpoints.Article;
@@ -44,6 +43,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseReDoc(options =>
+    {
+        options.SpecUrl = "/openapi/v1.json";
+        options.RoutePrefix = "documentation";
+        options.DocumentTitle = "Wave API";
+    });
 }
 
 var api = app.MapGroup("api");
