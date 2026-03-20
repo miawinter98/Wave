@@ -19,6 +19,7 @@ public class DatabaseContext : DbContext
             article.Property(a => a.Title).HasMaxLength(256);
             article.Property(a => a.Body).IsRequired();
             article.Property(a => a.Slug).HasMaxLength(64);
+            article.Property(a => a.CreationDate).HasDefaultValueSql("now()");
         });
     }
 }

@@ -9,6 +9,9 @@ public class ArticleRepository(IDbContextFactory<DatabaseContext> context)
     {
         await using var dao = await context.CreateDbContextAsync(cancellation);
 
-        return await dao.Set<ArticleRecord>().FirstOrDefaultAsync(cancellation);
+        var now = DateTimeOffset.UtcNow;
+        return await dao.Set<ArticleRecord>()
+            .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate < now)
+            .FirstOrDefaultAsync(cancellation);
     }
 }
