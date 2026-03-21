@@ -1,14 +1,32 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using wave.server.Configuration;
 using wave.server.Data;
 using wave.server.Endpoints.Article;
 using wave.server.Endpoints.User;
+using wave.server.Modules.ActivityPub;
+using wave.server.Modules.ActivityPub.WebFinger;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddProblemDetails();
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+	options.SerializerOptions.AllowOutOfOrderMetadataProperties = true;
+	options.SerializerOptions.AllowTrailingCommas = true;
+	options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+});
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+#region Configuration
+
+builder.Services.Configure<ActivityPubOptions>(builder.Configuration.GetSection("ActivityPub"));
+
+#endregion
 
 #region Data
 
@@ -44,6 +62,8 @@ var services = builder.Services;
 services.AddScoped<ArticleRepository>();
 services.AddScoped<ArticleService>();
 
+services.AddActivityPub();
+
 #endregion
 
 
@@ -61,10 +81,15 @@ if (app.Environment.IsDevelopment())
 	});
 }
 
-// app.MapIdentityApi<ApplicationUser>();
+var ap = app.Services.GetService<IOptions<ActivityPubOptions>>();
+if (ap?.Value is not null && !string.IsNullOrEmpty(ap.Value.Domain))
+{
+	app.MapWellKnownEndpoints();
+}
 
 var api = app.MapGroup("api");
 
+// app.MapIdentityApi<ApplicationUser>();
 api.MapUserEndpoints();
 api.MapArticleEndpoints();
 
