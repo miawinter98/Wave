@@ -3,7 +3,7 @@ import { ArticleView } from './views/article/article.view';
 
 export const routes: Routes = [
 	{
-		path: 'article',
+		path: 'article/:id',
 		component: ArticleView,
 	},
 ];

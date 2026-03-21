@@ -1,9 +1,9 @@
-<base-layout [title]="this.latestArticle()?.title ?? 'Article Not Found'">
-	@if(this.latestArticle(); as article) {
+<base-layout [title]="this.article.value()?.title ?? 'Article Not Found'">
+	@if(this.article.value(); as article) {
 	<article>
 		<header class="mb-3">
 			<p>
-				Published: {{ article.created | date: "dd.MM.yyyy HH:mm:ss" }}
+				Published: {{ article.published | date: "dd.MM.yyyy HH:mm:ss" }}
 			</p>
 			<p>
 				Modified: {{ article.modified | date: "dd.MM.yyyy HH:mm:ss" }}

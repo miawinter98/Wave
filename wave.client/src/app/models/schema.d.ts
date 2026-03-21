@@ -26,14 +26,39 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/api/article/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get Article By ID
+		 * @description Returns the article with the given ID. This endpoint may also
+		 *     return articles that have not been published if and only if
+		 *     the user has access to it (by either being the author, an assigned
+		 *     reviewer or having high access privileges like administrators).
+		 */
+		get: operations['GetArticleById'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
 		ArticleResponse: {
+			identifier?: string;
 			title?: string;
 			body?: string;
 			url?: string;
+			author?: components['schemas']['UserDto'];
 			status?: components['schemas']['ArticleStatus'];
 			/** Format: date-time */
 			created?: string;
@@ -44,6 +69,9 @@ export interface components {
 		};
 		/** @enum {unknown} */
 		ArticleStatus: 'Draft' | 'Review' | 'Published';
+		UserDto: {
+			name?: string;
+		};
 	};
 	responses: never;
 	parameters: never;
@@ -58,6 +86,35 @@ export interface operations {
 			query?: never;
 			header?: never;
 			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ArticleResponse'];
+				};
+			};
+			/** @description No Content */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	GetArticleById: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
 			cookie?: never;
 		};
 		requestBody?: never;
