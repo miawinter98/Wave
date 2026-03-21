@@ -15,4 +15,14 @@ public class ArticleRepository(IDbContextFactory<DatabaseContext> context)
             .Include(a => a.Author)
             .FirstOrDefaultAsync(cancellation);
     }
+
+    public async ValueTask<ArticleRecord?> GetByIdAsync(Guid id, CancellationToken cancellation)
+    {
+        await using var dao = await context.CreateDbContextAsync(cancellation);
+
+        return await dao.Set<ArticleRecord>()
+            .Where(a => a.Id == id)
+            .Include(a => a.Author)
+            .FirstOrDefaultAsync(cancellation);
+    }
 }
