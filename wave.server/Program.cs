@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using wave.server.Data;
 using wave.server.Endpoints.Article;
+using wave.server.Endpoints.User;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddProblemDetails();
@@ -64,6 +65,7 @@ if (app.Environment.IsDevelopment())
 
 var api = app.MapGroup("api");
 
+api.MapUserEndpoints();
 api.MapArticleEndpoints();
 
 app.Run();
