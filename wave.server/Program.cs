@@ -26,6 +26,15 @@ builder.Services.AddDbContextFactory<DatabaseContext>(options =>
 
 #endregion
 
+#region Identity
+
+builder.Services.AddAuthorizationBuilder();
+
+builder
+    .Services.AddIdentityApiEndpoints<ApplicationUser>()
+    .AddEntityFrameworkStores<DatabaseContext>();
+
+#endregion
 
 #region Services
 
@@ -50,6 +59,8 @@ if (app.Environment.IsDevelopment())
         options.DocumentTitle = "Wave API";
     });
 }
+
+// app.MapIdentityApi<ApplicationUser>();
 
 var api = app.MapGroup("api");
 

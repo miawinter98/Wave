@@ -12,6 +12,7 @@ public class ArticleRepository(IDbContextFactory<DatabaseContext> context)
         var now = DateTimeOffset.UtcNow;
         return await dao.Set<ArticleRecord>()
             .Where(a => a.Status >= ArticleStatus.Published && a.PublishDate < now)
+            .Include(a => a.Author)
             .FirstOrDefaultAsync(cancellation);
     }
 }

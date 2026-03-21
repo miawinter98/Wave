@@ -26,7 +26,9 @@ public record ArticleRecord(
     ArticleStatus Status
 )
 {
-    public DateTimeOffset CreationDate { get; init; } = DateTimeOffset.Now;
-    public DateTimeOffset PublishDate { get; init; } = DateTimeOffset.MaxValue;
+    public required ApplicationUser Author { get; set; }
+
+    public required DateTimeOffset CreationDate { get; init; } = DateTimeOffset.Now;
+    public required DateTimeOffset PublishDate { get; init; } = DateTimeOffset.MaxValue;
     public DateTimeOffset? LastModified { get; init; }
 }
