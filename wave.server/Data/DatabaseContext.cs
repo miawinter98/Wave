@@ -6,39 +6,39 @@ namespace wave.server.Data;
 
 public class DatabaseContext : IdentityDbContext<ApplicationUser>
 {
-    public DatabaseContext(DbContextOptions options)
-        : base(options) { }
+	public DatabaseContext(DbContextOptions options)
+		: base(options) { }
 
-    protected DatabaseContext() { }
+	protected DatabaseContext() { }
 
-    protected override void OnModelCreating(ModelBuilder model)
-    {
-        model.Entity<ApplicationUser>(user =>
-        {
-            user.Property(u => u.FullName).HasMaxLength(64);
-        });
+	protected override void OnModelCreating(ModelBuilder model)
+	{
+		model.Entity<ApplicationUser>(user =>
+		{
+			user.Property(u => u.FullName).HasMaxLength(64);
+		});
 
-        // Introduced in .net 10, can be added some other time when we not
-        // transitioning the backend
-        model.Ignore<IdentityPasskeyData>();
+		// Introduced in .net 10, can be added some other time when we not
+		// transitioning the backend
+		model.Ignore<IdentityPasskeyData>();
 
-        model.Entity<ArticleRecord>(article =>
-        {
-            article.ToTable("Articles");
+		model.Entity<ArticleRecord>(article =>
+		{
+			article.ToTable("Articles");
 
-            article.HasKey(a => a.Id);
-            article.Property(a => a.Title).HasMaxLength(256);
-            article.Property(a => a.Body).IsRequired();
-            article.Property(a => a.Slug).HasMaxLength(64);
-            article.Property(a => a.CreationDate).HasDefaultValueSql("now()");
+			article.HasKey(a => a.Id);
+			article.Property(a => a.Title).HasMaxLength(256);
+			article.Property(a => a.Body).IsRequired();
+			article.Property(a => a.Slug).HasMaxLength(64);
+			article.Property(a => a.CreationDate).HasDefaultValueSql("now()");
 
-            article
-                .HasOne(a => a.Author)
-                .WithMany(a => a.Articles)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-        });
+			article
+				.HasOne(a => a.Author)
+				.WithMany(a => a.Articles)
+				.IsRequired()
+				.OnDelete(DeleteBehavior.Cascade);
+		});
 
-        base.OnModelCreating(model);
-    }
+		base.OnModelCreating(model);
+	}
 }

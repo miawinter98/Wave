@@ -13,15 +13,15 @@ builder.Services.AddOpenApi();
 #region Data
 
 var dataConnection =
-    builder.Configuration.GetConnectionString("postgres")
-    ?? throw new InvalidOperationException("Connection string 'postgres' not found.");
+	builder.Configuration.GetConnectionString("postgres")
+	?? throw new InvalidOperationException("Connection string 'postgres' not found.");
 builder.Services.AddDbContextFactory<DatabaseContext>(options =>
 {
-    options.UseNpgsql(dataConnection);
+	options.UseNpgsql(dataConnection);
 #if DEBUG
-    options.EnableDetailedErrors();
-    options.EnableSensitiveDataLogging();
-    // TODO LogTo Serilog Logger
+	options.EnableDetailedErrors();
+	options.EnableSensitiveDataLogging();
+	// TODO LogTo Serilog Logger
 #endif
 });
 
@@ -32,8 +32,8 @@ builder.Services.AddDbContextFactory<DatabaseContext>(options =>
 builder.Services.AddAuthorizationBuilder();
 
 builder
-    .Services.AddIdentityApiEndpoints<ApplicationUser>()
-    .AddEntityFrameworkStores<DatabaseContext>();
+	.Services.AddIdentityApiEndpoints<ApplicationUser>()
+	.AddEntityFrameworkStores<DatabaseContext>();
 
 #endregion
 
@@ -52,13 +52,13 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.UseReDoc(options =>
-    {
-        options.SpecUrl = "/openapi/v1.json";
-        options.RoutePrefix = "documentation";
-        options.DocumentTitle = "Wave API";
-    });
+	app.MapOpenApi();
+	app.UseReDoc(options =>
+	{
+		options.SpecUrl = "/openapi/v1.json";
+		options.RoutePrefix = "documentation";
+		options.DocumentTitle = "Wave API";
+	});
 }
 
 // app.MapIdentityApi<ApplicationUser>();
