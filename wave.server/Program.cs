@@ -6,7 +6,6 @@ using wave.server.Data;
 using wave.server.Endpoints.Article;
 using wave.server.Endpoints.User;
 using wave.server.Modules.ActivityPub;
-using wave.server.Modules.ActivityPub.WebFinger;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddProblemDetails();
@@ -84,7 +83,7 @@ if (app.Environment.IsDevelopment())
 var ap = app.Services.GetService<IOptions<ActivityPubOptions>>();
 if (ap?.Value is not null && !string.IsNullOrEmpty(ap.Value.Domain))
 {
-	app.MapWellKnownEndpoints();
+	app.MapActivityPubEndpoints();
 }
 
 var api = app.MapGroup("api");

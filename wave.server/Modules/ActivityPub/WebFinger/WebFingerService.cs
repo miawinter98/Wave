@@ -34,12 +34,27 @@ public class WebFingerService(
 
 		return new ActorResponse(
 			"acct:" + resourceName,
-			[new Uri(new Uri(localDomain, UriKind.Absolute), "/api/user/" + user.Id).ToString()],
+			[new Uri(new Uri(localDomain, UriKind.Absolute), "/activityPub/" + user.Id).ToString()],
 			[
 				new LinkDto(
 					"self",
-					"application/json",
-					new Uri(new Uri(localDomain, UriKind.Absolute), $"/api/user/{user.Id}"),
+					"application/activity+json",
+					new Uri(new Uri(localDomain, UriKind.Absolute), $"/activityPub/{user.Id}"),
+					null
+				),
+				new LinkDto(
+					"http://webfinger.net/rel/profile-page",
+					"text/html",
+					new Uri(new Uri(localDomain, UriKind.Absolute), "/profile/" + user.Id),
+					null
+				),
+				new LinkDto(
+					"http://webfinger.net/rel/avatar",
+					"image/webp",
+					new Uri(
+						new Uri(localDomain, UriKind.Absolute),
+						"/api/user/pfp/" + user.Id + "?size=400"
+					),
 					null
 				),
 			]
