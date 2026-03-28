@@ -8,6 +8,7 @@ using wave.server.Endpoints.User;
 using wave.server.Modules.ActivityPub;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables("Wave_");
 builder.Services.AddProblemDetails();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -83,6 +84,7 @@ if (app.Environment.IsDevelopment())
 var ap = app.Services.GetService<IOptions<ActivityPubOptions>>();
 if (ap?.Value is not null && !string.IsNullOrEmpty(ap.Value.Domain))
 {
+	Console.WriteLine("Launching ActivityPub Integration on domain " + ap.Value.Domain); // TODO log
 	app.MapActivityPubEndpoints();
 }
 

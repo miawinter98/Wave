@@ -19,9 +19,23 @@ public class ActorService(
 		CancellationToken cancellation
 	)
 	{
-		var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == actor, cancellation);
+		var user = await userManager.FindByIdAsync(actor);
+		if (!actor.Contains('@'))
+		{
+			user ??= await userManager.Users.FirstOrDefaultAsync(
+				u => u.UserName != null && u.UserName == actor,
+				cancellation
+			);
+		}
+
 		if (user is null)
 			return null;
+
+		string? username = null;
+		if (user.UserName?.Contains('@') is not true)
+		{
+			username = user.UserName;
+		}
 
 		var localDomain = new Uri(scheme + "://" + options.Value.Domain);
 		return new PersonDto(
@@ -31,7 +45,7 @@ public class ActorService(
 			null,
 			null,
 			new Uri(localDomain, "/profile/" + user.Id),
-			null,
+			username,
 			false,
 			false,
 			new ImageDto(new Uri(localDomain, $"/api/user/pfp/{user.Id}?size=400")),

@@ -12,7 +12,7 @@ public static class WellKnownEndpoints
 		wellKnow.MapGet("webfinger", GetAsync);
 	}
 
-	public static async Task<Results<Ok<ActorResponse>, NotFound>> GetAsync(
+	public static async Task<Results<Ok<ActorResponse>, BadRequest, NotFound>> GetAsync(
 		[FromQuery] string resource,
 		WebFingerService service,
 		HttpContext context,
@@ -20,6 +20,8 @@ public static class WellKnownEndpoints
 	)
 	{
 		var data = resource.Split(":", 2);
+		if (data.Length < 2)
+			return TypedResults.BadRequest();
 
 		var resourceType = data[0];
 		var resourceName = data[1];
