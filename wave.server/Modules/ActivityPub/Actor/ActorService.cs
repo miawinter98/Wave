@@ -40,9 +40,29 @@ public class ActorService(
 			username = user.UserName;
 		}
 
+		IList<AttachmentDto>? attachments = [];
+		if (!string.IsNullOrWhiteSpace(user.AboutTheAuthor))
+		{
+			attachments.Add(new AttachmentDto("About", user.AboutTheAuthor));
+		}
+		if (!string.IsNullOrWhiteSpace(user.ContactWebsite))
+		{
+			attachments.Add(
+				new AttachmentDto(
+					"Website",
+					$"<a href=\"{user.ContactWebsite}\" rel=\"me nofollow noopener\" target=\"_blank\">{user.ContactWebsite}</a>"
+				)
+			);
+		}
+		if (attachments.Count < 1)
+			attachments = null;
+
 		var localDomain = new Uri(scheme + "://" + options.Value.Domain);
 		return new PersonDto(
 			new Uri(localDomain, "/activityPub/" + user.Id),
+			user.FullName,
+			!string.IsNullOrWhiteSpace(user.BiographyHtml) ? $"<p>{user.BiographyHtml}</p>" : null,
+			DateTimeOffset.FromUnixTimeMilliseconds(960372000000L),
 			new Uri(localDomain, "/activityPub/" + user.Id + "/inbox"),
 			new Uri(localDomain, "/activityPub/" + user.Id + "/outbox"),
 			null,
@@ -51,13 +71,15 @@ public class ActorService(
 			username,
 			false,
 			false,
+			false,
 			null,
 			new ImageDto(new Uri(localDomain, $"/api/user/pfp/{user.Id}?size=200")),
 			new PublicKeyRecord(
 				new Uri(localDomain, "/activityPub/" + user.Id + "#main-key"),
 				new Uri(localDomain, "/activityPub/" + user.Id),
 				await GetPublicKeyAsync(user.Id)
-			)
+			),
+			attachments?.ToArray()
 		);
 	}
 

@@ -16,6 +16,10 @@ public class DatabaseContext : IdentityDbContext<ApplicationUser>
 		model.Entity<ApplicationUser>(user =>
 		{
 			user.Property(u => u.FullName).HasMaxLength(64);
+			user.Property(u => u.AboutTheAuthor).HasMaxLength(512);
+			user.Property(u => u.ContactWebsite).HasMaxLength(128);
+			user.Property(u => u.Biography).HasMaxLength(4096);
+			user.Property(u => u.BiographyHtml).HasMaxLength(-1);
 		});
 
 		// Introduced in .net 10, can be added some other time when we not
