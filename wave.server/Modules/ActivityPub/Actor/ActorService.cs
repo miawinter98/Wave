@@ -19,6 +19,9 @@ public class ActorService(
 		CancellationToken cancellation
 	)
 	{
+#if !DEBUG
+		scheme = "https";
+#endif
 		var user = await userManager.FindByIdAsync(actor);
 		if (!actor.Contains('@'))
 		{
@@ -48,8 +51,8 @@ public class ActorService(
 			username,
 			false,
 			false,
-			new ImageDto(new Uri(localDomain, $"/api/user/pfp/{user.Id}?size=400")),
 			null,
+			new ImageDto(new Uri(localDomain, $"/api/user/pfp/{user.Id}?size=200")),
 			new PublicKeyRecord(
 				new Uri(localDomain, "/activityPub/" + user.Id + "#main-key"),
 				new Uri(localDomain, "/activityPub/" + user.Id),
@@ -104,7 +107,10 @@ public class ActorService(
 
 		if (File.Exists(file))
 		{
-			return await File.ReadAllTextAsync(file);
+			var pub = await File.ReadAllTextAsync(file);
+			using var rsa = RSA.Create();
+			rsa.ImportFromPem(pub);
+			return rsa.ExportSubjectPublicKeyInfoPem();
 		}
 
 		if (Directory.Exists(keyDirectory) is not true)

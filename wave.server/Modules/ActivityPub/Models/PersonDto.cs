@@ -28,5 +28,5 @@ public record PersonDto(
 		PublicKey
 	)
 {
-	public string Type { get; } = "person";
+	public string Type { get; } = "Person";
 }

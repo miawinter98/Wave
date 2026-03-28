@@ -17,6 +17,10 @@ public class WebFingerService(
 		CancellationToken cancellation
 	)
 	{
+#if !DEBUG
+		scheme = "https";
+#endif
+
 		var localDomain = scheme + "://" + options.Value.Domain;
 
 		var data = resourceName.Split("@", 2);
